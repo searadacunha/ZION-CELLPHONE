@@ -286,22 +286,6 @@ bash tests/seedvault_check.sh
 
 The tests are provided for inspection and reproduction. They do not establish comprehensive security or general reliability on every device.
 
-## WHAT ZION-CELLPHONE IS NOT
-
-**Not a new operating system.** Android remains installed. Termux supplies the Linux command-line environment.
-
-**Not root.** Shizuku exposes ADB shell-level access, not unrestricted system privileges. Unlocking the bootloader would have serious wallet consequences and is outside this project.
-
-**Not invisible.** Google components remain. Private DNS is not an anonymity network. The measured zero outbound connections apply to the tested terminal-app inference scenario, not every application or system service.
-
-**Not a supercomputer.** A 4B model makes mistakes. In testing, it even gave a wrong explanation of a private key. Do not delegate wallet safety or other high-stakes decisions to it.
-
-**Not thermally free.** Sustained inference reached **48.5 °C at the skin** and Android's **severe** thermal status. The first agent response after startup can take roughly **50 seconds**; subsequent responses in the reported tests took **1–15 seconds**.
-
-**Not battery-benchmarked yet.** The device remained connected to USB during measurement.
-
-An auditable limitation is better than a marketing claim you cannot reproduce.
-
 ## INSIDE THE REPOSITORY
 
 | Path | Purpose |
