@@ -27,6 +27,8 @@ import java.util.List;
 public class Main extends Activity {
     static final int FG = 0xFFE6E6E6, DIM = 0xFF808080, BG = 0xFF000000;
     static final String TERMUX = "com.termux", AI = "/data/data/com.termux/files/usr/bin/seeker-ai";
+    static final String SHELL = "/data/data/com.termux/files/usr/bin/zion-terminal";
+    static final String DASH = "/data/data/com.termux/files/usr/bin/seeker-dash";
     static final String RULE = "-----------------------";
 
     interface Act { void run(); }
@@ -135,7 +137,7 @@ public class Main extends Activity {
     void showHome() {
         atHome = true;
         menu("ZION", Arrays.asList(
-            new Item("terminal", () -> launch(TERMUX), () -> details(TERMUX)),
+            new Item("terminal", this::runTerminal, () -> details(TERMUX)),
             new Item("ai", this::showAiAgent, null),
             new Item("applications", this::showApps, null),
             new Item("privacy", () -> sub("privacy",
@@ -171,8 +173,8 @@ public class Main extends Activity {
     void showAiAgent() {
         sub("ai agent",
             new Item("open seeker-ai", this::runAi, null),
-            new Item("dashboard (in Termux: dash)", () -> { launch(TERMUX); toast("in Termux, type: dash"); }, null),
-            new Item("start / stop (in Termux: ai --start / ai --stop)", () -> { launch(TERMUX); toast("ai --start   or   ai --stop"); }, null),
+            new Item("dashboard", () -> runTermuxForeground(DASH, 3), null),
+            new Item("start / stop (shell: ai --start / ai --stop)", () -> { runTerminal(); toast("use: ai --start   or   ai --stop"); }, null),
             new Item("refresh", this::showAiAgent, null));
         TextView st = text("status: checking...", DIM, 16, false);
         root.addView(st, 2);
@@ -275,6 +277,33 @@ public class Main extends Activity {
         fill.run();
     }
 
+    /** A real shell on explicit terminal selection; ordinary Termux sessions auto-start OPERATOR. */
+    void runTerminal() { runTermuxForeground(SHELL, 2); }
+
+    /** Run one trusted installed Termux executable in a new foreground session. */
+    void runTermuxForeground(String executable, int permissionCode) {
+        if (getPackageManager().getLaunchIntentForPackage(TERMUX) == null) {
+            toast("Termux is not installed");
+            return;
+        }
+        String perm = "com.termux.permission.RUN_COMMAND";
+        try { getPackageManager().getPermissionInfo(perm, 0); }
+        catch (PackageManager.NameNotFoundException e) {
+            toast("Direct shell requires Termux RUN_COMMAND support; run zion-terminal inside Termux");
+            return;
+        }
+        if (checkSelfPermission(perm) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{perm}, permissionCode);
+            return;
+        }
+        Intent i = new Intent("com.termux.RUN_COMMAND").setClassName(TERMUX, "com.termux.app.RunCommandService")
+            .putExtra("com.termux.RUN_COMMAND_PATH", executable)
+            .putExtra("com.termux.RUN_COMMAND_BACKGROUND", false)
+            .putExtra("com.termux.RUN_COMMAND_SESSION_ACTION", "0");
+        try { startService(i); }
+        catch (RuntimeException e) { toast("Unable to open shell: " + e.getMessage()); }
+    }
+
     void runAi() {
         if (getPackageManager().getLaunchIntentForPackage(TERMUX) == null) { toast("termux is not installed"); return; }
         // Termux from Google Play: runs a script in a new session through its exported RUN activity (as its shortcuts do)
@@ -300,8 +329,14 @@ public class Main extends Activity {
     }
 
     @Override public void onRequestPermissionsResult(int code, String[] p, int[] r) {
-        if (r.length > 0 && r[0] == PackageManager.PERMISSION_GRANTED) runAi();
-        else toast("ai needs the Termux run-command permission");
+        super.onRequestPermissionsResult(code, p, r);
+        if (r.length == 0 || r[0] != PackageManager.PERMISSION_GRANTED) {
+            toast("ZION needs 'Run commands in Termux environment' for this shortcut");
+            return;
+        }
+        if (code == 1) runAi();
+        else if (code == 2) runTerminal();
+        else if (code == 3) runTermuxForeground(DASH, 3);
     }
 
     Item app(String label, String pkg) { return new Item(label, () -> launch(pkg), () -> details(pkg)); }
