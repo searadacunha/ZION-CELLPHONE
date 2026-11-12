@@ -12,7 +12,7 @@ loader.exec_module(sa)
 
 allow = sa.DEFAULT["shell_auto_allow"]
 assert sa.is_auto_cmd("ls -la ~/models", allow)
-for bad in ("ls; rm -rf ~", "ls $(echo x)", "rm -rf ~/models", "ls > out.txt", "cat ~/.ssh/id_ed25519"):
+for bad in ("ls; rm -rf ~", "ls $(echo x)", "rm -rf ~/models", "ls > out.txt", "cat ~/.ssh/id_ed25519", "ls ~/[.]ssh", "ls ~/*"):
     assert not sa.is_auto_cmd(bad, allow), bad
 
 requests = []
@@ -23,6 +23,9 @@ OVERFLOW = (b'{"error":{"code":400,"message":"request (12012 tokens) exceeds the
 class Fake(BaseHTTPRequestHandler):
     def log_message(self, *a): pass
     def do_GET(self):
+        if self.path == "/redir":  # an approved URL that bounces to this machine's own server
+            self.send_response(302); self.send_header("Location", f"http://127.0.0.1:{srv.server_port}/props"); self.end_headers()
+            return
         self.send_response(200); self.end_headers(); self.wfile.write(b'{"status":"ok"}')
     def do_POST(self):
         body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
@@ -32,7 +35,11 @@ class Fake(BaseHTTPRequestHandler):
             err = (500, b'{"error":{"code":500,"message":"boom"}}') if "ERR500" in last["content"] else (400, OVERFLOW)
             self.send_response(err[0]); self.end_headers(); self.wfile.write(err[1])
             return
-        if last["role"] == "user" and "CALL " in last["content"]:  # "CALL <tool> <json>" -> that tool call, in 2 chunks
+        if last["role"] == "user" and "CALLS " in last["content"]:  # "CALLS [[tool, args], ...]" -> several calls at once
+            calls = json.loads(last["content"][last["content"].index("CALLS ") + 6:])
+            chunks = [{"tool_calls": [{"index": i, "id": f"c{i}", "function": {"name": n, "arguments": json.dumps(a)}}
+                                      for i, (n, a) in enumerate(calls)]}]
+        elif last["role"] == "user" and "CALL " in last["content"]:  # "CALL <tool> <json>" -> that tool call, in 2 chunks
             _, name, args = last["content"][last["content"].index("CALL "):].split(" ", 2)
             chunks = [{"tool_calls": [{"index": 0, "id": "c1", "function": {"name": name, "arguments": args[:5]}}]},
                       {"tool_calls": [{"index": 0, "function": {"arguments": args[5:]}}]}]
@@ -68,7 +75,7 @@ def setconf(**extra):
 
 def run(prompt, confirm="no", *extra):
     env = dict(os.environ, SEEKER_AI_CONFIG=str(conf), SEEKER_AI_DATA=str(data), SEEKER_AI_CONFIRM=confirm,
-               PATH=f"{fakebin}:{os.environ['PATH']}")
+               SEEKER_AI_SLOTS=str(tmp / "slots"), PATH=f"{fakebin}:{os.environ['PATH']}")
     args = [sys.executable, str(HERE / "seeker-ai"), *extra] + ([prompt] if prompt else [])
     return subprocess.run(args, capture_output=True, text=True, env=env, stdin=subprocess.DEVNULL, timeout=30)
 
@@ -295,4 +302,180 @@ run('CALL shell {"command": "ls /"}', "no")
 assert last_tool().startswith("denied by the user"), last_tool()
 run('CALL shell {"command": "ls -a ."}', "no")
 assert "note.txt" in last_tool(), last_tool()
-print("seeker-ai self-test: OK (30 scenarios)")
+# 31. git: each subcommand has its level; options before it, unknown ones and risky repository configs never run alone
+c2 = {**json.loads(json.dumps(sa.DEFAULT)), "allowed_paths": [str(work)], "workdir": str(work)}
+gl = lambda a, repo=str(work): sa.git_level({"args": a, "repo": repo}, c2)
+assert gl("status") == "read" and gl("log --oneline -3") == "read" and gl("commit -m x") == "exec" and gl("push") == "sensitive"
+assert gl("branch") == "read" and gl("branch -D old") == "exec" and gl("diff --output=/tmp/x") == "exec" and gl("show -O x") == "exec"
+assert gl("-c core.pager=sh status") is None and gl("frobnicate") is None and gl("") is None and gl("log 'unclosed") is None
+evil = work / "evil"; (evil / ".git").mkdir(parents=True)
+(evil / ".git" / "config").write_text(f"[core]\n\tfsmonitor = touch {tmp}/pwned\n")
+assert gl("status", str(evil)) == "exec"
+# 32. git runs for real: init asks, status is automatic, a repository's fsmonitor never runs (even when approved)
+proj = work / "proj"; proj.mkdir()
+run(f'CALL git {{"args": "init", "repo": "{proj}"}}', "no")
+assert last_tool().startswith("denied by the user") and not (proj / ".git").exists()
+run(f'CALL git {{"args": "init", "repo": "{proj}"}}', "yes")
+assert (proj / ".git").is_dir(), last_tool()
+run(f'CALL git {{"args": "status --short", "repo": "{proj}"}}', "no")
+assert last_tool().startswith("exit 0"), last_tool()
+run(f'CALL git {{"args": "status", "repo": "{evil}"}}', "no")
+assert last_tool().startswith("denied by the user")
+run(f'CALL git {{"args": "status", "repo": "{evil}"}}', "yes")
+assert not (tmp / "pwned").exists(), "a repository's fsmonitor must never run"
+run(f'CALL git {{"args": "--exec-path=/tmp status", "repo": "{proj}"}}', "yes")
+assert "takes a subcommand first" in last_tool(), last_tool()
+# 33. search: hits in readable files only (no hidden file, no denied folder)
+run(f'CALL search {{"pattern": "seeker-marker", "path": "{work}"}}')
+assert "note.txt:1:seeker-marker-42" in last_tool(), last_tool()
+run(f'CALL search {{"pattern": "visible-on-request", "path": "{work}"}}')
+assert "info.txt" not in last_tool(), last_tool()
+setconf(denied_paths=[str(work / "secret")])
+(work / "secret" / "key.txt").write_text("zion-secret-77")
+run(f'CALL search {{"pattern": "zion-secret-77", "path": "{work}"}}')
+assert "key.txt" not in last_tool(), last_tool()
+setconf()
+# 34. apps: package names checked, Seed Vault / Solana / core / Termux refused even if approved, changes journaled with undo
+(fakebin / "rish").write_text('#!/bin/sh\necho "rish: $2"\n'); (fakebin / "rish").chmod(0o755)
+for pkg, why in (("com.solanamobile.wallet", "protected"), ("com.termux", "protected"), ("not a package", "package must be")):
+    run(f'CALL android {{"action": "app_disable", "package": "{pkg}"}}', "yes")
+    assert why in last_tool(), (pkg, last_tool())
+run('CALL android {"action": "app_disable", "package": "org.fossify.gallery"}', "no")
+assert last_tool().startswith("denied by the user") and not (data / "changes.tsv").exists()
+run('CALL android {"action": "app_disable", "package": "org.fossify.gallery"}', "yes")
+assert "rish: pm disable-user --user 0 org.fossify.gallery" in last_tool(), last_tool()
+row = (data / "changes.tsv").read_text().splitlines()[-1].split("\t")
+assert row[1:4] == ["app_disable", "org.fossify.gallery", "undo: app_enable"], row
+run('CALL android {"action": "app_info", "package": "com.solanamobile.wallet"}')  # reading about it is fine
+assert "rish: dumpsys package com.solanamobile.wallet" in last_tool(), last_tool()
+run('CALL android {"action": "diagnose"}')
+assert "dumpsys thermalservice" in last_tool() and "logcat -d -b crash" in last_tool(), last_tool()
+# 35. prefix cache: computed once and saved, restored next time, a bad copy is recomputed, only 3 copies kept, and a
+#     sleeping server is woken with the prefix restored
+slot_calls = []
+class SlotFake(BaseHTTPRequestHandler):
+    sleeping, refuse_restore = False, False
+    def log_message(self, *a): pass
+    def reply(self, code, obj):
+        self.send_response(code); self.end_headers(); self.wfile.write(json.dumps(obj).encode())
+    def do_GET(self):
+        self.reply(200, {"is_sleeping": SlotFake.sleeping, "model_path": "/m.gguf"})
+    def do_POST(self):
+        b = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
+        slot_calls.append((self.path, b))
+        if self.path == "/apply-template":
+            text = "".join(f"<|im_start|>{m['role']}\n{m['content']}<|im_end|>\n" for m in b["messages"])
+            return self.reply(200, {"prompt": text + "<|im_start|>assistant\n"})
+        if self.path == "/completion":
+            return self.reply(200, {"timings": {"prompt_n": 99}})
+        name = b["filename"]
+        if "action=save" in self.path:
+            (sa.SLOTS / name).write_bytes(b"kv")
+            return self.reply(200, {"n_saved": 99})
+        if SlotFake.refuse_restore or not (sa.SLOTS / name).exists():
+            return self.reply(400, {"error": "bad file"})
+        return self.reply(200, {"n_restored": 99})
+slot_srv = HTTPServer(("127.0.0.1", 0), SlotFake)
+threading.Thread(target=slot_srv.serve_forever, daemon=True).start()
+sa.SLOTS = tmp / "slots-unit"; sa.SLOTS.mkdir()
+cs = {**json.loads(json.dumps(sa.DEFAULT)), "server": f"http://127.0.0.1:{slot_srv.server_port}"}
+mfile = mdir / "Alpha-Q4_0.gguf"
+head = [{"role": "system", "content": "SYS"}]
+assert sa.prefix_cache(cs, mfile, head, []) == "saved"
+comp = [b for p_, b in slot_calls if p_ == "/completion"][-1]
+assert comp["prompt"] == "<|im_start|>system\nSYS<|im_end|>\n<|im_start|>user\n" and comp["n_predict"] == 0, comp
+assert sa.prefix_cache(cs, mfile, head, []) == "restored"
+SlotFake.refuse_restore = True
+assert sa.prefix_cache(cs, mfile, head, []) == "saved"  # a copy the server refuses is replaced
+SlotFake.refuse_restore = False
+for i in range(4):
+    sa.prefix_cache(cs, mfile, [{"role": "system", "content": f"SYS{i}"}], [])
+files = list(sa.SLOTS.glob("prefix-*.bin"))
+assert len(files) == 3 and all("/" not in f.name[7:] for f in files), files
+cs["_prefix"] = (mfile, head, [])
+n = len(slot_calls)
+sa.wake_with_prefix(cs)
+assert len(slot_calls) == n, "an awake server is left alone"
+SlotFake.sleeping = True
+sa.wake_with_prefix(cs)
+assert any("action=restore" in p_ or "/completion" in p_ for p_, _ in slot_calls[n:]), slot_calls[n:]
+SlotFake.sleeping = False
+assert sa.prefix_cache({**cs, "server": "http://127.0.0.1:9"}, mfile, head, []).startswith("not cached")  # never raises
+# 36. a task is saved after every tool round, and a chat that ends mid-task is seen as interrupted
+c3 = {**json.loads(json.dumps(sa.DEFAULT)), "server": f"http://127.0.0.1:{srv.server_port}", "allowed_paths": [str(work)],
+      "workdir": str(work), "show_speed": False}
+t3 = sa.make_tools(c3)
+msgs, saves = [{"role": "system", "content": "S"}, {"role": "user", "content": f'CALL read_file {{"path": "{work}/note.txt"}}'}], []
+with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+    sa.turn(c3, msgs, sa.tool_specs(c3, t3), t3, lambda: saves.append(len(msgs)))
+assert saves == [4] and msgs[-1]["role"] == "assistant", (saves, msgs)
+assert sa.interrupted(msgs[:4]) and sa.interrupted(msgs[:3]) and not sa.interrupted(msgs)
+# 37. interactive: /history lists saved chats, /resume N reloads one
+master, slave = pty.openpty()
+env = dict(os.environ, SEEKER_AI_CONFIG=str(conf), SEEKER_AI_DATA=str(data), SEEKER_AI_CONFIRM="no",
+           SEEKER_AI_SLOTS=str(tmp / "slots"), PATH=f"{fakebin}:{os.environ['PATH']}")
+chat = subprocess.Popen([sys.executable, str(HERE / "seeker-ai")], stdin=slave, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env, text=True)
+for line in ("history-marker-1", "/history", "/resume 1", "/resume 99", "/exit"):
+    os.write(master, (line + "\n").encode()); time.sleep(0.7)
+out = chat.communicate(timeout=30)[0]
+assert "history-marker-1" in out and "(resumed " in out and "/resume N" in out and "OPERATOR agent" in out, out
+# 38. --remote: the configured server and model name are used, nothing is started; no model configured = clear message
+setconf(remote={"server": f"http://127.0.0.1:{srv.server_port}", "model": "gemma-test"})
+run("bonjour", "no", "--remote")
+assert requests[-1]["model"] == "gemma-test", requests[-1]
+setconf(remote={"server": f"http://127.0.0.1:{srv.server_port}", "model": ""})
+r = run("bonjour", "no", "--remote")
+assert r.returncode != 0 and "remote" in r.stderr and "Traceback" not in r.stderr, r.stderr
+setconf()
+# 39. status shows the prefix cache, the sleep setting and the journaled changes
+r = run("", "no", "--status")
+assert "prefix cache" in r.stdout and "app_disable" in r.stdout, r.stdout
+# 40. git read calls ask before reaching past the repository: a path outside it (diff turns into --no-index), --no-index,
+#     a hidden path in rev:path; an ordinary read still runs by itself
+for bad in (f"diff /dev/null {tmp}/outside.txt", "diff --no-index a b", "show HEAD:.env", "log -p -- ../x", "status ~"):
+    run(f'CALL git {{"args": "{bad}", "repo": "{proj}"}}', "no")
+    assert last_tool().startswith("denied by the user"), (bad, last_tool())
+run(f'CALL git {{"args": "diff HEAD~1 -- src/a.py", "repo": "{proj}"}}', "no")
+assert not last_tool().startswith("denied"), last_tool()
+# 41. a tool name chosen by the model is printed and logged without its escape sequences
+r = run('CALL \x1b[2Jevil {}', "no")
+assert "\x1b[2J" not in r.stderr and "\\u001b" in r.stderr, r.stderr
+# 42. --remote refuses a server off this phone over plain HTTP, before sending anything
+n = len(requests)
+setconf(remote={"server": "http://10.0.0.7:11434", "model": "x"})
+r = run("bonjour", "no", "--remote")
+assert r.returncode != 0 and "refused" in r.stderr and len(requests) == n and "Traceback" not in r.stderr, r.stderr
+setconf()
+# 43. a memory note is kept as one plain line
+run('CALL remember {"note": "line one\\nline two \\u001b[2J"}', "no")
+assert (data / "memory.md").read_text().splitlines()[-1].endswith("line one line two [2J"), (data / "memory.md").read_text()
+# 44. after a refusal, the other calls of the same answer do not run (a new file would be written without asking)
+run(f'CALLS [["shell", {{"command": "touch {work}/x44"}}], ["write_file", {{"path": "{work}/new44.txt", "content": "x"}}]]', "no")
+assert not (work / "new44.txt").exists() and not (work / "x44").exists()
+assert "not run: the user refused" in requests[-1]["messages"][-1]["content"], requests[-1]["messages"][-2:]
+# 45. --resume skips a session cut off mid-write and takes the newest readable one; an empty chat is never saved
+(data / "sessions").mkdir(exist_ok=True)
+(data / "sessions" / "20990101-000001.json").write_text('[{"role": "user", "content": "cut')
+(data / "sessions" / "20990101-000000.json").write_text(json.dumps([{"role": "user", "content": "resume-marker-45"},
+                                                                     {"role": "assistant", "content": "ok"}]))
+r = run("", "no", "--resume")  # interactive; stdin is closed, so it resumes, then leaves
+assert "(cannot read 20990101-000001.json" in r.stdout and "(resumed 20990101-000000.json, 2 messages)" in r.stdout and "Traceback" not in r.stderr, r.stdout + r.stderr
+before = sorted((data / "sessions").glob("*.json"))
+sa.save_session(data / "sessions" / "20990101-000002.json", [{"role": "system", "content": "s"}])
+assert sorted((data / "sessions").glob("*.json")) == before
+for f in (data / "sessions").glob("2099*"): f.unlink()
+# 46. read_file reads only the start of a big file
+(work / "big.txt").write_text("x" * (3 * sa.DEFAULT["max_tool_output"]))
+run(f'CALL read_file {{"path": "{work}/big.txt"}}')
+assert "only its start was read" in last_tool(), last_tool()[-200:]
+# 47. fetch_url: an approved URL may not redirect to this machine
+run(f'CALL fetch_url {{"url": "http://127.0.0.1:{srv.server_port}/redir"}}', "yes")
+assert "redirect to" in last_tool() and "refused" in last_tool(), last_tool()
+# 48. a llama-server too old for an option says which one and what to do, instead of only "stopped at once"
+old_srv = tmp / "old-llama-server"
+old_srv.write_text("#!/bin/sh\necho 'error: invalid argument: --load-mode'\nexit 1\n"); old_srv.chmod(0o755)
+setconf(server="http://127.0.0.1:9", llama_server=str(old_srv))
+r = run("", "no", "--start")
+assert r.returncode != 0 and "older than OPERATOR expects (invalid argument: --load-mode)" in r.stderr, r.stderr
+setconf()
+print("seeker-ai self-test: OK (48 scenarios)")

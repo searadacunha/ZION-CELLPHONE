@@ -1,0 +1,1 @@
+pid=28720 ppid=6036 ZION_TERMINAL_MODE=1 ACTIVE= shell=/data/data/com.termux/files/usr/bin/bash

@@ -1,0 +1,4 @@
+#!/data/data/com.termux/files/usr/bin/sh
+# ZION ZERO launcher > ai: OPERATOR at once, even with autostart off; leaving it gives the shell back.
+export ZION_OPEN_OPERATOR=1
+exec /data/data/com.termux/files/usr/bin/login

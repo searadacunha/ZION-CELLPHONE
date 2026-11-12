@@ -117,7 +117,7 @@ def section_head():
         pass
     me = sh(["id", "-un"]).strip()
     priv = "shizuku: uid " + (adb_sh("id -u").strip() or "?") if RISH else "shizuku: off (app sandbox only)"
-    return [f"SEEKER ZERO  {time.strftime('%H:%M:%S')}  up {int(up // 3600)}h{int(up % 3600 // 60):02d}  "
+    return [f"ZION ZERO  {time.strftime('%H:%M:%S')}  up {int(up // 3600)}h{int(up % 3600 // 60):02d}  "
             f"battery {bat.get('percentage', '?')}% {bat.get('temperature', '?')}C {bat.get('status', '')}",
             f"user {me} (not root)  {priv}"]
 

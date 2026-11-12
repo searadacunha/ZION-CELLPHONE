@@ -33,6 +33,12 @@ class H(BaseHTTPRequestHandler):
             chunks = [{"content": "```python\ndef premiers(n):\n    return [p for p in range(2, n + 1) if all(p % d for d in range(2, p))]\n```"}]
         else:
             chunks = [{"content": "Réponse de test en français."}]
+        t = {"cache_n": 281, "prompt_n": 40, "prompt_per_second": 30.0, "predicted_n": 12, "predicted_per_second": 6.0}
+        if not b.get("stream"):  # like llama-server: one JSON answer when the request does not ask for a stream
+            text = "".join(c.get("content", "") for c in chunks)
+            self.send_response(200); self.send_header("Content-Type", "application/json"); self.end_headers()
+            self.wfile.write(json.dumps({"choices": [{"message": {"role": "assistant", "content": text}}], "timings": t}).encode())
+            return
         self.send_response(200); self.send_header("Content-Type", "text/event-stream"); self.end_headers()
         for c in chunks:
             self.wfile.write(f"data: {json.dumps({'choices': [{'delta': c}]})}\n\n".encode())

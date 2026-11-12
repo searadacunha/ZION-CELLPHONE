@@ -1,0 +1,27 @@
+starting llama-server with Qwen3.5-4B-Uncensored-HauhauCS-Aggressive-Q4_K_M.gguf
+OK
+[2m[5.5 tok/s, 2 tokens; prompt 15 tok at 15.2 tok/s; first token 1.0s][0m
+
+== no-copy: whole command 70028 ms
+{"t": 1794500982.6687627, "model": "Qwen3.5-4B-Uncensored-HauhauCS-Aggressive-Q4_K_M.gguf", "ctx": 4096, "ttft_s": 1.04, "prompt_n": 15, "prompt_ms": 989.269, "prompt_per_second": 15.162711052302257, "predicted_n": 2, "predicted_ms": 182.397, "predicted_per_second": 5.482546313809986}
+total 205411
+drwx------. 2 u0_a131 u0_a131      3452 Nov 12 16:29 .
+drwx------. 3 u0_a131 u0_a131      3452 Nov 12 16:28 ..
+-rw-------. 1 u0_a131 u0_a131 210122224 Nov 12 16:29 prefix-fc77d5fb76547637.bin
+starting llama-server with Qwen3.5-4B-Uncensored-HauhauCS-Aggressive-Q4_K_M.gguf
+OK
+[2m[5.4 tok/s, 2 tokens; prompt 15 tok at 15.3 tok/s; first token 1.0s][0m
+
+== with-copy: whole command 8780 ms
+{"t": 1794500992.2302427, "model": "Qwen3.5-4B-Uncensored-HauhauCS-Aggressive-Q4_K_M.gguf", "ctx": 4096, "ttft_s": 1.03, "prompt_n": 15, "prompt_ms": 983.385, "prompt_per_second": 15.253435836422154, "predicted_n": 2, "predicted_ms": 185.025, "predicted_per_second": 5.4046750439129845}
+total 205411
+drwx------. 2 u0_a131 u0_a131      3452 Nov 12 16:29 .
+drwx------. 3 u0_a131 u0_a131      3452 Nov 12 16:28 ..
+-rw-------. 1 u0_a131 u0_a131 210122224 Nov 12 16:29 prefix-fc77d5fb76547637.bin
+== warm (server already up, prefix in place)
+NON
+[2m[5.6 tok/s, 2 tokens; prompt 15 tok at 15.5 tok/s; first token 1.0s][0m
+
+whole command 1498 ms
+{"t": 1794500993.8886626, "model": "Qwen3.5-4B-Uncensored-HauhauCS-Aggressive-Q4_K_M.gguf", "ctx": 4096, "ttft_s": 1.02, "prompt_n": 15, "prompt_ms": 969.461, "prompt_per_second": 15.472515139856064, "predicted_n": 2, "predicted_ms": 179.478, "predicted_per_second": 5.57171352477741}
+== done 16:29:53

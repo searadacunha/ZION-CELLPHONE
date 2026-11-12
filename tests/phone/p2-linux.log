@@ -1,0 +1,72 @@
+stopped 1 llama-server process(es)
+== 16:13:12 proot-distro
+[K
+[KUSAGE
+[K
+[K  proot-distro [COMMAND] [ARGUMENTS]
+[K
+[KDESCRIPTION
+[K
+[K  PRoot-Distro is a wrapper utility for proot user-space emulator
+[K  of chroot, mount --bind and binfmt_misc. This utility provides a
+[K  convenient way for working with Linux containers, leveraging
+[K  support of Docker registries to provide distributions of any
+[K  kind.
+[K
+[KCOMMANDS
+[K
+[K  help         Show this help.
+[K  install      Install distribution from OCI image or rootfs
+[K               archive.
+[K  list         List created containers.
+[K  login        Start interactive shell inside a container.
+[K  run          Run container entrypoint in server or distroless
+[K               images.
+[K  remove       Delete a container. Destroys data!
+[K  rename       Rename a container.
+[K  reset        Reinstall a container from scratch. Destroys data!
+
+== 16:13:13 install alpine
+[K[*] Updating '/etc/hosts'...
+[K[*] Registering Android-specific UIDs and GIDs...
+[K[*] Finished installation.
+[K
+[KStart shell: proot-distro login alpine
+[K
+install alpine: 4 s, exit 0
+== alpine login
+proot warning: can't sanitize binding "/proc/self/fd/2": No such file or directory
+aarch64
+NAME="Alpine Linux"
+ID=alpine
+0
+ok-login
+
+== 16:13:17 install debian
+[K[*] Updating '/etc/hosts'...
+[K[*] Registering Android-specific UIDs and GIDs...
+[K[*] Finished installation.
+[K
+[KStart shell: proot-distro login debian
+[K
+install debian: 9 s, exit 0
+== debian login
+proot warning: can't sanitize binding "/proc/self/fd/2": No such file or directory
+aarch64
+PRETTY_NAME="Debian GNU/Linux 13 (trixie)"
+NAME="Debian GNU/Linux"
+0
+ok-login
+
+== 16:13:27 debian: apt python3 git
+proot warning: can't sanitize binding "/proc/self/fd/1": No such file or directory
+proot warning: can't sanitize binding "/proc/self/fd/2": No such file or directory
+3.13.5 aarch64
+git version 2.47.3
+apt python3+git: 107 s
+== startup cost: python3 -c pass, native vs debian
+native  55 ms
+debian  427 ms (includes proot start)
+== disk
+du: cannot access '/data/data/com.termux/files/usr/var/lib/proot-distro/installed-rootfs/*': No such file or directory
+== done 16:15:16

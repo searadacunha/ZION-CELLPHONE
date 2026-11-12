@@ -39,6 +39,6 @@ assert g == {"RECORD_AUDIO": ["com.solanamobile.wallet"], "READ_MEDIA_IMAGES": [
 
 # without Termux/Shizuku (this Mac) the snapshot still renders, with honest "needs Shizuku" panels
 out = subprocess.run([sys.executable, str(HERE / "seeker-dash"), "--once"], capture_output=True, text=True, timeout=60)
-assert out.returncode == 0 and "needs Shizuku" in out.stdout and "SEEKER ZERO" in out.stdout, out.stdout + out.stderr
+assert out.returncode == 0 and "needs Shizuku" in out.stdout and "ZION ZERO" in out.stdout, out.stdout + out.stderr
 assert "AI AGENT STOPPED" in out.stdout and "permissions    read=auto write=auto exec=ask sensitive=ask" in out.stdout, out.stdout
 print("seeker-dash self-test: OK")

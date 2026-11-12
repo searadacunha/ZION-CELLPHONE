@@ -1,0 +1,3 @@
+zsh=5.9.1 ACTIVE=1
+nested-zsh-ok
+noninteractive-ok

@@ -1,0 +1,17 @@
+{"t": 1794500993.8886626, "model": "Qwen3.5-4B-Uncensored-HauhauCS-Aggressive-Q4_K_M.gguf", "ctx": 4096, "ttft_s": 1.02, "prompt_n": 15, "prompt_ms": 969.461, "prompt_per_second": 15.472515139856064, "predicted_n": 2, "predicted_ms": 179.478, "predicted_per_second": 5.57171352477741}
+{"t": 1794512880.8152416, "model": "Qwen3.5-4B-Uncensored-HauhauCS-Aggressive-Q4_K_M.gguf", "ctx": 4096, "ttft_s": 1.33, "prompt_n": 19, "prompt_ms": 1269.089, "prompt_per_second": 14.971369226271758, "predicted_n": 2, "predicted_ms": 192.487, "predicted_per_second": 5.195156036511556}
+server       online (http://127.0.0.1:8080)
+model        default Qwen3.5-4B-Uncensored-HauhauCS-Aggressive-Q4_K_M.gguf, running Qwen3.5-4B-Uncensored-HauhauCS-Aggressive-Q4_K_M.gguf
+context      4096 tokens
+memory       llama-server pid 4442: 3673 MB now, 3673 MB peak
+speed        last 20 answers: generation 5.4 tok/s, prompt 21.1 tok/s, first token 8.3 s
+permissions  read=auto, write=auto, exec=ask, sensitive=ask
+tools        read_file=auto, list_dir=auto, search=auto, git=auto, write_file=auto, remember=auto, shell=ask, python=ask, fetch_url=ask, system=ask
+android      battery=auto, volume=auto, toast=auto, notify=auto, vibrate=auto, wifi_info=auto, apps=auto, usb_devices=auto, open_url=ask, screenshot=ask, install_apk=ask, diagnose=auto, thermal=auto, processes=auto, network=auto, crashes=ask, logs=ask, app_info=auto, app_stop=ask, app_disable=ask, app_enable=ask
+shizuku      ready (rish)
+prefix cache 1 file(s), 210 MB in ~/.cache/seeker-ai/slots; sleep after 600 s idle
+task         2026-11-12 13:50:09 agent: Write hello.py that prints Hello from the Matrix, run it, th [write_file, shell, android:battery]
+task         2026-11-12 16:29:42 agent: Réponds juste OK.
+task         2026-11-12 16:29:52 agent: Réponds juste OK.
+task         2026-11-12 16:29:53 agent: Réponds juste NON.
+task         2026-11-12 19:48:00 agent: R%C3%A9ponds juste OK.

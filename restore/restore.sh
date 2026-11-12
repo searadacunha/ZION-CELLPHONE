@@ -16,7 +16,7 @@ tail -n +2 restore/journal.tsv | tail -r | while IFS=$'\t' read -r t g op target
   case $op in
     disable) run pm enable --user 0 "$target" ;;
     setting) ns=${target%%/*}; key=${target#*/}
-             if [ "$old" = null ]; then run settings delete "$ns" "$key"; else run settings put "$ns" "$key" "'$old'"; fi ;;
+             if [ "$old" = null ]; then run settings delete "$ns" "$key"; else run settings put "$ns" "$key" "'${old//\'/\'\\\'\'}'"; fi ;;
     install) echo "installed by SEEKER-ZERO, kept: $target (uninstall: adb shell pm uninstall $target)" ;;
     revoke)  pkg=${target% *}; perm=${target#* }
              run pm clear-permission-flags "$pkg" "$perm" user-set; run pm grant "$pkg" "$perm" ;;
@@ -27,6 +27,9 @@ tail -n +2 restore/journal.tsv | tail -r | while IFS=$'\t' read -r t g op target
     doze)    run dumpsys deviceidle whitelist "-$target" ;;
     start)   echo "$target: stops by itself at the next reboot" ;;
     wallpaper) run am start -n zero.seeker.launcher/.Main --es wallpaper restore ;;  # the launcher puts its saved copy back
+    netblock) run cmd connectivity set-package-networking-enabled true "$target" ;;  # privacy/firewall.sh
+    netallow) run cmd connectivity set-package-networking-enabled false "$target" ;;
+    netchain) run cmd connectivity set-chain3-enabled "$old" ;;
     restored) ;;
     *) echo "unknown op $op for $target" ;;
   esac

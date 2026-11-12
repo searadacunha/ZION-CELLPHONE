@@ -1,0 +1,100 @@
+{
+ "model": "Qwen3.5-4B-Uncensored-HauhauCS-Aggressive-Q4_K_M.gguf",
+ "started": "2026-11-12 16:17:26",
+ "load_s": 7.1,
+ "cold_first_message": {
+  "wall_s": 43.43,
+  "prompt_n": 1180,
+  "cache_n": 0,
+  "prompt_ms": 43203.304,
+  "predicted_per_second": 5.650260194481956
+ },
+ "warm_second_message": {
+  "wall_s": 1.22,
+  "prompt_n": 20,
+  "cache_n": 1161,
+  "prompt_ms": 991.393,
+  "predicted_per_second": 5.552748332787313
+ },
+ "prefix_warmup_and_save": {
+  "prefix_chars": 4534,
+  "prefix_tail": " Seed Vault.<|im_end|>\n<|im_start|>user\n",
+  "compute_wall_s": 44.31,
+  "tokens": 1164,
+  "save": {
+   "id_slot": 0,
+   "filename": "prefix.bin",
+   "n_saved": 1164,
+   "n_written": 196249516,
+   "timings": {
+    "save_ms": 186.87
+   }
+  },
+  "save_wall_s": 0.19,
+  "file_mb": 196.2
+ },
+ "first_message_after_warmup_same_server": {
+  "wall_s": 1.06,
+  "prompt_n": 16,
+  "cache_n": 1164,
+  "prompt_ms": 838.646,
+  "predicted_per_second": 5.665850784153748
+ },
+ "restore": {
+  "result": {
+   "id_slot": 0,
+   "filename": "prefix.bin",
+   "n_restored": 1164,
+   "n_read": 196249516,
+   "timings": {
+    "restore_ms": 193.751
+   }
+  },
+  "wall_s": 0.21
+ },
+ "first_message_after_restore": {
+  "wall_s": 1.1,
+  "prompt_n": 16,
+  "cache_n": 1164,
+  "prompt_ms": 875.454,
+  "predicted_per_second": 5.478191320353672
+ },
+ "second_message_after_restore": {
+  "wall_s": 1.17,
+  "prompt_n": 17,
+  "cache_n": 1164,
+  "prompt_ms": 949.666,
+  "predicted_per_second": 5.4679767939064865
+ },
+ "gen_baseline": {
+  "label": "baseline",
+  "predicted_n": 128,
+  "predicted_per_second": 5.6069776231703985,
+  "draft_n": null,
+  "draft_n_accepted": null,
+  "wall_s": 24.2
+ },
+ "gen_ngram-mod": {
+  "label": "ngram-mod",
+  "predicted_n": 128,
+  "predicted_per_second": 5.517476759692773,
+  "draft_n": null,
+  "draft_n_accepted": null,
+  "wall_s": 24.6
+ },
+ "gen_draft-mtp": {
+  "error": "server did not start",
+  "log_tail": "l init, n_threads = 4\n0.06.702.700 I common_speculative_init_result: creating MTP draft context against the target model '/data/data/com.termux/files/home/models/Qwen3.5-4B-Uncensored-HauhauCS-Aggressive-Q4_K_M.gguf'\n0.06.702.714 W llama_init_from_model: context type MTP requested but model doesn't contain MTP layers\n0.06.702.716 E common_speculative_init_result: failed to create MTP context\n0.06.702.718 E srv    load_model: failed to create MTP context\n0.06.702.722 I srv    operator(): operator(): cleaning up before exit...\n0.06.705.931 E srv  server_run_i: exiting due to model loading error\n"
+ },
+ "sleep_rss_before_mb": 3507,
+ "sleep_rss_after_idle_mb": 217,
+ "first_message_after_sleep": {
+  "wall_s": 51.9,
+  "prompt_n": 1180,
+  "cache_n": 0,
+  "prompt_ms": 45452.544,
+  "predicted_per_second": 5.451314311880594
+ },
+ "sleep_rss_after_wake_mb": 3739,
+ "done": "2026-11-12 16:22:49"
+}

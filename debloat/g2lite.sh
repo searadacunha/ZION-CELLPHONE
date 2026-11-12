@@ -31,8 +31,9 @@ for pkg in com.google.android.gms com.android.vending; do
   done
 done
 
-# Mullvad DNS "base": blocks ads, trackers and malware domains, DNS over TLS for the whole phone
+# AdGuard DNS: blocks ads and trackers, DNS over TLS for the whole phone (Mullvad's public DNS, used until 12/11/2026,
+# is being closed by Mullvad; 8 tracker names tested: Mullvad 6 blocked, AdGuard 5, DNS4EU 4, Quad9 0)
+op_setting global private_dns_specifier dns.adguard-dns.com  # the name first: "hostname" mode without one has no DNS
 op_setting global private_dns_mode hostname
-op_setting global private_dns_specifier base.dns.mullvad.net
 sleep 3
 tests/health.sh

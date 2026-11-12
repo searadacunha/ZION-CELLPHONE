@@ -27,6 +27,9 @@ It runs on a real **Solana Seeker**, tested on **Android 16** (security patch **
 | On-device result | Measured outcome |
 |---|---|
 | Local AI generation | **5.4 tokens/second** with the default model |
+| First word from OPERATOR after the model restarts | **1.0 s** instead of 43 s (the start of the conversation is kept on disk) |
+| Model memory after 10 idle minutes | **3.5 GB → 0.2 GB** (it reloads on the next question) |
+| Debian 13 inside the terminal, no root | **installed in 9 s** |
 | Tool-call correctness | **30/30** cases on the benchmark |
 | Real agent tasks | **4/4** completed in full-device validation |
 | Outbound connections from the terminal app during the offline inference test | **0 observed** |
@@ -34,7 +37,7 @@ It runs on a real **Solana Seeker**, tested on **Android 16** (security patch **
 | Bootloader | **Locked** |
 | Root | **Not required** |
 
-These are results from the tested device and specific test procedures—not claims that the whole phone is invisible, anonymous, or permanently disconnected. Raw artifacts and scripts live in [`tests/`](tests/).
+These are results from the tested device and specific test procedures—not claims that the whole phone is invisible, anonymous, or permanently disconnected. Raw artifacts and scripts live in [`tests/`](tests/); every figure, with its date and file, is in [`docs/RESULTS.md`](docs/RESULTS.md).
 
 ## WHAT HAPPENS WHEN YOU UNPLUG?
 
@@ -58,7 +61,10 @@ It can:
 - Create and edit permitted files, inspect output, and retry after ordinary programming errors.
 - Use **git**, including creating a commit.
 - Read a CSV, calculate results, and explain what it did.
+- Search your permitted folders, and diagnose the phone: battery, heat, memory, storage, crashes, logs.
+- Manage apps (stop, disable, enable) with a journal and an undo, never the Seed Vault.
 - Work with Android services through **Shizuku**, within ADB shell-level permissions.
+- Save every step: a task cut short by Android can be resumed (`/history`, `/resume`).
 - Continue saved conversations and use your own system instructions.
 
 On the phone, the full validation included **four practical programming tasks**. The narrower model comparison benchmark separately recorded **3/3** agent tasks.
@@ -77,6 +83,8 @@ nmap · dig · tmux · ripgrep · jq
 
 Code compiled on the phone runs on the phone. The terminal is not a decorative interface to a cloud service.
 
+Need a package Termux does not have? A full **Debian 13** runs inside it through `proot-distro`, without root: installed in 9 seconds, Python and git added in under two minutes.
+
 ### ANDROID ACCESS, WITHOUT ROOT
 
 **Shizuku** gives supported tools access through the Android shell identity (**uid 2000**), similar to ADB—not root.
@@ -92,7 +100,7 @@ No infinite feed. No attention economy. No unnecessary decoration.
 The custom launcher replaces the usual app grid with a black, monospace command-center aesthetic:
 
 ```text
-ZION
+ZION ZERO
 ─────────────────────────────────
 > terminal
 > ai
@@ -102,7 +110,6 @@ ZION
 > system
 > seed-vault
 ─────────────────────────────────
-ZION  /  OPERATOR  /  USER CONTROL
 ```
 
 The launcher is written in **Java** and built **without Gradle**. A black wallpaper option covers the home and lock screens, with the previous wallpaper backed up.
@@ -116,13 +123,13 @@ The documented configuration:
 - Disables **35** unused Google and factory packages in the first group.
 - Disables another **23** Google applications and replaces selected functions with open-source alternatives from **F-Droid**.
 - Revokes **16** permissions from Play Services.
-- Uses **Private DNS** to block known trackers.
+- Uses **Private DNS** (AdGuard DNS) to block known trackers: the four tested on the phone are blocked.
 - Journals changes so they can be reversed with a restore script.
 - Checks Android and Seed Vault health after modifications.
 
 **Important:** Google Play Services, the services framework, and the Play Store remain for security updates and wallet-related functionality. Google may still observe activity. ZION-CELLPHONE does **not** claim to make the device untraceable.
 
-See [`debloat/PLAN.md`](debloat/PLAN.md) for the actual trade-offs.
+See [`debloat/PLAN.md`](debloat/PLAN.md) for the actual trade-offs, [`docs/PRIVACY.md`](docs/PRIVACY.md) for who still talks to whom, and [`docs/ROOT.md`](docs/ROOT.md) for what works without root and what would need it.
 
 ### THE WALLET IS NOT AN EXPERIMENT
 
@@ -160,7 +167,7 @@ The offline comparison uses the same questions and seeds, a **4,096-token contex
 | Prompt processing | 20 tok/s | 24 tok/s |
 | Cold first token, 1,153-token agent prompt | 45 s | 35 s |
 | Subsequent first-token latency, median | 2.6 s | 2.4 s |
-| RAM, model loaded | 3.6 GB | 3.5 GB |
+| RAM peak, model read into memory as OPERATOR runs it (`--load-mode none`, `round6b.log`) | 3.6 GB | 3.5 GB |
 | Correct tool calls, 15 cases × 2 seeds | **30/30** | **30/30** |
 | Python unit tests, 6 functions × 2 | **12/12** | 11/12 |
 | Agent benchmark tasks: script, fix, commit | **3/3** | **3/3** |
@@ -174,20 +181,21 @@ A separate on-device validation with `tests/termux-round7.sh` and `tests/termux-
 
 Prompts are deliberately **in French**: this tests how the model performs in the language actually used by its owner.
 
+Newer measurements (first-token cache, Linux, speed by thread layout, other models, battery) are in [`docs/RESULTS.md`](docs/RESULTS.md).
+
 ## USE THE PHONE
 
 ### OPERATOR BY DEFAULT. TERMINAL WHEN YOU ASK.
 
-After running the updated Termux setup and installing launcher version **1.4.2**:
+After running the Termux setup and installing launcher version **1.5.3**:
 
-- **Open Termux normally:** a new interactive session opens **OPERATOR**, the local AI agent. Exit the agent to return to the shell.
-- **Tap `terminal` in the ZION launcher:** open a new **regular interactive shell**, without auto-starting the AI.
-- **Tap `ai` → `open seeker-ai`:** open the agent explicitly.
-- **Tap `ai` → `dashboard`:** launch the dashboard directly.
+- **Open Termux normally:** a new interactive session opens **OPERATOR**, the local AI agent. `/exit` returns to the shell.
+- **Tap `terminal` in the ZION ZERO launcher:** a **regular interactive shell**, without the AI.
+- **Tap `ai`:** OPERATOR. **Long press `ai`:** its status, `open operator` and `dashboard`.
 
-Direct launcher shortcuts use Termux **RUN_COMMAND**. In Termux settings, `allow-external-apps=true` must be enabled (the setup script configures it), and Android must grant the **ZION** launcher permission to **Run commands in Termux environment**. Grant this only to apps you trust; it gives those apps the ability to execute commands as your Termux user. Some Android versions may also require Termux's **Display over other apps** permission to bring the new session to the foreground. If the shortcut cannot run, no security bypass is attempted.
+The launcher starts these through Termux's own shortcuts (`~/.shortcuts/terminal`, `operator`, `dashboard`, installed by the setup). The first time, Termux shows its list once: tap the same name. The Google Play build of Termux has no `RUN_COMMAND`, so the launcher needs neither that permission nor `allow-external-apps`.
 
-To disable automatic AI startup later, run `rm ~/.config/zion/ai-autostart.enabled` inside Termux. The agent remains available with `seeker-ai`.
+To stop OPERATOR from opening on every new session: `touch ~/.config/zion/autostart-off` (the `ai` button still opens it; `rm` the file to turn it back on). To remove the whole shell integration: `bash terminal/zion-shell-setup.sh --remove`, which gives your `~/.bashrc` and `~/.zshrc` back as they were.
 
 From Termux, after installation:
 
@@ -202,6 +210,7 @@ From Termux, after installation:
 | `ai --stop` | Stop it and release roughly 3.5 GB RAM |
 | `ai --status` | Inspect agent/model status |
 | `ai --resume` | Resume the saved conversation |
+| `/history`, `/resume N` | Inside OPERATOR: list the saved chats, reopen one |
 | `seeker-ai --models` | Show available models |
 | `seeker-ai --use NAME` | Change the default |
 | `seeker-ai --model NAME` | Run with a selected model once |
@@ -258,7 +267,7 @@ Then, in Termux on the phone:
 bash /sdcard/Download/seeker-zero/terminal/termux-setup.sh
 ```
 
-This installs the terminal tools, agent, dashboard, and both local model files, with SHA-256 verification.
+This installs the terminal tools, agent, dashboard, and both local model files, with SHA-256 verification. It takes llama.cpp from Termux's `llama-cpp` package; the measurements here used a native build made on the phone (llama.cpp `9e9619d`, [`tests/termux-round3.sh`](tests/termux-round3.sh) then [`tests/termux-round5.sh`](tests/termux-round5.sh)), set as `llama_server` in `~/.config/seeker-ai/config.json`. If an older `llama-server` refuses an option, OPERATOR says which one.
 
 **6. Connect Shizuku.** In the Shizuku app, use **“Use Shizuku in terminal apps” → “Export files”** into `terminal/shizuku/`, then run `terminal/seeker-setup-shizuku` in Termux. After a reboot, use `terminal/start-shizuku.sh` from the computer as documented.
 
@@ -281,18 +290,24 @@ Review the script documentation before executing it. Test the Seed Vault manuall
 
 ```bash
 python3 ai/test_seeker_ai.py
+python3 terminal/test_zion_shell.py
 python3 terminal/test_seeker_dash.py
-bash tests/test_bench_dry.sh
+python3 tests/eval_fr.py --selftest
 python3 tests/bench_decide.py --test
+bash tests/test_bench_dry.sh
+bash tests/test_bench_power_dry.sh
+bash tests/test_chain_dry.sh
+bash tests/test_journal_ops.sh
 ```
 
-The agent test suite covers **30 scenarios**, including approval boundaries, protected folders, quote-based bypass attempts, command injection through notifications, context handling, and stopping during a task.
+The agent test suite covers **48 scenarios**, including approval boundaries, protected folders, quote-based bypass attempts, git reads that reach outside a repository, escape sequences hidden in tool names, a remote model server off the phone, interrupted sessions, command injection through notifications, context handling, and stopping during a task. `terminal/test_zion_shell.py` opens real bash and zsh terminals to check when OPERATOR may start, and that removing the integration gives your shell files back byte for byte.
 
 **On the phone:**
 
 ```bash
 bash tests/termux-round6.sh
 bash tests/termux-round7.sh
+bash tests/termux-chain.sh     # unattended: speed sweep, French eval and agent bench of every model, battery test
 bash tests/health.sh
 bash tests/seedvault_check.sh
 ```
@@ -312,6 +327,7 @@ The tests are provided for inspection and reproduction. They do not establish co
 | [`audit/`](audit/) | Read-only device inspection |
 | [`privacy/`](privacy/) | Network/privacy inspection utilities |
 | [`tests/`](tests/) | Benchmarks, validation, raw results, wallet health checks |
+| [`docs/`](docs/) | Measured results, privacy audit, root and no-root |
 | [`adb.sh`](adb.sh) | ADB helper |
 
 ## THE IDEA

@@ -5,4 +5,5 @@ set -eu
 cd "$(dirname "$0")/.." && . ./adb.sh
 dir=$(a shell pm path moe.shizuku.privileged.api | head -1 | sed 's/^package://; s#/base.apk$##' | tr -d '\r')
 [ -n "$dir" ] || { echo "Shizuku is not installed"; exit 1; }
-a shell "$dir/lib/arm64/libshizuku.so" | tail -2
+out=$(a shell "$dir/lib/arm64/libshizuku.so" 2>&1) || { echo "$out" | tail -5; echo "Shizuku did not start"; exit 1; }
+echo "$out" | tail -2

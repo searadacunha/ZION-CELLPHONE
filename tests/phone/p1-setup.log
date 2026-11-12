@@ -1,0 +1,82 @@
++ install -m 755 /sdcard/Download/seeker-zero/ai/seeker-ai /data/data/com.termux/files/usr/bin/seeker-ai
++ install -m 755 /sdcard/Download/seeker-zero/terminal/seeker-dash /data/data/com.termux/files/usr/bin/seeker-dash
++ bash /sdcard/Download/seeker-zero/terminal/zion-shell-setup.sh
+ZION ZERO: new Termux sessions open OPERATOR (off: touch ~/.config/zion/autostart-off).
+Launcher: the first tap on terminal, ai or dashboard shows Termux's script list: tap the same name once.
++ set +x
+== SHELL=/data/data/com.termux/files/usr/bin/bash shell-file=none bash=5.3.9(1)-release
+== profile reads ~/.bashrc?
+/data/data/com.termux/files/usr/etc/profile:8:# Source etc/bash.bashrc and ~/.bashrc also for interactive bash login shells:
+/data/data/com.termux/files/usr/etc/profile:11:                if [ -r /data/data/com.termux/files/usr/etc/bash.bashrc ]; then
+/data/data/com.termux/files/usr/etc/profile:12:                        . /data/data/com.termux/files/usr/etc/bash.bashrc
+/data/data/com.termux/files/usr/etc/profile:14:                if [ -r /data/data/com.termux/files/home/.bashrc ]; then
+/data/data/com.termux/files/usr/etc/profile:15:                        . /data/data/com.termux/files/home/.bashrc
+== ~/.bash_profile ~/.profile ~/.bash_login:
+ls: cannot access '/data/data/com.termux/files/home/.bash_profile': No such file or directory
+ls: cannot access '/data/data/com.termux/files/home/.profile': No such file or directory
+ls: cannot access '/data/data/com.termux/files/home/.bash_login': No such file or directory
+== tail ~/.bashrc
+export PATH="$HOME/bin:$PATH"
+alias ai=seeker-ai
+alias dash=seeker-dash
+if [ -r "$PREFIX/share/zion/autostart.sh" ]; then . "$PREFIX/share/zion/autostart.sh"; fi  # ZION ZERO: OPERATOR on new sessions
+== ~/.zshrc
+
+if [ -r "$PREFIX/share/zion/autostart.sh" ]; then . "$PREFIX/share/zion/autostart.sh"; fi  # ZION ZERO: OPERATOR on new sessions
+== ~/.shortcuts
+total 19
+drwxr-xr-x.  2 u0_a131 u0_a131 3452 Nov 12 16:05 .
+drwx------. 10 u0_a131 u0_a131 3452 Nov 12 16:05 ..
+-rwx------.  1 u0_a131 u0_a131  260 Nov 12 16:05 dashboard
+-rwx------.  1 u0_a131 u0_a131  219 Nov 12 16:05 operator
+-rwx------.  1 u0_a131 u0_a131  225 Nov 12 16:05 terminal
+== login script head
+#!/data/data/com.termux/files/usr/bin/sh
+# shellcheck shell=dash
+
+is_executable_file() {
+	test -f "$1" -a -x "$1"
+}
+
+set_default_shell() {
+	for file in "/data/data/com.termux/files/usr/bin/bash" "/data/data/com.termux/files/usr/bin/sh" "/system/bin/sh"; do
+		if is_executable_file "$file"; then
+			SHELL="$file"
+			break
+		fi
+	done
+}
+
+if tty >/dev/null 2>&1 && [ $# = 0 ] && [ ! -f ~/.hushlogin ] && [ -z "$TERMUX_HUSHLOGIN" ]; then
+	if [ -f ~/.config/termux/motd-dynamic ]; then
+		# Use user defined dynamic motd file if it exists
+		[ ! -x ~/.config/termux/motd-dynamic ] && chmod u+x ~/.config/termux/motd-dynamic
+		~/.config/termux/motd-dynamic
+	elif [ -f ~/.config/termux/motd ]; then
+		# Use user defined static motd file if it exists
+		cat ~/.config/termux/motd
+	elif [ -f ~/.termux/motd.sh ]; then
+		# Same as termux-tools in F-Droid build does:
+		[ ! -x ~/.termux/motd.sh ] && chmod u+x ~/.termux/motd.sh
+		~/.termux/motd.sh
+	elif [ -f /data/data/com.termux/files/usr/etc/motd ]; then
+		# Default to termux-tools package provided static motd file if it exists
+		cat /data/data/com.termux/files/usr/etc/motd
+	fi
+else
+	# This variable shouldn't be kept set.
+	unset TERMUX_HUSHLOGIN
+fi
+
+unset SHELL
+SHELL_FILE=~/.termux/shell
+
+== env of this session
+HOME=/data/data/com.termux/files/home
+LD_PRELOAD=/data/data/com.termux/files/usr/lib/libtermux-exec.so
+PATH=/data/data/com.termux/files/home/bin:/data/data/com.termux/files/usr/bin:/product/bin:/apex/com.android.runtime/bin:/apex/com.android.art/bin:/apex/com.android.virt/bin:/system_ext/bin:/system/bin:/system/xbin:/odm/bin:/vendor/bin:/vendor/xbin
+PREFIX=/data/data/com.termux/files/usr
+SHELL=/data/data/com.termux/files/usr/bin/bash
+TERMUX_EXEC__PROC_SELF_EXE=/data/data/com.termux/files/usr/bin/env
+TERMUX_VERSION=googleplay.2026.10.09
+== done 16:05:39

@@ -3,8 +3,10 @@ package zero.seeker.launcher;
 import android.app.Activity;
 import android.app.WallpaperManager;
 import android.content.Intent;
+import android.content.pm.LauncherApps;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.content.pm.ShortcutInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
@@ -23,13 +25,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-/** ZION home screen: black, monospace, one menu, no feeds. */
+/** ZION ZERO home screen: black, monospace, one menu, no feeds. */
 public class Main extends Activity {
     static final int FG = 0xFFE6E6E6, DIM = 0xFF808080, BG = 0xFF000000;
-    static final String TERMUX = "com.termux", AI = "/data/data/com.termux/files/usr/bin/seeker-ai";
-    static final String SHELL = "/data/data/com.termux/files/usr/bin/zion-terminal";
-    static final String DASH = "/data/data/com.termux/files/usr/bin/seeker-dash";
+    static final String TERMUX = "com.termux";
     static final String RULE = "-----------------------";
+    // Termux scripts in ~/.shortcuts (terminal/zion-shell-setup.sh) that this launcher may open
+    static final List<String> SCRIPTS = Arrays.asList("terminal", "operator", "dashboard");
+    // asked for before its shortcut existed, opened as soon as Termux pins it. Static: Android delivers the pin request
+    // with FLAG_ACTIVITY_CLEAR_TASK, so it reaches a new instance of this activity (seen on the phone, 12/11)
+    static String pendingScript;
 
     interface Act { void run(); }
     static final class Item {
@@ -52,10 +57,14 @@ public class Main extends Activity {
         getWindow().setBackgroundDrawable(new ColorDrawable(BG)); // never the wallpaper behind the menu
         setContentView(sv);
         showHome();
-        wallpaperAction(getIntent());
+        if (b == null) {  // a recreated activity (rotation, dark mode, process restored) must not replay an old request
+            wallpaperAction(getIntent());
+            pinRequest(getIntent());
+        }
+        getIntent().removeExtra("wallpaper");
     }
 
-    @Override protected void onNewIntent(Intent i) { super.onNewIntent(i); showHome(); wallpaperAction(i); } // home button = main menu
+    @Override protected void onNewIntent(Intent i) { super.onNewIntent(i); showHome(); wallpaperAction(i); pinRequest(i); } // home button = main menu
 
     /** From adb: am start -n zero.seeker.launcher/.Main --es wallpaper black|restore */
     void wallpaperAction(Intent i) {
@@ -65,15 +74,28 @@ public class Main extends Activity {
     }
 
     java.io.File backupDir() { return new java.io.File(getExternalFilesDir(null), "wallpaper-backup"); }
+    java.io.File blackIds() { return new java.io.File(getExternalFilesDir(null), "black-wallpaper.ids"); }
+    static String ids(WallpaperManager wm) {
+        return wm.getWallpaperId(WallpaperManager.FLAG_SYSTEM) + " " + wm.getWallpaperId(WallpaperManager.FLAG_LOCK);
+    }
+    static void deleteTree(java.io.File f) {
+        java.io.File[] kids = f.listFiles();
+        if (kids != null) for (java.io.File k : kids) deleteTree(k);
+        f.delete();
+    }
 
-    /** Home and lock screens become plain black. The current images are copied first (once: a second run keeps the
-     *  first copy), and nothing changes if that copy fails. Result in files/wallpaper.log (adb-readable). */
+    /** Home and lock screens become plain black. The current images are copied first, and nothing changes if that copy
+     *  fails. An existing copy is kept, unless the wallpaper changed since this launcher set black (the ids it then
+     *  noted differ): then the new wallpaper is copied instead, so it is never lost. Result in files/wallpaper.log. */
     void blackWallpaper() {
         WallpaperManager wm = WallpaperManager.getInstance(this);
         java.io.File dir = backupDir();
         try {
-            if (!dir.isDirectory()) {
-                java.io.File tmp = new java.io.File(dir.getPath() + ".tmp");
+            boolean stale = dir.isDirectory() && blackIds().isFile()
+                && !ids(wm).equals(new String(java.nio.file.Files.readAllBytes(blackIds().toPath())).trim());
+            if (!dir.isDirectory() || stale) {
+                java.io.File tmp = new java.io.File(dir.getPath() + ".tmp"), old = new java.io.File(dir.getPath() + ".old");
+                deleteTree(tmp);
                 tmp.mkdirs();
                 int saved = 0;
                 for (int which : new int[]{WallpaperManager.FLAG_SYSTEM, WallpaperManager.FLAG_LOCK}) {
@@ -89,38 +111,44 @@ public class Main extends Activity {
                     }
                 }
                 if (saved == 0) throw new java.io.IOException("no wallpaper file could be read");
-                if (!tmp.renameTo(dir)) throw new java.io.IOException("cannot keep the backup");
+                deleteTree(old);
+                if (dir.isDirectory() && !dir.renameTo(old)) throw new java.io.IOException("cannot set the old copy aside");
+                if (!tmp.renameTo(dir)) { old.renameTo(dir); throw new java.io.IOException("cannot keep the backup"); }
+                deleteTree(old);
             }
             android.util.DisplayMetrics m = getResources().getDisplayMetrics();
             Bitmap black = Bitmap.createBitmap(Math.max(m.widthPixels, 1), Math.max(m.heightPixels, 1), Bitmap.Config.ARGB_8888);
             black.eraseColor(BG);
             wm.setBitmap(black, null, true, WallpaperManager.FLAG_SYSTEM | WallpaperManager.FLAG_LOCK);
-            report("black: done, previous wallpaper kept in " + dir);
-        } catch (Exception e) {  // SecurityException included: then the wallpaper is left as it was
+            java.nio.file.Files.write(blackIds().toPath(), ids(wm).getBytes());
+            report("black: done, previous wallpaper kept in " + dir + (stale ? " (new copy: the wallpaper had changed)" : ""));
+        } catch (Exception | OutOfMemoryError e) {  // SecurityException included: then the wallpaper is left as it was
             report("black: NOT done, " + e);
         }
     }
 
-    /** Puts back the images saved by blackWallpaper(), or Android's default wallpaper if there is no copy. */
+    /** Puts back the images saved by blackWallpaper(). Without a copy nothing changes (never wipe what was not saved);
+     *  both images are read before anything is set, so a bad copy cannot leave home and lock half restored. */
     void restoreWallpaper() {
         WallpaperManager wm = WallpaperManager.getInstance(this);
         try {
             java.io.File sys = new java.io.File(backupDir(), "system.img"), lock = new java.io.File(backupDir(), "lock.img");
             if (!sys.isFile()) {
-                wm.clear(WallpaperManager.FLAG_SYSTEM | WallpaperManager.FLAG_LOCK);
-                report("restore: no copy, Android's default wallpaper");
+                report("restore: no copy, nothing changed");
                 return;
             }
             Bitmap s = BitmapFactory.decodeFile(sys.getPath());
-            if (s == null) throw new java.io.IOException("unreadable copy " + sys);
-            if (lock.isFile()) {
+            Bitmap l = lock.isFile() ? BitmapFactory.decodeFile(lock.getPath()) : null;
+            if (s == null || (lock.isFile() && l == null)) throw new java.io.IOException("unreadable copy in " + backupDir());
+            if (l != null) {
                 wm.setBitmap(s, null, true, WallpaperManager.FLAG_SYSTEM);
-                wm.setBitmap(BitmapFactory.decodeFile(lock.getPath()), null, true, WallpaperManager.FLAG_LOCK);
+                wm.setBitmap(l, null, true, WallpaperManager.FLAG_LOCK);
             } else {
                 wm.setBitmap(s, null, true, WallpaperManager.FLAG_SYSTEM | WallpaperManager.FLAG_LOCK);
             }
+            blackIds().delete();  // the wallpaper is no longer our black
             report("restore: done from " + backupDir());
-        } catch (Exception e) {
+        } catch (Exception | OutOfMemoryError e) {
             report("restore: NOT done, " + e);
         }
     }
@@ -136,9 +164,9 @@ public class Main extends Activity {
 
     void showHome() {
         atHome = true;
-        menu("ZION", Arrays.asList(
-            new Item("terminal", this::runTerminal, () -> details(TERMUX)),
-            new Item("ai", this::showAiAgent, null),
+        menu("ZION ZERO", Arrays.asList(
+            new Item("terminal", () -> termuxScript("terminal"), () -> details(TERMUX)),
+            new Item("ai", () -> termuxScript("operator"), this::showAiAgent),  // long press: status
             new Item("applications", this::showApps, null),
             new Item("privacy", () -> sub("privacy",
                 app("rethinkdns (firewall, dns)", "com.celzero.bravedns"),
@@ -155,6 +183,7 @@ public class Main extends Activity {
             new Item("system", () -> sub("system",
                 set("settings", Settings.ACTION_SETTINGS),
                 set("apps", Settings.ACTION_MANAGE_APPLICATIONS_SETTINGS),
+                new Item("ai status (also: long press on ai)", this::showAiAgent, null),
                 set("home app (back to the old launcher)", Settings.ACTION_HOME_SETTINGS),
                 new Item("wallpaper: black", () -> new Thread(this::blackWallpaper).start(), null),
                 new Item("wallpaper: restore previous", () -> new Thread(this::restoreWallpaper).start(), null),
@@ -169,12 +198,11 @@ public class Main extends Activity {
                 app("dapp store", "com.solanamobile.dappstore")), null)));
     }
 
-    /** AI AGENT: live status read from llama-server on 127.0.0.1:8080 (seeker-ai's engine, inside Termux). */
+    /** AI AGENT: live status read from llama-server on 127.0.0.1:8080 (OPERATOR's engine, inside Termux). */
     void showAiAgent() {
         sub("ai agent",
-            new Item("open seeker-ai", this::runAi, null),
-            new Item("dashboard", () -> runTermuxForeground(DASH, 3), null),
-            new Item("start / stop (shell: ai --start / ai --stop)", () -> { runTerminal(); toast("use: ai --start   or   ai --stop"); }, null),
+            new Item("open operator", () -> termuxScript("operator"), null),
+            new Item("dashboard", () -> termuxScript("dashboard"), null),
             new Item("refresh", this::showAiAgent, null));
         TextView st = text("status: checking...", DIM, 16, false);
         root.addView(st, 2);
@@ -204,6 +232,7 @@ public class Main extends Activity {
         StringBuilder b = new StringBuilder("status: ONLINE");
         try {
             org.json.JSONObject p = new org.json.JSONObject(http("/props"));
+            if (p.optBoolean("is_sleeping")) b = new StringBuilder("status: SLEEPING (model unloaded, wakes on use)");
             String m = p.optString("model_path", "?");
             b.append("\nmodel: ").append(m.substring(m.lastIndexOf('/') + 1));
             org.json.JSONObject g = p.optJSONObject("default_generation_settings");
@@ -265,7 +294,7 @@ public class Main extends Activity {
                 if (!q.isEmpty() && !e[0].toLowerCase().contains(q) && !e[1].contains(q)) continue;
                 rows.addView(row("> " + e[0], new Item(e[0],
                     () -> start(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER).setClassName(e[1], e[2])),
-                    () -> details(e[1]))));
+                    seedVault(e[1]) ? null : () -> details(e[1]))));
             }
             rows.addView(row("< back", new Item("back", this::showHome, null)));
         };
@@ -277,69 +306,61 @@ public class Main extends Activity {
         fill.run();
     }
 
-    /** A real shell on explicit terminal selection; ordinary Termux sessions auto-start OPERATOR. */
-    void runTerminal() { runTermuxForeground(SHELL, 2); }
-
-    /** Run one trusted installed Termux executable in a new foreground session. */
-    void runTermuxForeground(String executable, int permissionCode) {
-        if (getPackageManager().getLaunchIntentForPackage(TERMUX) == null) {
-            toast("Termux is not installed");
-            return;
-        }
-        String perm = "com.termux.permission.RUN_COMMAND";
-        try { getPackageManager().getPermissionInfo(perm, 0); }
-        catch (PackageManager.NameNotFoundException e) {
-            toast("Direct shell requires Termux RUN_COMMAND support; run zion-terminal inside Termux");
-            return;
-        }
-        if (checkSelfPermission(perm) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{perm}, permissionCode);
-            return;
-        }
-        Intent i = new Intent("com.termux.RUN_COMMAND").setClassName(TERMUX, "com.termux.app.RunCommandService")
-            .putExtra("com.termux.RUN_COMMAND_PATH", executable)
-            .putExtra("com.termux.RUN_COMMAND_BACKGROUND", false)
-            .putExtra("com.termux.RUN_COMMAND_SESSION_ACTION", "0");
-        try { startService(i); }
-        catch (RuntimeException e) { toast("Unable to open shell: " + e.getMessage()); }
-    }
-
-    void runAi() {
-        if (getPackageManager().getLaunchIntentForPackage(TERMUX) == null) { toast("termux is not installed"); return; }
-        // Termux from Google Play: runs a script in a new session through its exported RUN activity (as its shortcuts do)
+    /** Opens a Termux session running ~/.shortcuts/NAME. Termux from Google Play takes no command from other apps (no
+     *  RUN_COMMAND; its RUN alias needs a Termux-only permission): it runs a script only from its own shortcut, which it
+     *  pins through the home app, this one, and which the home app may then start. First time: Termux lists its scripts
+     *  and the user taps NAME once. */
+    void termuxScript(String name) {
+        if (getPackageManager().getLaunchIntentForPackage(TERMUX) == null) { toast("Termux is not installed"); return; }
+        LauncherApps la = getSystemService(LauncherApps.class);
         try {
-            startActivity(new Intent("android.intent.action.RUN", Uri.parse("file://" + AI))
-                .setClassName(TERMUX, "com.termux.app.TermuxActivityInternal").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-            return;
-        } catch (RuntimeException e) { /* refused (Play build: TERMUX_INTERNAL) or absent: try RUN_COMMAND below */ }
-        String perm = "com.termux.permission.RUN_COMMAND";
-        try { getPackageManager().getPermissionInfo(perm, 0); }
-        catch (PackageManager.NameNotFoundException e) {  // Termux from Google Play accepts no command from other apps
-            launch(TERMUX);
-            toast("in Termux, type: ai");
+            ShortcutInfo s = pinned(la, name);
+            if (s != null) { la.startShortcut(s, null, null); return; }
+        } catch (RuntimeException e) {  // not the default home app, Termux stopped or updating...
+            toast("cannot open " + name + ": " + e.getMessage());
             return;
         }
-        if (checkSelfPermission(perm) != PackageManager.PERMISSION_GRANTED) { requestPermissions(new String[]{perm}, 1); return; }
-        Intent i = new Intent("com.termux.RUN_COMMAND").setClassName(TERMUX, "com.termux.app.RunCommandService")
-            .putExtra("com.termux.RUN_COMMAND_PATH", AI)
-            .putExtra("com.termux.RUN_COMMAND_BACKGROUND", false)
-            .putExtra("com.termux.RUN_COMMAND_SESSION_ACTION", "0");
-        try { startService(i); }
-        catch (RuntimeException e) { toast("ai: " + e.getMessage()); launch(TERMUX); }
+        pendingScript = name;
+        toast("Termux: tap \"" + name + "\" (first time only)");
+        start(new Intent(Intent.ACTION_CREATE_SHORTCUT).setClassName(TERMUX, "com.termux.widget.TermuxCreateShortcutActivity"));
     }
 
-    @Override public void onRequestPermissionsResult(int code, String[] p, int[] r) {
-        super.onRequestPermissionsResult(code, p, r);
-        if (r.length == 0 || r[0] != PackageManager.PERMISSION_GRANTED) {
-            toast("ZION needs 'Run commands in Termux environment' for this shortcut");
-            return;
+    /** Termux names a script's shortcut after the file; its id is the file's path. */
+    static boolean isScript(ShortcutInfo s, String name) {
+        return TERMUX.equals(s.getPackage())
+            && (name.contentEquals(String.valueOf(s.getShortLabel())) || s.getId().endsWith("/.shortcuts/" + name));
+    }
+
+    ShortcutInfo pinned(LauncherApps la, String name) {
+        LauncherApps.ShortcutQuery q = new LauncherApps.ShortcutQuery().setPackage(TERMUX)
+            .setQueryFlags(LauncherApps.ShortcutQuery.FLAG_MATCH_PINNED);
+        List<ShortcutInfo> l = la.getShortcuts(q, android.os.Process.myUserHandle());
+        if (l != null) for (ShortcutInfo s : l) if (s.isEnabled() && isScript(s, name)) return s;
+        return null;
+    }
+
+    /** Android asks the home app to confirm a pinned shortcut: accepted only for our Termux scripts, never others. */
+    void pinRequest(Intent i) {
+        if (i == null || !LauncherApps.ACTION_CONFIRM_PIN_SHORTCUT.equals(i.getAction())) return;
+        try {  // the request comes through an exported filter: a malformed one must not crash the home screen
+            LauncherApps la = getSystemService(LauncherApps.class);
+            LauncherApps.PinItemRequest r = la.getPinItemRequest(i);
+            ShortcutInfo s = r == null ? null : r.getShortcutInfo();
+            String name = null;
+            if (s != null) for (String n : SCRIPTS) if (isScript(s, n)) name = n;
+            if (name == null || !r.isValid() || !r.accept()) { toast("ZION ZERO keeps no other shortcuts"); return; }
+            if (name.equals(pendingScript)) {
+                pendingScript = null;
+                la.startShortcut(s, null, null);
+            }
+        } catch (RuntimeException e) {
+            toast("shortcut request ignored: " + e.getMessage());
         }
-        if (code == 1) runAi();
-        else if (code == 2) runTerminal();
-        else if (code == 3) runTermuxForeground(DASH, 3);
     }
 
-    Item app(String label, String pkg) { return new Item(label, () -> launch(pkg), () -> details(pkg)); }
+    Item app(String label, String pkg) { return new Item(label, () -> launch(pkg), seedVault(pkg) ? null : () -> details(pkg)); }
+    /** No long press to App info (one tap from Clear storage / Uninstall) for the Seed Vault and Solana packages. */
+    static boolean seedVault(String pkg) { return pkg.startsWith("com.solanamobile.") || pkg.startsWith("com.trustkernel."); }
     Item set(String label, String action) { return new Item(label, () -> start(new Intent(action)), null); }
 
     void launch(String pkg) {
