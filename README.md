@@ -176,6 +176,19 @@ Prompts are deliberately **in French**: this tests how the model performs in the
 
 ## USE THE PHONE
 
+### OPERATOR BY DEFAULT. TERMINAL WHEN YOU ASK.
+
+After running the updated Termux setup and installing launcher version **1.4.2**:
+
+- **Open Termux normally:** a new interactive session opens **OPERATOR**, the local AI agent. Exit the agent to return to the shell.
+- **Tap `terminal` in the ZION launcher:** open a new **regular interactive shell**, without auto-starting the AI.
+- **Tap `ai` → `open seeker-ai`:** open the agent explicitly.
+- **Tap `ai` → `dashboard`:** launch the dashboard directly.
+
+Direct launcher shortcuts use Termux **RUN_COMMAND**. In Termux settings, `allow-external-apps=true` must be enabled (the setup script configures it), and Android must grant the **ZION** launcher permission to **Run commands in Termux environment**. Grant this only to apps you trust; it gives those apps the ability to execute commands as your Termux user. Some Android versions may also require Termux's **Display over other apps** permission to bring the new session to the foreground. If the shortcut cannot run, no security bypass is attempted.
+
+To disable automatic AI startup later, run `rm ~/.config/zion/ai-autostart.enabled` inside Termux. The agent remains available with `seeker-ai`.
+
 From Termux, after installation:
 
 | Command | Action |
