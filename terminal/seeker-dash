@@ -1,0 +1,253 @@
+#!/usr/bin/env python3
+"""seeker-dash: live terminal dashboard of the Seeker, for Termux.
+  seeker-dash          live view (q quits, arrows scroll)
+  seeker-dash --once   print one snapshot
+System-wide panels (processes, network, permissions, thermal) need ADB-level rights: they go through Shizuku's `rish`.
+Without Shizuku, Android only lets Termux see its own processes."""
+import collections, ipaddress, json, os, re, shutil, subprocess, sys, threading, time, urllib.request
+from pathlib import Path
+
+HOME = Path.home()
+DATA = Path(os.environ.get("SEEKER_AI_DATA", HOME / ".local/share/seeker-ai"))
+AI = os.environ.get("SEEKER_AI_SERVER", "http://127.0.0.1:8080")
+SENSITIVE = ["CAMERA", "RECORD_AUDIO", "ACCESS_FINE_LOCATION", "ACCESS_BACKGROUND_LOCATION", "READ_CONTACTS",
+             "READ_SMS", "READ_CALL_LOG", "BODY_SENSORS", "READ_MEDIA_IMAGES"]
+
+
+def read(path):  # Android forbids apps some /proc files (uptime, loadavg): "" instead of a crash
+    try:
+        return Path(path).read_text()
+    except OSError:
+        return ""
+
+
+def sh(argv, timeout=15, merge=False):
+    try:
+        return subprocess.run(argv, stdout=subprocess.PIPE, stderr=subprocess.STDOUT if merge else subprocess.DEVNULL,
+                              text=True, timeout=timeout, stdin=subprocess.DEVNULL).stdout
+    except (OSError, subprocess.TimeoutExpired):
+        return ""
+
+
+RISH = shutil.which("rish") or (str(HOME / "bin/rish") if (HOME / "bin/rish").exists() else None)
+def adb_sh(cmd, timeout=20):  # runs as uid 2000 (shell) through Shizuku; "" when unavailable
+    # rish spreads the command's output between stdout and stderr at random: both are read as one stream
+    return sh([RISH, "-c", cmd], timeout, merge=True) if RISH else ""
+
+
+# ---- parsers (pure, tested in test_seeker_dash.py) ----
+def parse_meminfo(text):
+    kv = {m.group(1): int(m.group(2)) // 1024 for m in re.finditer(r"^(\w+):\s+(\d+) kB", text, re.M)}
+    return {k: kv.get(k, 0) for k in ("MemTotal", "MemAvailable", "SwapTotal", "SwapFree")}
+
+
+def parse_thermal(text):
+    seen = {}  # the live block only: the "Cached temperatures" block before it can be hours old, cooling devices follow it
+    live = text.split("Current temperatures from HAL:")[-1].split("Current cooling devices")[0]
+    for val, name in re.findall(r"mValue=([\d.]+), mType=\d+, mName=(\w+)", live):
+        seen.setdefault(name, float(val))
+    return seen
+
+
+def addr(hexaddr):
+    ip, port = hexaddr.split(":")
+    b = bytes.fromhex(ip)
+    if len(b) == 4:
+        a = ipaddress.IPv4Address(b[::-1])
+    else:  # /proc stores IPv6 as four little-endian 32-bit words
+        a = ipaddress.IPv6Address(b"".join(b[i:i + 4][::-1] for i in range(0, 16, 4)))
+        a = a.ipv4_mapped or a
+    return a, int(port, 16)
+
+
+def parse_proc_net(text, uid_names):
+    """ESTABLISHED TCP connections -> Counter[(owner, remote ip, port)]"""
+    out = collections.Counter()
+    for line in text.splitlines():
+        f = line.split()
+        if len(f) < 8 or not f[0].endswith(":") or f[3] != "01":
+            continue
+        (ra, rp), uid = addr(f[2]), int(f[7])
+        if not ra.is_loopback:
+            out[(uid_names.get(uid, f"uid{uid}"), str(ra), rp)] += 1
+    return out
+
+
+def parse_uid_map(text):
+    m = collections.defaultdict(list)
+    for pkg, uid in re.findall(r"package:(\S+) uid:(\d+)", text):
+        m[int(uid)].append(pkg)
+    names = {u: (p[0] if len(p) == 1 else f"{p[0]}+{len(p) - 1}") for u, p in m.items()}
+    names.update({0: "root", 1000: "system", 1051: "netd", 1052: "dns"})
+    return names
+
+
+def parse_granted(dumpsys):
+    """dumpsys package -> {permission: [packages with uid >= 10000 that have it granted]}"""
+    res = collections.defaultdict(list)
+    for block in re.split(r"\n  Package \[", dumpsys)[1:]:
+        pkg = block.split("]", 1)[0]
+        uid = re.search(r"userId=(\d+)", block)
+        if not uid or int(uid.group(1)) < 10000:
+            continue
+        for perm in SENSITIVE:
+            if re.search(rf"android\.permission\.{perm}: granted=true", block.split("runtime permissions:", 1)[-1]):
+                res[perm].append(pkg)
+    return res
+
+
+# ---- collectors ----
+class State:
+    def __init__(self):
+        self.perms, self.perms_at, self.uid_names = {}, 0, {}
+
+    def refresh_slow(self):
+        if RISH:
+            self.uid_names = parse_uid_map(adb_sh("pm list packages -U"))
+            self.perms = parse_granted(adb_sh("dumpsys package", 60))
+        self.perms_at = time.time()
+
+
+def section_head():
+    up = time.clock_gettime(getattr(time, "CLOCK_BOOTTIME", time.CLOCK_MONOTONIC))  # BOOTTIME on Android
+    bat = {}
+    try:
+        bat = json.loads(sh(["termux-battery-status"], 10) or "{}")
+    except json.JSONDecodeError:
+        pass
+    me = sh(["id", "-un"]).strip()
+    priv = "shizuku: uid " + (adb_sh("id -u").strip() or "?") if RISH else "shizuku: off (app sandbox only)"
+    return [f"SEEKER ZERO  {time.strftime('%H:%M:%S')}  up {int(up // 3600)}h{int(up % 3600 // 60):02d}  "
+            f"battery {bat.get('percentage', '?')}% {bat.get('temperature', '?')}C {bat.get('status', '')}",
+            f"user {me} (not root)  {priv}"]
+
+
+def section_mem():
+    m = parse_meminfo(read("/proc/meminfo"))
+    lines = [f"memory  {m['MemTotal'] - m['MemAvailable']}/{m['MemTotal']} MB used, {m['MemAvailable']} MB available, "
+             f"swap {m['SwapTotal'] - m['SwapFree']}/{m['SwapTotal']} MB"]
+    t = parse_thermal(adb_sh("dumpsys thermalservice"))
+    if t:
+        lines.append("thermal " + "  ".join(f"{k} {v:.0f}C" for k, v in t.items()))
+    return lines
+
+
+CONF = Path(os.environ.get("SEEKER_AI_CONFIG", HOME / ".config/seeker-ai/config.json"))
+LEVELS = {"read": "auto", "write": "auto", "exec": "ask", "sensitive": "ask"}  # seeker-ai defaults
+
+
+def jsonl(path, n):
+    rows = []
+    for l in read(path).splitlines()[-n:]:
+        try:
+            rows.append(json.loads(l))
+        except ValueError:
+            pass
+    return rows
+
+
+def section_ai():
+    """AI AGENT panel: state, models, memory, speed, last tasks, permissions. Keys in live view: s start, x stop."""
+    try:
+        conf = json.loads(read(CONF) or "{}")
+    except ValueError:
+        conf = {}
+    try:
+        props = json.loads(urllib.request.urlopen(AI + "/props", timeout=2).read())
+        urllib.request.urlopen(AI + "/health", timeout=2).read()
+        running = Path(props.get("model_path", "?")).name
+        ctx = (props.get("default_generation_settings") or {}).get("n_ctx", "?")
+        state = f"ONLINE   running {running}, context {ctx}"
+    except (OSError, ValueError):
+        state = "STOPPED  (s or `seeker-ai --start` starts it)"
+    lines = [f"AI AGENT {state}", f"  default model  {Path(conf.get('model', '~/models/Qwen3.5-4B-Uncensored-HauhauCS-Aggressive-Q4_K_M.gguf')).name}"]
+    # RAM of llama-server and the tools offered to the model: asked to seeker-ai, which owns these rules
+    status = [l for l in sh(["seeker-ai", "--status"], 20).splitlines() if l.startswith(("memory", "tools", "android"))]
+    lines += [f"  {l[:13].strip():14} {l[13:]}" for l in status if l.startswith("memory")]
+    rows = jsonl(DATA / "perf.jsonl", 20)
+    pick = lambda k: [r[k] for r in rows if r.get(k)]
+    gen, pre, ttft = pick("predicted_per_second"), pick("prompt_per_second"), pick("ttft_s")
+    if gen:
+        lines.append(f"  speed          last {len(gen)}: generation {sum(gen) / len(gen):.1f} tok/s, prompt "
+                     f"{sum(pre) / max(1, len(pre)):.1f} tok/s" + (f", first token {sum(ttft) / len(ttft):.1f} s" if ttft else ""))
+    levels = {**LEVELS, **conf.get("levels", {})}
+    lines.append("  permissions    " + " ".join(f"{k}={v}" for k, v in levels.items())
+                 + (f"  overrides {conf['tools']}" if conf.get("tools") else "") + f"  shizuku {'ready' if RISH else 'off'}")
+    lines += [f"  {l[:13].strip():14} {l[13:]}" for l in status if not l.startswith("memory")]
+    for h in jsonl(DATA / "history.jsonl", 5):
+        lines.append(f"  task           {h.get('t', '')[5:16]} {h.get('mode', '')}: {h.get('prompt', '')[:48]}"
+                     + (f" [{', '.join(h['tools'])}]" if h.get("tools") else "") + (f" ({h['error']})" if h.get("error") else ""))
+    return lines
+
+
+def section_procs():
+    if not RISH:
+        return ["processes (Termux only, Shizuku off)"] + ["  " + l for l in sh(["ps", "-o", "pid,rss,args"]).splitlines()[:10]]
+    out = adb_sh("top -b -n 1 -m 10 -o PID,USER,%CPU,RES,NAME -s 3").splitlines()
+    return ["processes (whole phone, top CPU)"] + ["  " + l for l in out[4:15]]
+
+
+def section_net(st):
+    if not RISH:
+        return ["network  needs Shizuku (Android hides other apps' sockets from Termux)"]
+    dns = adb_sh("settings get global private_dns_mode; settings get global private_dns_specifier").split()
+    conns = parse_proc_net(adb_sh("cat /proc/net/tcp /proc/net/tcp6"), st.uid_names)
+    lines = [f"network  private dns {' '.join(dns)}  {sum(conns.values())} established TCP"]
+    lines += [f"  {who[:42]:42} {ip}:{port}" for (who, ip, port), _ in conns.most_common(12)]
+    return lines
+
+
+def section_perms(st):
+    if not RISH:
+        return ["permissions  needs Shizuku"]
+    lines = [f"permissions granted to apps (refreshed {int(time.time() - st.perms_at)}s ago)"]
+    for perm in SENSITIVE:
+        pk = st.perms.get(perm, [])
+        lines.append(f"  {perm[:24]:24} {len(pk):2}  {', '.join(p.split('.')[-1] for p in pk)[:90]}")
+    return lines
+
+
+def snapshot(st):
+    lines = []
+    for part in (section_head(), section_mem(), section_ai(), section_procs(), section_net(st), section_perms(st)):
+        lines += part + [""]
+    return lines
+
+
+def live(st):
+    import curses
+
+    def loop(scr):
+        curses.curs_set(0)
+        scr.timeout(3000)
+        top = 0
+        while True:
+            if time.time() - st.perms_at > 120:
+                threading.Thread(target=st.refresh_slow, daemon=True).start()
+                st.perms_at = time.time()  # avoid stacking refreshes
+            lines = snapshot(st)
+            h, w = scr.getmaxyx()
+            scr.erase()
+            for i, l in enumerate(lines[top:top + h - 1]):
+                scr.addnstr(i, 0, l, w - 1, curses.A_BOLD if i + top < 2 else 0)
+            scr.addnstr(h - 1, 0, "q quit  s start AI  x stop AI  up/down scroll", w - 1, curses.A_DIM)
+            scr.refresh()
+            k = scr.getch()
+            if k in (ord("q"), 27):
+                return
+            if k == ord("s"):  # start the agent's model server in the background
+                subprocess.Popen(["seeker-ai", "--start"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+            if k == ord("x"):
+                sh(["seeker-ai", "--stop"], 30)
+            top = max(0, min(top + (k == curses.KEY_DOWN) - (k == curses.KEY_UP), max(0, len(lines) - h + 1)))
+
+    curses.wrapper(loop)
+
+
+if __name__ == "__main__":
+    state = State()
+    if "--once" in sys.argv:
+        state.refresh_slow()
+        print("\n".join(snapshot(state)))
+    else:
+        live(state)

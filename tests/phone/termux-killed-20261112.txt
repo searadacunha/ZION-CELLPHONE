@@ -1,0 +1,63 @@
+# Why Termux stopped during round 6 on 12/11/2026: phone event and system logs around 06:09:50 (adb logcat -d, read at 2026-11-12 12:47:14)
+## events buffer: rotated on the phone before this file was written (oldest event now 07:44). These four lines were
+## read with `adb shell logcat -d -b events` at 10:44 the same day and are copied verbatim from that output:
+11-12 06:09:50.894  1949  3246 I am_low_memory: 15
+11-12 06:09:50.894  1949  4147 I am_proc_died: [0,7616,com.termux,0,2]
+11-12 06:09:50.918  1949  4147 I am_low_memory: 14
+11-12 06:09:54.623  1949 17580 I am_mem_factor: [0,2]
+## (am_proc_died fields: user, pid, process, oom_adj 0 = foreground, process state 2 = TOP)
+## system buffer: Termux and its child processes
+11-12 06:09:50.701  1949  1987 I ActivityManager: Process PhantomProcessRecord {2e36b17 7686:7616:bash/u0a131} died
+11-12 06:09:50.755  1949  2125 W ClientLifecycleManager: Failed to deliver transaction for ProcessRecord{2d961f1 7616:com.termux/u0a131}
+11-12 06:09:50.770  1949  2125 W ClientLifecycleManager: Failed to deliver transaction for ProcessRecord{2d961f1 7616:com.termux/u0a131}
+11-12 06:09:50.771  1949  2125 I WindowManager: WINDOW DIED Window{87045f6 u0 com.termux/com.termux.app.TermuxActivity}
+11-12 06:09:50.779  1949  2125 W WindowManager: Changing focus from Window{87045f6 u0 com.termux/com.termux.app.TermuxActivity} to null displayId=0 Callers=com.android.server.wm.RootWindowContainer.up
+11-12 06:09:50.894  1949  4147 I ActivityManager: Process com.termux (pid 7616) has died: fg  TOP 
+11-12 06:09:50.901  1949  4147 I START_DEBUG: remove ALL_TIMEOUT cleanup   ProcessRecord :ProcessRecord{2d961f1 7616:com.termux/u0a131}
+11-12 06:09:50.907  1949  4147 W ActivityTaskManager: Force removing ActivityRecord{102591148 u0 com.termux/.app.TermuxActivity t58}: app died, no saved state
+11-12 06:09:50.919  1949  1984 W ActivityManager: Rescheduling restart of crashed service com.google.android.ext.services/android.ext.services.notification.Assistant in 19871ms for mem-pressure-event
+11-12 06:09:50.919  1949  1984 W ActivityManager: Rescheduling restart of crashed service helium314.keyboard/.latin.LatinIME in 49871ms for mem-pressure-event
+11-12 06:09:50.920  1949  1984 W ActivityManager: Rescheduling restart of crashed service com.google.android.gms/.advancedprotection.service.AdvancedProtectionSyncService in 79871ms for mem-pressure-e
+11-12 06:09:50.920  1949  1984 W ActivityManager: Rescheduling restart of crashed service com.google.android.gms/.personalsafety.service.PersonalSafetyService in 109871ms for mem-pressure-event
+11-12 06:09:50.920  1949  1984 W ActivityManager: Rescheduling restart of crashed service com.google.android.gms/.nearby.sharing.SendSurfaceService in 139871ms for mem-pressure-event
+11-12 06:09:50.920  1949  1984 W ActivityManager: Rescheduling restart of crashed service com.google.android.gms/.location.geocode.GeocodeService in 169871ms for mem-pressure-event
+11-12 06:09:50.921  1949  1984 W ActivityManager: Rescheduling restart of crashed service com.google.android.gms/.chimera.PersistentBoundBrokerService in 199871ms for mem-pressure-event
+11-12 06:09:50.921  1949  1984 W ActivityManager: Rescheduling restart of crashed service com.google.android.gms/.dtdi.lifecycle.LifecycleService in 229871ms for mem-pressure-event
+11-12 06:09:50.921  1949  1984 W ActivityManager: Rescheduling restart of crashed service com.google.android.gms/com.google.android.location.network.NetworkLocationService in 259871ms for mem-pressure
+11-12 06:09:50.921  1949  1984 W ActivityManager: Rescheduling restart of crashed service com.google.android.gms/.findmydevice.spot.bleadvertising.OfflineBeaconService_Persistent in 289871ms for mem-p
+11-12 06:09:50.921  1949  1984 W ActivityManager: Rescheduling restart of crashed service com.google.android.gms/.auth.setup.devicesignals.LockScreenService in 319871ms for mem-pressure-event
+11-12 06:09:50.921  1949  1984 W ActivityManager: Rescheduling restart of crashed service com.google.android.gms/.nearby.sharing.ReceiveSurfaceService in 349871ms for mem-pressure-event
+11-12 06:09:50.921  1949  1984 W ActivityManager: Rescheduling restart of crashed service com.google.android.gms/.stats.eastworld.EastworldService in 379871ms for mem-pressure-event
+11-12 06:09:50.921  1949  1984 W ActivityManager: Rescheduling restart of crashed service com.google.android.gms/.personalsafety.service.SndDetectionService in 409871ms for mem-pressure-event
+11-12 06:09:50.921  1949  1984 W ActivityManager: Rescheduling restart of crashed service com.google.android.gms/com.google.android.location.internal.GoogleLocationManagerService in 439871ms for mem-p
+11-12 06:09:50.921  1949  1984 W ActivityManager: Rescheduling restart of crashed service com.google.android.gms/.gcm.nts.SchedulerService in 469871ms for mem-pressure-event
+11-12 06:09:50.922  1949  1984 W ActivityManager: Rescheduling restart of crashed service com.google.android.gms/com.google.android.contextmanager.service.ContextManagerService in 499871ms for mem-pre
+11-12 06:09:50.922  1949  1984 W ActivityManager: Rescheduling restart of crashed service com.google.android.gms/.nearby.presence.service.LifeCycleService in 529871ms for mem-pressure-event
+11-12 06:09:50.922  1949  1984 W ActivityManager: Rescheduling restart of crashed service com.google.android.gms/.fido.authenticator.service.AuthenticatorService in 559871ms for mem-pressure-event
+11-12 06:09:50.922  1949  1984 W ActivityManager: Rescheduling restart of crashed service com.google.android.gms/.cast.devicesuggestions.SuggestionsProviderChimeraService in 589871ms for mem-pressure-
+11-12 06:09:50.922  1949  1984 W ActivityManager: Rescheduling restart of crashed service com.google.android.gms/.tapandpay.hce.service.TpHceService in 619871ms for mem-pressure-event
+11-12 06:09:50.922  1949  1984 W ActivityManager: Rescheduling restart of crashed service com.google.android.gms/.gcm.GcmService in 649871ms for mem-pressure-event
+11-12 06:09:50.923  1949  1984 W ActivityManager: Rescheduling restart of crashed service com.google.android.gms/.location.persistent.LocationPersistentService in 679871ms for mem-pressure-event
+11-12 06:09:50.923  1949  1984 W ActivityManager: Rescheduling restart of crashed service com.google.android.gms/com.google.android.location.internal.server.GoogleLocationService in 709871ms for mem-p
+11-12 06:09:50.923  1949  1984 W ActivityManager: Rescheduling restart of crashed service com.google.android.gms/.geotimezone.GeoTimeZoneService in 739871ms for mem-pressure-event
+11-12 06:09:50.923  1949  1984 W ActivityManager: Rescheduling restart of crashed service com.google.android.gms/com.google.android.location.fused.FusedLocationService in 769871ms for mem-pressure-eve
+11-12 06:09:50.923  1949  1984 W ActivityManager: Rescheduling restart of crashed service com.google.android.gms/.chimera.PersistentInternalBoundBrokerService in 799871ms for mem-pressure-event
+11-12 06:09:50.923  1949  1984 W ActivityManager: Rescheduling restart of crashed service com.google.android.gms/.magictether.wifisync.WifiSyncService in 829871ms for mem-pressure-event
+11-12 06:09:50.923  1949  1984 W ActivityManager: Rescheduling restart of crashed service com.google.android.gms/.play.integrity.api.service.IntegrityApiPersistentService in 859871ms for mem-pressure-
+11-12 06:09:50.923  1949  1984 W ActivityManager: Rescheduling restart of crashed service com.google.android.gms/.cast.media.CastRemoteDisplayProviderService_Persistent in 889871ms for mem-pressure-ev
+11-12 06:09:50.923  1949  1984 W ActivityManager: Rescheduling restart of crashed service com.google.android.gms/.clearcut.debug.ClearcutDebugDumpService in 919871ms for mem-pressure-event
+11-12 06:09:50.923  1949  1984 W ActivityManager: Rescheduling restart of crashed service com.google.android.gms/.common.stats.GmsCoreStatsService in 949871ms for mem-pressure-event
+11-12 06:09:50.923  1949  1984 W ActivityManager: Rescheduling restart of crashed service com.google.android.gms/.personalsafety.service.PSAService in 979871ms for mem-pressure-event
+11-12 06:09:50.923  1949  1984 W ActivityManager: Rescheduling restart of crashed service com.google.android.gms/.thunderbird.EmergencyPersistentService in 1009871ms for mem-pressure-event
+11-12 06:09:50.923  1949  1984 W ActivityManager: Rescheduling restart of crashed service com.google.android.gms/com.google.android.location.internal.server.HardwareArProviderService in 1039871ms for 
+11-12 06:09:50.923  1949  1984 W ActivityManager: Rescheduling restart of crashed service com.google.android.gms/.crisisalerts.init.CrisisAlertsPersistentService in 1069871ms for mem-pressure-event
+11-12 06:09:50.924  1949  1984 W ActivityManager: Rescheduling restart of crashed service com.google.android.gms/.personalsafety.service.LockingTrustAgentService in 1099871ms for mem-pressure-event
+11-12 06:09:50.924  1949  1984 W ActivityManager: Rescheduling restart of crashed service com.google.android.gms/.remotegestures.api.RemoteGesturesService in 1129871ms for mem-pressure-event
+11-12 06:09:50.924  1949  1984 W ActivityManager: Rescheduling restart of crashed service com.google.android.gms/.auth.trustagent.GoogleTrustAgent in 1159871ms for mem-pressure-event
+11-12 06:09:50.924  1949  1984 W ActivityManager: Rescheduling restart of crashed service com.android.launcher3/.notification.NotificationListener in 1189871ms for mem-pressure-event
+11-12 06:09:52.260  1949  1987 I ActivityManager: Process PhantomProcessRecord {5455d0 2110:7616:bash/u0a131} died
+11-12 06:09:52.261  1949  1987 I ActivityManager: Process PhantomProcessRecord {4ee19c9 2111:7616:tee/u0a131} died
+11-12 06:09:52.261  1949  1987 I ActivityManager: Process PhantomProcessRecord {fb268ce 2434:7616:python/u0a131} died
+11-12 06:09:52.261  1949  1987 I ActivityManager: Process PhantomProcessRecord {83993ef 2852:7616:llama-server/u0a131} died
+11-12 06:09:54.624  1949  1984 W ActivityManager: Rescheduling restart of crashed service com.google.android.ext.services/android.ext.services.notification.Assistant in 0ms for mem-pressure-event
+11-12 06:09:54.624  1949  1984 W ActivityManager: Rescheduling restart of crashed service helium314.keyboard/.latin.LatinIME in 231ms for mem-pressure-event

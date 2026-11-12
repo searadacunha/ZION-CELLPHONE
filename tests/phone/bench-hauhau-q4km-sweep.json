@@ -1,0 +1,412 @@
+{
+ "label": "hauhau-q4km",
+ "model": "Qwen3.5-4B-Uncensored-HauhauCS-Aggressive-Q4_K_M.gguf",
+ "ctx": 4096,
+ "server": "/data/data/com.termux/files/home/llama.cpp/build-static/bin/llama-server",
+ "threads": 4,
+ "server_args": [
+  "--cache-ram",
+  "0"
+ ],
+ "started": "2026-11-12 12:08:58",
+ "errors": {},
+ "network": "Wifi is disabled | Active default network: none",
+ "power_start": [
+  [
+   "AC powered",
+   "false"
+  ],
+  [
+   "USB powered",
+   "true"
+  ],
+  [
+   "Wireless powered",
+   "false"
+  ],
+  [
+   "Max charging current",
+   "500000"
+  ],
+  [
+   "level",
+   "100"
+  ],
+  [
+   "level",
+   "5"
+  ]
+ ],
+ "file_read_s": 2.2,
+ "samples": {
+  "t": [
+   4,
+   15,
+   25,
+   35,
+   46,
+   56,
+   66,
+   81,
+   91,
+   101,
+   114,
+   124
+  ],
+  "cpu_pct": [
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null
+  ],
+  "mem_available_mb": [
+   5464,
+   5456,
+   5460,
+   5460,
+   2757,
+   2708,
+   2731,
+   2633,
+   2787,
+   2401,
+   2048,
+   1926
+  ],
+  "swap_used_mb": [
+   1300,
+   1300,
+   1300,
+   1300,
+   1513,
+   1431,
+   1415,
+   1407,
+   2682,
+   2256,
+   1259,
+   1258
+  ],
+  "server_rss_mb": [
+   null,
+   null,
+   null,
+   null,
+   null,
+   4920,
+   null,
+   4825,
+   null,
+   3945,
+   null,
+   3572
+  ],
+  "cpu_c": [
+   45.153,
+   null,
+   null,
+   42.803,
+   null,
+   null,
+   65.661,
+   null,
+   null,
+   68.054,
+   null,
+   null
+  ],
+  "skin_c": [
+   36.301,
+   null,
+   null,
+   36.448,
+   null,
+   null,
+   37.147,
+   null,
+   null,
+   38.53,
+   null,
+   null
+  ],
+  "battery_c": [
+   36.0,
+   null,
+   null,
+   36.0,
+   null,
+   null,
+   36.0,
+   null,
+   null,
+   37.0,
+   null,
+   null
+  ],
+  "thermal_status": [
+   0,
+   null,
+   null,
+   0,
+   null,
+   null,
+   0,
+   null,
+   null,
+   0,
+   null,
+   null
+  ],
+  "big_mhz": [
+   900,
+   null,
+   null,
+   1400,
+   null,
+   null,
+   2500,
+   null,
+   null,
+   2500,
+   null,
+   null
+  ],
+  "battery_mw": [
+   -225,
+   null,
+   null,
+   -251,
+   null,
+   null,
+   2448,
+   null,
+   null,
+   2358,
+   null,
+   null
+  ],
+  "charge_uah": [
+   2946000,
+   null,
+   null,
+   2946000,
+   null,
+   null,
+   2946000,
+   null,
+   null,
+   2946000,
+   null,
+   null
+  ],
+  "battery_pct": [
+   100,
+   null,
+   null,
+   100,
+   null,
+   null,
+   100,
+   null,
+   null,
+   100,
+   null,
+   null
+  ],
+  "all_ext_conn": [
+   0,
+   null,
+   null,
+   0,
+   null,
+   null,
+   0,
+   null,
+   null,
+   0,
+   null,
+   null
+  ],
+  "termux_ext_conn": [
+   0,
+   null,
+   null,
+   0,
+   null,
+   null,
+   0,
+   null,
+   null,
+   0,
+   null,
+   null
+  ],
+  "termux_open_listen": [
+   0,
+   null,
+   null,
+   0,
+   null,
+   null,
+   0,
+   null,
+   null,
+   0,
+   null,
+   null
+  ]
+ },
+ "timeline": [
+  [
+   60,
+   5.15,
+   64
+  ],
+  [
+   81,
+   5.07,
+   64
+  ],
+  [
+   107,
+   4.85,
+   64
+  ],
+  [
+   129,
+   4.99,
+   64
+  ]
+ ],
+ "idle": {
+  "battery_mw": [
+   -225,
+   -251
+  ],
+  "skin_c": [
+   36.301,
+   36.448
+  ],
+  "mem_available_mb": 5450
+ },
+ "ctx_sweep": [
+  {
+   "ctx": 2048,
+   "args": [],
+   "load_s": 7.1,
+   "peak_ram_mb": 5090,
+   "mem_available_mb": 2679,
+   "gen_tps": 5.145878298507989,
+   "ttft": 1.359818696975708,
+   "memory_log": []
+  },
+  {
+   "ctx": 4096,
+   "args": [],
+   "load_s": 6.1,
+   "peak_ram_mb": 5522,
+   "mem_available_mb": 2633,
+   "gen_tps": 5.066186917529231,
+   "ttft": 1.3801875114440918,
+   "memory_log": []
+  },
+  {
+   "ctx": 8192,
+   "args": [],
+   "load_s": 10.6,
+   "peak_ram_mb": 5298,
+   "mem_available_mb": 2322,
+   "gen_tps": 4.850653386860935,
+   "ttft": 1.3538122177124023,
+   "memory_log": []
+  },
+  {
+   "ctx": 4096,
+   "args": [
+    "--load-mode",
+    "none"
+   ],
+   "load_s": 7.1,
+   "peak_ram_mb": 3572,
+   "mem_available_mb": 1925,
+   "gen_tps": 4.98665318317861,
+   "ttft": 1.2687575817108154,
+   "memory_log": []
+  }
+ ],
+ "power_end": [
+  [
+   "AC powered",
+   "false"
+  ],
+  [
+   "USB powered",
+   "true"
+  ],
+  [
+   "Wireless powered",
+   "false"
+  ],
+  [
+   "Max charging current",
+   "500000"
+  ],
+  [
+   "level",
+   "100"
+  ],
+  [
+   "level",
+   "5"
+  ]
+ ],
+ "summary": {
+  "speed": {
+   "gen_tps": null,
+   "prompt_tps": null,
+   "ttft_s_median": null,
+   "n": 0
+  },
+  "probe_tps_start_end": null,
+  "tool_calls_pass": "0/0",
+  "tool_calls_valid_json": "0/0",
+  "python_pass": "0/0",
+  "agent_tasks_pass": null,
+  "convo_turns_ok": 0,
+  "request_errors": 0,
+  "peak_ram_mb": null,
+  "peak_ram_mb_sweep_max": 5522,
+  "cpu_pct_mean_busy": null,
+  "cpu_pct_max": null,
+  "mem_available_mb_min": 1926,
+  "swap_used_mb_max": 2682,
+  "server_rss_mb_max": 4920,
+  "cpu_temp_c_max": 68.054,
+  "skin_temp_c_max": 38.53,
+  "thermal_status_max": 0,
+  "big_core_mhz_busy_min_max": [
+   2500,
+   2500
+  ],
+  "battery_mw_idle": -238.0,
+  "battery_mw_busy_mean": 2403.0,
+  "battery_pct_start_end": [
+   100,
+   100
+  ],
+  "termux_external_connections_max": 0,
+  "termux_open_listen_max": 0,
+  "all_external_connections_max": 0,
+  "minutes": 2.2,
+  "errors": null
+ },
+ "finished": "2026-11-12 12:11:08"
+}

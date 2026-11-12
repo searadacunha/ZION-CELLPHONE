@@ -1,0 +1,19 @@
+== start Thu Nov 12 12:08:48 WET 2026
+== offline: Wifi is disabled, Active default network: none
+== skin 36.472 C before hauhau-q4km
+  ctx 2048 : load 7s, peak RAM 5090 MB, 5.1 tok/s
+  ctx 4096 : load 6s, peak RAM 5522 MB, 5.1 tok/s
+  ctx 8192 : load 11s, peak RAM 5298 MB, 4.9 tok/s
+  ctx 4096 --load-mode none: load 7s, peak RAM 3572 MB, 5.0 tok/s
+== summary hauhau-q4km {"speed": {"gen_tps": null, "prompt_tps": null, "ttft_s_median": null, "n": 0}, "probe_tps_start_end": null, "tool_calls_pass": "0/0", "tool_calls_valid_json": "0/0", "python_pass": "0/0", "agent_tasks_pass": null, "convo_turns_ok": 0, "request_errors": 0, "peak_ram_mb": null, "peak_ram_mb_sweep_max": 5522, "cpu_pct_mean_busy": null, "cpu_pct_max": null, "mem_available_mb_min": 1926, "swap_used_mb_max": 2682, "server_rss_mb_max": 4920, "cpu_temp_c_max": 68.054, "skin_temp_c_max": 38.53, "thermal_status_max": 0, "big_core_mhz_busy_min_max": [2500, 2500], "battery_mw_idle": -238.0, "battery_mw_busy_mean": 2403.0, "battery_pct_start_end": [100, 100], "termux_external_connections_max": 0, "termux_open_listen_max": 0, "all_external_connections_max": 0, "minutes": 2.2, "errors": null}
+sweep hauhau-q4km exit 0 12:11:08
+== skin 39.173 C before qwen35-q40
+  ctx 2048 : load 5s, peak RAM 5101 MB, 5.9 tok/s
+  ctx 4096 : load 4s, peak RAM 5347 MB, 5.5 tok/s
+  ctx 8192 : load 7s, peak RAM 5299 MB, 5.5 tok/s
+  ctx 4096 --load-mode none: load 5s, peak RAM 3456 MB, 5.4 tok/s
+== summary qwen35-q40 {"speed": {"gen_tps": null, "prompt_tps": null, "ttft_s_median": null, "n": 0}, "probe_tps_start_end": null, "tool_calls_pass": "0/0", "tool_calls_valid_json": "0/0", "python_pass": "0/0", "agent_tasks_pass": null, "convo_turns_ok": 0, "request_errors": 0, "peak_ram_mb": null, "peak_ram_mb_sweep_max": 5347, "cpu_pct_mean_busy": 397.0, "cpu_pct_max": 397, "mem_available_mb_min": 2188, "swap_used_mb_max": 1440, "server_rss_mb_max": 5272, "cpu_temp_c_max": 69.587, "skin_temp_c_max": 39.96, "thermal_status_max": 1, "big_core_mhz_busy_min_max": [2500, 2500], "battery_mw_idle": -895.0, "battery_mw_busy_mean": 2618.5, "battery_pct_start_end": [100, 100], "termux_external_connections_max": 0, "termux_open_listen_max": 0, "all_external_connections_max": 0, "minutes": 1.9, "errors": null}
+sweep qwen35-q40 exit 0 12:13:04
+stopped 0 llama-server process(es)
+== round6b done Thu Nov 12 12:13:04 WET 2026
+== wifi back: Wifi is connected to "<home network>"

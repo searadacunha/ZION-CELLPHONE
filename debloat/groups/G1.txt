@@ -1,0 +1,41 @@
+# G1: class C, applied automatically. Unused since setup (usagestats 2026), no feature of the phone depends on them.
+# Format: package  # reason. Undo: restore/restore.sh G1
+# Unused Google consumer apps
+com.google.android.apps.bard                 # Gemini
+com.google.android.youtube                   # YouTube
+com.google.android.apps.youtube.music        # YouTube Music
+com.google.android.videos                    # Google TV / Play Films
+com.google.android.apps.tachyon              # Meet
+com.google.android.apps.docs                 # Drive
+com.google.android.keep                      # Keep
+# Google background profiling, ads, setup leftovers
+com.google.android.as                        # Android System Intelligence (smart text selection, live caption)
+com.google.android.as.oss                    # Private Compute Services (dependency of the above)
+com.google.android.feedback                  # crash-report sender to Google
+com.google.android.apps.restore              # restore-from-Google wizard, setup only
+com.google.android.apps.setupwizard.searchselector  # search-engine chooser, setup only
+com.google.android.gms.location.history      # empty stub
+com.google.android.gmsintegration            # sample home screen stub
+com.google.android.onetimeinitializer        # first-boot only
+com.google.android.adservices.api            # Privacy Sandbox ads
+com.google.android.federatedcompute          # on-device learning for ads personalisation
+com.google.android.ondevicepersonalization.services  # ads personalisation
+# Factory, test and debug tools (reachable by dialer codes, some with REBOOT/CAMERA/MIC rights)
+com.example.adingtest                        # MTK AgingTest, /system/app/AgingTest, boot receiver + secret code receiver
+com.mediatektest.factorymode                 # MTK factory mode
+com.mediatektest.factorymode.dualmic.test    # factory mic test
+com.mediatektest.factorymode.psensor         # factory proximity test
+com.focaltech.fpsensormmitest                # fingerprint factory test (not the fingerprint HAL)
+com.mediatek.ygps                            # GPS test tool
+com.mediatek.atmwifimeta                     # Wi-Fi data logger
+com.mediatek.voicecommand                    # MTK voice command
+com.mediatek.voiceunlock                     # MTK voice unlock
+com.android.traceur                          # system tracing UI
+com.android.egg                              # Easter egg
+# Unused small extras
+com.android.dreams.basic                     # screensaver
+com.android.wallpaper.livepicker             # live wallpaper picker
+com.android.bookmarkprovider                 # legacy browser bookmarks
+com.google.android.printservice.recommendation  # print plugin suggestions
+com.android.systemui.accessibility.accessibilitymenu  # accessibility menu shortcut
+com.google.android.accessibility.switchaccess  # switch access

@@ -1,0 +1,65 @@
+Wi-Fi scans of the Seeker since its last boot (11/11 16:38), from `adb shell dumpsys wifiscanner` taken on 12/11 at 00:52.
+Each line: time, who asked (null = the system's own connectivity manager), number of access points found.
+Wi-Fi was switched off then on by `cmd wifi set-wifi-enabled` at 00:47:13/00:47:19 and at 00:50:04/00:50:09.
+
+2026-11-11T16:38:44 null 0
+2026-11-11T16:38:55 com.google.android.gms 24
+2026-11-11T16:39:04 null 0
+2026-11-11T16:39:44 null 0
+2026-11-11T16:39:47 com.android.shell 0
+2026-11-11T16:39:58 null 0
+2026-11-11T16:40:02 com.google.android.gms 27
+2026-11-11T16:40:18 null 0
+2026-11-11T16:40:42 com.android.shell 0
+2026-11-11T16:40:48 null 2
+2026-11-11T16:44:17 com.android.settings 24
+2026-11-11T16:44:17 com.android.settings 24
+2026-11-11T16:44:17 com.android.settings 24
+2026-11-11T16:44:17 com.android.settings 24
+2026-11-11T16:44:17 com.android.settings 24
+2026-11-11T19:48:42 com.google.android.gms 21
+2026-11-11T19:58:39 com.google.android.gms 22
+2026-11-11T21:29:01 com.google.android.gms 21
+2026-11-11T21:29:14 null 1
+2026-11-11T21:29:34 null 1
+2026-11-11T21:30:14 null 1
+2026-11-11T21:33:45 null 1
+2026-11-11T21:34:05 null 1
+2026-11-11T21:34:45 null 1
+2026-11-11T21:36:05 null 1
+2026-11-11T21:36:28 com.google.android.gms 18
+2026-11-11T21:38:45 null 1
+2026-11-11T21:44:05 null 1
+2026-11-11T21:46:45 null 1
+2026-11-11T21:49:25 null 1
+2026-11-11T21:52:05 null 1
+2026-11-11T21:54:45 null 1
+2026-11-11T21:57:25 null 1
+2026-11-11T22:00:05 null 1
+2026-11-11T22:02:45 null 1
+2026-11-11T22:05:25 null 1
+2026-11-11T22:08:05 null 1
+2026-11-11T22:10:45 null 1
+2026-11-11T22:13:25 null 1
+2026-11-11T22:26:20 com.google.android.gms 22
+2026-11-11T22:36:23 com.google.android.gms 19
+2026-11-12T00:47:20 null 0
+2026-11-12T00:47:40 null 0
+2026-11-12T00:48:20 null 0
+2026-11-12T00:48:38 com.android.shell 0
+2026-11-12T00:49:40 null 0
+2026-11-12T00:50:09 null 0
+2026-11-12T00:50:22 com.android.shell 0
+2026-11-12T00:50:30 null 0
+2026-11-12T00:51:10 null 0
+2026-11-12T00:51:28 com.android.shell 0
+2026-11-12T00:51:53 com.android.shell 0
+
+Summary by requester: scans, scans that found at least one access point, largest count
+  com.android.settings           5   5  24
+  com.android.shell              6   0   0
+  com.google.android.gms         8   8  27
+  null                          33  21   2
+
+After the dump: opening Settings > Wi-Fi at 00:53:20 gave a scan with 18 access points (requester com.android.settings)
+and the phone reconnected to the saved network within 6 s. Between 00:47:19 and 00:53:20: 12 scans, all empty, no reconnection.

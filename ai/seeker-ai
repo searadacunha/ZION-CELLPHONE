@@ -1,0 +1,739 @@
+#!/usr/bin/env python3
+"""seeker-ai: local AI agent of the Seeker, on llama.cpp's llama-server, offline, not root.
+Usage:
+  seeker-ai                      agent chat (with tools), saved and resumable
+  seeker-ai --chat               conversation only, no tools
+  seeker-ai "task"               one shot          seeker-ai --resume       continue the last chat
+  seeker-ai -f FILE "question"   attach files (repeatable); piped stdin is attached too
+  seeker-ai --models             models in ~/models (* = default)
+  seeker-ai --use NAME           make a model the default (any part of its file name)
+  seeker-ai --model NAME "..."   use a model for this run only
+  seeker-ai --start | --stop | --status
+In a chat: /file PATH  /tools  /memory  /forget  /system  /reset  /exit     Ctrl+C stops the current answer or command.
+Config: ~/.config/seeker-ai/config.json   Instructions: ~/.config/seeker-ai/system.md (optional, replaces the default)
+Data: ~/.local/share/seeker-ai/ (memory.md, sessions/, history.jsonl, perf.jsonl, server.log)"""
+import argparse, html, http.client, json, os, re, shlex, shutil, signal, subprocess, sys, time, urllib.error, urllib.request
+from pathlib import Path
+
+HOME = Path.home()
+CONF_PATH = Path(os.environ.get("SEEKER_AI_CONFIG", HOME / ".config/seeker-ai/config.json"))
+DATA = Path(os.environ.get("SEEKER_AI_DATA", HOME / ".local/share/seeker-ai"))
+DEFAULT = {
+    "server": "http://127.0.0.1:8080",
+    "models_dir": "~/models",
+    "model": "~/models/Qwen3.5-4B-Uncensored-HauhauCS-Aggressive-Q4_K_M.gguf",  # fallback: Qwen3.5-4B-Q4_0.gguf (tests/bench_decide.py, 12/11)
+    "ctx": 4096, "threads": 4, "thinking": False, "show_speed": True,
+    "sampling": {"temperature": 0.7, "top_p": 0.8, "top_k": 20, "min_p": 0.0},  # Qwen3.5 values, non-thinking mode
+    # Memory, on this 8 GB phone (Termux was killed by Android for lack of memory on 12/11 at 06:09:50, am_low_memory):
+    # --cache-ram 0: no copy of past prompts in RAM (up to 8 GB by default);
+    # --load-mode none: weights read into RAM, not memory-mapped: peak 3.5 GB instead of 5.3 GB at the same speed
+    # (tests/phone/bench-*-sweep.json, both models, 12/11).
+    "llama_server": "llama-server", "server_args": ["--cache-ram", "0", "--load-mode", "none"],
+    "system_prompt": "",  # replaces the default instructions; ~/.config/seeker-ai/system.md wins over it
+    # permission levels. auto = runs without asking, ask = you approve each call, off = not offered to the model
+    "levels": {"read": "auto", "write": "auto", "exec": "ask", "sensitive": "ask"},
+    "tools": {},           # per-tool override of its level, e.g. {"python": "auto"}
+    "android_policy": {},  # per-action override, e.g. {"screenshot": "auto"}
+    # actions offered to the model, all verified on the Seeker (Termux from Google Play + Shizuku). torch, clipboard_get,
+    # location, photo, sms_*, contacts need the Termux:API app signed like Termux: add them once it is installed.
+    "android_actions": ["battery", "volume", "toast", "notify", "vibrate", "wifi_info", "apps", "usb_devices",
+                        "open_url", "screenshot", "install_apk"],
+    # file tools see only these folders, minus the denied ones and minus every hidden file or folder inside them
+    # (symlinks resolved; relative paths start in workdir). To open a hidden folder, list it here explicitly.
+    # shell and python are not confined: they are "exec" (ask by default) and start in workdir.
+    "allowed_paths": ["~", "/sdcard/Download", "/sdcard/Documents", "/sdcard/Pictures", "/sdcard/DCIM"],
+    "denied_paths": ["~/.ssh", "~/.gnupg", "~/.config/seeker-ai", "~/.local/share/seeker-ai", "~/.termux", "~/bin"],
+    "workdir": "~/seeker-work",
+    # with shell/system on "ask", these commands run without asking if the line has no shell metacharacter.
+    # No file readers here (cat, head...): reading files goes through read_file, which enforces the folders above.
+    "shell_auto_allow": ["ls", "pwd", "df", "free", "uptime", "whoami", "uname", "ps"],
+    "system_auto_allow": ["ps", "getprop", "df", "uptime", "id"],
+    "memory_chars": 3000, "max_tool_output": 6000,
+}
+# {workdir} = the configured work folder (the prompt said ~/seeker-work whatever the config: on 12/11 the agent then
+# wrote and read in the wrong folder). The two "jamais" rules answer what the phone showed on 12/11: after a refusal the
+# model claimed the command "had been approved" and asked again 12 times; it gave a script's output that never printed.
+SYSTEM_AGENT = ("You are seeker-ai, the local agent of a Solana Seeker phone (Android, Termux), offline, without root. "
+                "Answer in the language of the user's request (not of the notes), briefly. If the request needs no tool, answer directly. For a multi-step "
+                "task: make a short plan, use one tool at a time, read its result, fix errors, then summarize. Your work "
+                "folder is {workdir}: relative paths and commands start there. Never state a result that no tool has shown. "
+                "The user approves sensitive actions: if they refuse one, never try it again, nor another way, and tell them "
+                "it was not done. Use remember to keep what you are asked to remember. You have no access to the Seed Vault.")
+SYSTEM_CHAT = ("You are seeker-ai, a local offline assistant on a Solana Seeker phone. "
+               "Answer in the language of the user's request (not of the notes), clearly and briefly.")
+META = set(";&|`$<>(){}\\\n")
+# escape sequences, carriage returns and bidi overrides: never sent raw to the terminal (a file, a web page or the
+# model could otherwise repaint the screen or disguise the command you are asked to approve)
+CTRL = re.compile("[\x00-\x08\x0b-\x1f\x7f-\x9f\u200e\u200f\u202a-\u202e\u2066-\u2069]")
+MAX_ROUNDS = 12
+TOOL_LEVEL = {"read_file": "read", "list_dir": "read", "write_file": "write", "remember": "write",
+              "shell": "exec", "python": "exec", "fetch_url": "sensitive", "system": "sensitive"}
+# the agent may never change these packages, even with approval (Seed Vault first)
+PROTECTED = re.compile(r"com\.solanamobile|seedvault|com\.trustkernel", re.I)
+CHANGING = re.compile(r"\b(uninstall|disable[-\w]*|enable|clear|suspend|unsuspend|hide|unhide|revoke|grant|reset[-\w]*|"
+                      r"kill|force-stop|deny|set[-\w]*|install[-\w]*|delete|rm)\b", re.I)
+
+
+def load_conf():
+    c = json.loads(json.dumps(DEFAULT))
+    if CONF_PATH.exists():
+        user = json.loads(CONF_PATH.read_text())
+        for k, v in user.items():
+            c[k] = {**c[k], **v} if isinstance(c.get(k), dict) else v
+    return c
+
+
+def save_conf(**kv):
+    """Change keys of the user's config file, after a dated backup of it."""
+    raw = json.loads(CONF_PATH.read_text()) if CONF_PATH.exists() else {}
+    if CONF_PATH.exists():
+        shutil.copy2(CONF_PATH, CONF_PATH.with_name(f"config.json.bak-{time.strftime('%Y%m%d-%H%M%S')}"))
+    raw.update(kv)
+    CONF_PATH.parent.mkdir(parents=True, exist_ok=True)
+    CONF_PATH.write_text(json.dumps(raw, indent=2, ensure_ascii=False))
+
+
+def tilde(p):
+    p, h = str(p), str(HOME)
+    return "~" + p[len(h):] if p.startswith(h + "/") else p
+
+
+def is_auto_cmd(cmd, allow):
+    try:
+        words = shlex.split(cmd)
+    except ValueError:
+        return False
+    return bool(words) and words[0] in allow and not (set(cmd) & META)
+
+
+class ServerError(Exception):
+    """llama-server refused the request (HTTP error, error event) or the connection was lost."""
+
+
+def plain(s):
+    return CTRL.sub(lambda m: f"\\u{ord(m.group()):04x}", s)
+
+
+def paths_ok(cmd, conf):
+    """The arguments of an auto-allowed shell command stay where the file tools may look: `ls ~/.ssh` asks first."""
+    for w in shlex.split(cmd)[1:]:
+        if not w.startswith("-"):
+            try:
+                allowed(w, conf)
+            except PermissionError:
+                return False
+    return True
+
+
+def clip(s, n):
+    return s if len(s) <= n else s[:n] + f"\n[... {len(s) - n} more characters cut]"
+
+
+def workdir(conf):
+    w = Path(conf["workdir"]).expanduser()
+    w.mkdir(parents=True, exist_ok=True)
+    return w
+
+
+def target(path, conf):
+    p = Path(path).expanduser()
+    return p if p.is_absolute() else Path(conf["workdir"]).expanduser() / p
+
+
+def allowed(path, conf):
+    p = target(path, conf).resolve()
+    inside = lambda r: p == r or r in p.parents
+    for d in conf["denied_paths"]:
+        if inside(Path(d).expanduser().resolve()):
+            raise PermissionError(f"{p} is in a protected folder ({d})")
+    hidden = False
+    for root in conf["allowed_paths"]:
+        r = Path(root).expanduser().resolve()
+        if inside(r):
+            # dotfiles hold credentials (.ssh, .netrc, .env) and code that runs by itself (.bashrc, .git/hooks):
+            # reachable only below a root that names the hidden folder itself
+            if not any(part.startswith(".") for part in p.relative_to(r).parts):
+                return p
+            hidden = True
+    raise PermissionError(f"{p} is a hidden file or folder (protected)" if hidden
+                          else f"{p} is outside the allowed folders {conf['allowed_paths']}")
+
+
+def run(argv, timeout=300, cwd=None):
+    # one stream, in the order printed (rish, Shizuku's shell, spreads its output between stdout and stderr at random)
+    r = subprocess.run(argv, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, timeout=timeout, cwd=cwd,
+                       stdin=subprocess.DEVNULL)
+    return f"exit {r.returncode}\n{r.stdout}"
+
+
+# ---- Android actions: name -> (builder, permission level, backend) ----
+# backend "api": a termux-* command (argv list). Termux from Google Play has battery, volume, toast and usb built in;
+#   torch, clipboard, location, photo, sms, contacts need the Termux:API app signed like Termux (F-Droid builds).
+# backend "rish": an Android shell command (string) run with ADB-level rights through Shizuku. Tested on the Seeker.
+q = shlex.quote
+ANDROID = {
+    "battery":        (lambda a: ["termux-battery-status"], "read", "api"),
+    "volume":         (lambda a: ["termux-volume"], "read", "api"),
+    "usb_devices":    (lambda a: ["termux-usb", "-l"], "read", "api"),
+    "toast":          (lambda a: ["termux-toast", a["text"]], "write", "api"),
+    # small models often put the whole message in title: an empty text takes the title, so nothing is lost
+    "notify":         (lambda a: f"cmd notification post -S bigtext -t {q((a['title'] or 'seeker-ai') if a['text'] else 'seeker-ai')} seeker_ai "
+                                 f"{q(a['text'] or a['title'])}", "write", "rish"),
+    "vibrate":        (lambda a: f"cmd vibrator_manager synced -f oneshot {min(int(a['value'] or 300), 3000)}", "write", "rish"),
+    "wifi_info":      (lambda a: "cmd wifi status", "read", "rish"),
+    "apps":           (lambda a: "pm list packages -3", "read", "rish"),
+    "open_url":       (lambda a: f"am start -a android.intent.action.VIEW -d {q(a['text'])}", "sensitive", "rish"),
+    "screenshot":     (lambda a: f"screencap -p {q(a['path'])}", "sensitive", "rish"),
+    "install_apk":    (lambda a: f"pm install -r {q(a['path'])}", "sensitive", "rish"),
+    "torch":          (lambda a: ["termux-torch", a["value"] or "on"], "write", "api"),
+    "clipboard_get":  (lambda a: ["termux-clipboard-get"], "sensitive", "api"),
+    "location":       (lambda a: ["termux-location", "-p", "gps", "-r", "once"], "sensitive", "api"),
+    "photo":          (lambda a: ["termux-camera-photo", "-c", a["value"] or "0", a["path"]], "sensitive", "api"),
+    "sms_list":       (lambda a: ["termux-sms-list", "-l", a["value"] or "10"], "sensitive", "api"),
+    "sms_send":       (lambda a: ["termux-sms-send", "-n", a["number"], a["text"]], "sensitive", "api"),
+    "contacts":       (lambda a: ["termux-contact-list"], "sensitive", "api"),
+}
+
+
+def policy(conf, name, action=None):
+    if name == "android":
+        if action not in ANDROID or action not in conf["android_actions"]:
+            return "off"
+        level = conf["android_policy"].get(action) or conf["levels"][ANDROID[action][1]]
+        whole = conf["tools"].get("android")  # ask or off for the whole tool can only tighten an action, never reopen it
+        return "off" if "off" in (level, whole) else "ask" if whole == "ask" else level
+    return conf["tools"].get(name) or conf["levels"][TOOL_LEVEL[name]]
+
+
+def offered_actions(conf):
+    return [k for k in conf["android_actions"] if policy(conf, "android", k) != "off"]
+
+
+def rish_path():
+    return shutil.which("rish") or next((str(p) for p in [HOME / "bin/rish"] if p.exists()), None)
+
+
+def make_tools(conf):
+    def t_read_file(path):
+        return allowed(path, conf).read_text(errors="replace")
+
+    def t_list_dir(path="."):
+        return "\n".join(sorted(f"{x.name}/" if x.is_dir() else x.name for x in allowed(path, conf).iterdir()))
+
+    def t_write_file(path, content):
+        p = allowed(path, conf)
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(content)
+        return f"wrote {len(content)} characters to {p}"
+
+    def t_shell(command):
+        return run(["bash", "-c", command], cwd=workdir(conf))
+
+    def t_python(code):
+        return run([sys.executable, "-c", code], cwd=workdir(conf))
+
+    def t_fetch_url(url):
+        if not url.startswith(("http://", "https://")):
+            return "error: only http(s) URLs"
+        with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "seeker-ai"}), timeout=30) as r:
+            body = r.read(2_000_000).decode(r.headers.get_content_charset() or "utf-8", "replace")
+        body = re.sub(r"(?is)<(script|style).*?</\1>", " ", body)
+        return html.unescape(re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", body))).strip()
+
+    def t_android(action, text="", title="", number="", path="", value=""):
+        if action == "open_url" and not text.startswith(("http://", "https://")):
+            return "error: open_url needs an http(s) URL in text"
+        if action == "install_apk" and not path.endswith(".apk"):
+            return "error: install_apk needs the path of an .apk file"
+        if action in ("screenshot", "photo") and not path:  # screencap runs as shell: it can write to shared storage only
+            path = f"/sdcard/Pictures/seeker-ai-{int(time.time())}.{'png' if action == 'screenshot' else 'jpg'}"
+        a = {"text": text, "title": title, "number": number, "path": str(allowed(path, conf)) if path else "", "value": value}
+        build, _, backend = ANDROID[action]
+        if backend == "api":
+            return run(build(a), timeout=60)
+        rish = rish_path()
+        if not rish:
+            return f"error: {action} needs Shizuku (start Shizuku, then run seeker-setup-shizuku)"
+        return run([rish, "-c", build(a)], timeout=120)
+
+    def t_system(command):
+        rish = rish_path()
+        if not rish:
+            return "error: Shizuku is not set up (no rish). Start Shizuku, then run seeker-setup-shizuku."
+        return run([rish, "-c", command])
+
+    def t_remember(note):
+        DATA.mkdir(parents=True, exist_ok=True)
+        mem = DATA / "memory.md"
+        known = {l.split(" ", 2)[-1].strip().lower() for l in mem.read_text().splitlines()} if mem.exists() else set()
+        if note.strip().lower() in known:
+            return "already noted"
+        with open(mem, "a") as f:
+            f.write(f"- {time.strftime('%Y-%m-%d')} {note.strip()}\n")
+        return "noted"
+
+    offered = offered_actions(conf)
+    s = lambda **p: {"type": "object", "properties": {k: {"type": "string", "description": d} for k, d in p.items()}, "required": list(p)}
+    android_schema = {"type": "object", "required": ["action"], "properties": {
+        "action": {"type": "string", "enum": offered},
+        "text": {"type": "string", "description": "message, or URL for open_url"},
+        "title": {"type": "string"}, "number": {"type": "string", "description": "phone number for sms_send"},
+        "path": {"type": "string", "description": "file: .apk for install_apk, .png for screenshot"},
+        "value": {"type": "string", "description": "milliseconds for vibrate, on/off for torch, count for sms_list"}}}
+    return {
+        "read_file": (t_read_file, "Read a text file", s(path="file path")),
+        "list_dir": (t_list_dir, "List a directory", s(path="directory path")),
+        "write_file": (t_write_file, "Create or overwrite a text file", s(path="file path", content="full new content")),
+        "shell": (t_shell, "Run a bash command in Termux (git, python, ls...), as the Termux app user, not root", s(command="the command")),
+        "python": (t_python, "Run a Python 3 snippet and return what it prints", s(code="python code")),
+        "fetch_url": (t_fetch_url, "Download a web page and return its text (uses the network)", s(url="http(s) URL")),
+        "android": (t_android, "Phone features: " + ", ".join(offered), android_schema),
+        "system": (t_system, "Run an Android shell command with ADB-level rights through Shizuku (pm, settings, dumpsys, getprop...)",
+                   s(command="the command")),
+        "remember": (t_remember, "Save a short note to long-term memory", s(note="what to remember")),
+    }
+
+
+def tool_specs(conf, tools):
+    return [{"type": "function", "function": {"name": n, "description": d, "parameters": s}}
+            for n, (_, d, s) in tools.items() if (offered_actions(conf) if n == "android" else policy(conf, n) != "off")]
+
+
+def confirm(prompt):
+    sys.stderr.write(f"{prompt} [y/N] ")
+    sys.stderr.flush()
+    forced = os.environ.get("SEEKER_AI_CONFIRM")  # scripted runs and tests: yes | no (the question stays in their logs)
+    if forced:
+        sys.stderr.write(f"{forced} (SEEKER_AI_CONFIRM)\n")
+        return forced == "yes"
+    try:
+        with open("/dev/tty") as tty:
+            return tty.readline().strip().lower() in ("y", "yes", "o", "oui")
+    except OSError:
+        return False
+
+
+def needs_ok(name, args, conf):
+    if name == "write_file" and target(args.get("path", ""), conf).exists():
+        return True  # overwriting is irreversible: always ask
+    if policy(conf, name, args.get("action")) == "auto":
+        return False
+    if name == "shell":
+        cmd = args.get("command", "")
+        return not (is_auto_cmd(cmd, conf["shell_auto_allow"]) and paths_ok(cmd, conf))
+    if name == "system":
+        return not is_auto_cmd(args.get("command", ""), conf["system_auto_allow"])
+    return True
+
+
+def call_tool(name, args, conf, tools):
+    args = {k: v if isinstance(v, str) else json.dumps(v) for k, v in args.items()}  # models also send numbers and lists
+    if name not in tools or policy(conf, name, args.get("action")) == "off":
+        return f"error: {name} {args.get('action', '')} is not available".replace("  ", " ")
+    # quotes and backslashes removed first: they cannot hide a package name. Applies even when you approve.
+    bare = re.sub(r"[\"'\\]", "", args.get("command", "") + args.get("code", ""))
+    if name in ("system", "shell", "python") and PROTECTED.search(bare) and CHANGING.search(bare):
+        return "refused: the agent may not change Seed Vault or Solana packages"
+    # you approve what you see: the whole command, only a file's content is shortened (with a visible mark)
+    shown = json.dumps({**args, **({"content": clip(args["content"], 600)} if "content" in args else {})}, ensure_ascii=False)
+    if needs_ok(name, args, conf) and not confirm(f"\n[seeker-ai wants to run] {name} {plain(shown)}\nallow?"):
+        return "denied by the user"
+    try:
+        return clip(str(tools[name][0](**args)), conf["max_tool_output"])
+    except Exception as e:  # report to the model instead of crashing the chat
+        return f"error: {type(e).__name__}: {e}"
+
+
+# ---- models and llama-server ----
+def models(conf):
+    d = Path(conf["models_dir"]).expanduser()
+    return sorted(p for p in d.glob("*.gguf") if not p.name.lower().startswith("mmproj")) if d.exists() else []
+
+
+def find_model(conf, name):
+    p = Path(name).expanduser()
+    if p.is_file():
+        return p.resolve()
+    hits = [m for m in models(conf) if name.lower() in m.name.lower()]
+    if len(hits) != 1:
+        sys.exit(f"model '{name}': " + ("no match" if not hits else "ambiguous: " + ", ".join(h.name for h in hits))
+                 + " (see seeker-ai --models)")
+    return hits[0]
+
+
+def get_json(url, timeout=2):
+    try:
+        with urllib.request.urlopen(url, timeout=timeout) as r:
+            return json.loads(r.read() or b"{}")
+    except (OSError, ValueError):
+        return None
+
+
+def server_up(url):
+    return get_json(url + "/health") is not None
+
+
+def is_llama_server(cmdline):
+    """cmdline = bytes of /proc/PID/cmdline. Termux from Google Play starts every binary through /system/bin/linker64:
+    the process is then NAMED linker64 (pgrep -x llama-server finds nothing) and the program is its first two words.
+    Only those two are looked at: a script started with `--server .../llama-server` is not a server."""
+    return any(os.path.basename(a) == b"llama-server" for a in cmdline.split(b"\0")[:2])
+
+
+def server_pids():
+    pids = []
+    for p in Path("/proc").glob("[0-9]*"):
+        try:
+            if is_llama_server((p / "cmdline").read_bytes()):
+                pids.append(int(p.name))
+        except OSError:
+            pass
+    return pids
+
+
+def stop_server():
+    pids = server_pids()
+    for sig in (signal.SIGTERM, signal.SIGKILL):
+        for p in server_pids():
+            try:
+                os.kill(p, sig)
+            except (ProcessLookupError, PermissionError):
+                pass
+        for _ in range(20):
+            if not server_pids():
+                return len(pids)
+            time.sleep(0.5)
+    return len(pids)
+
+
+def ensure_server(conf, model):
+    url = conf["server"]
+    if server_up(url):
+        running = (get_json(url + "/props") or {}).get("model_path")
+        if not running or Path(running).expanduser().resolve() == model.resolve():
+            return
+        sys.stderr.write(f"switching model: {Path(running).name} -> {model.name}\n")
+        stop_server()
+    if not model.exists():
+        sys.exit(f"model not found: {model} (see seeker-ai --models, install-model)")
+    log = DATA / "server.log"
+    log.parent.mkdir(parents=True, exist_ok=True)
+    binary = str(Path(conf["llama_server"]).expanduser()) if "/" in conf["llama_server"] else conf["llama_server"]
+    try:
+        p = subprocess.Popen([binary, "-m", str(model), "-c", str(conf["ctx"]), "-t", str(conf["threads"]), "--jinja",
+                              "--host", "127.0.0.1", "--port", url.rsplit(":", 1)[1], "--metrics", *conf["server_args"]],
+                             stdout=open(log, "a"), stderr=subprocess.STDOUT, start_new_session=True)
+    except OSError as e:
+        sys.exit(f"cannot start {binary}: {e} (key llama_server of {tilde(CONF_PATH)})")
+    sys.stderr.write(f"starting llama-server with {model.name}, loading...\n")
+    for _ in range(300):
+        if server_up(url):
+            return
+        if p.poll() is not None:
+            sys.exit(f"llama-server stopped at once (code {p.returncode}), see {tilde(log)}")
+        time.sleep(1)
+    sys.exit(f"llama-server did not start, see {log}")
+
+
+def complete(conf, messages, tools):
+    body = {"messages": messages, "stream": True, "chat_template_kwargs": {"enable_thinking": conf["thinking"]}, **conf["sampling"]}
+    if tools:
+        body["tools"] = tools
+    req = urllib.request.Request(conf["server"] + "/v1/chat/completions", json.dumps(body).encode(),
+                                 {"Content-Type": "application/json"})
+    text, calls, timings, t0, ttft = "", {}, None, time.time(), None
+    try:
+        with urllib.request.urlopen(req, timeout=900) as r:
+            for raw in r:
+                line = raw.decode().strip()
+                if not line.startswith("data: ") or line == "data: [DONE]":
+                    continue
+                chunk = json.loads(line[6:])
+                if chunk.get("error"):
+                    raise ServerError(json.dumps(chunk["error"], ensure_ascii=False)[:400])
+                timings = chunk.get("timings") or timings
+                delta = (chunk.get("choices") or [{}])[0].get("delta") or {}
+                if ttft is None and (delta.get("content") or delta.get("reasoning_content") or delta.get("tool_calls")):
+                    ttft = time.time() - t0
+                if delta.get("reasoning_content"):
+                    sys.stdout.write(f"\033[2m{plain(delta['reasoning_content'])}\033[0m")
+                if delta.get("content"):
+                    text += delta["content"]
+                    sys.stdout.write(plain(delta["content"]))
+                for tc in delta.get("tool_calls") or []:
+                    c = calls.setdefault(tc.get("index", 0), {"id": "", "name": "", "args": ""})
+                    f = tc.get("function") or {}
+                    c["id"] = tc.get("id") or c["id"]
+                    c["name"] += f.get("name") or ""
+                    c["args"] += f.get("arguments") or ""
+                sys.stdout.flush()
+    except urllib.error.HTTPError as e:  # e.g. 400 exceed_context_size_error
+        raise ServerError(f"{e.code} {e.read().decode(errors='replace')[:400]}") from None
+    except (OSError, http.client.HTTPException) as e:
+        raise ServerError(f"llama-server unreachable or connection lost: {e}") from None
+    if timings:
+        conf["_used"] = sum(timings.get(k) or 0 for k in ("cache_n", "prompt_n", "predicted_n"))  # tokens now in the context
+        DATA.mkdir(parents=True, exist_ok=True)
+        with open(DATA / "perf.jsonl", "a") as f:
+            f.write(json.dumps({"t": time.time(), "model": Path(conf.get("_model", "")).name, "ctx": conf["ctx"],
+                                "ttft_s": round(ttft, 2) if ttft else None, **{k: timings.get(k) for k in
+                    ("prompt_n", "prompt_ms", "prompt_per_second", "predicted_n", "predicted_ms", "predicted_per_second")}}) + "\n")
+        if conf["show_speed"]:
+            sys.stderr.write(f"\n\033[2m[{timings.get('predicted_per_second', 0):.1f} tok/s, {timings.get('predicted_n')} tokens; "
+                             f"prompt {timings.get('prompt_n')} tok at {timings.get('prompt_per_second', 0):.1f} tok/s; "
+                             f"first token {ttft or 0:.1f}s]\033[0m")
+    return text, [calls[i] for i in sorted(calls)]
+
+
+def forget_oldest(conf, messages):
+    """Context nearly full: drop the older half of the exchanges, never the system prompt, the memory notes nor the
+    current request. One big cut, not one per turn: everything after it is processed again (about a minute here)."""
+    start = 3 if messages[1:3] and messages[1]["content"].startswith(NOTES) else 1  # the notes pair stays
+    users = [i for i in range(start + 1, len(messages)) if messages[i]["role"] == "user"]
+    if not users:
+        return False
+    del messages[start:users[(len(users) - 1) // 2]]
+    sys.stderr.write("\033[2m[context nearly full: the oldest exchanges are forgotten]\033[0m\n")
+    return True
+
+
+def turn(conf, messages, tool_specs_, tools):
+    used = []
+    for _ in range(MAX_ROUNDS):
+        if conf.get("_used", 0) > 0.75 * conf["ctx"] and forget_oldest(conf, messages):
+            conf["_used"] = 0
+        while True:
+            try:
+                text, calls = complete(conf, messages, tool_specs_)
+                break
+            except ServerError as e:  # the request itself is larger than the context: forget more, or give up
+                if "context" not in str(e) or not forget_oldest(conf, messages):
+                    raise
+        msg = {"role": "assistant", "content": text}
+        if calls:
+            msg["tool_calls"] = [{"id": c["id"] or f"call{i}", "type": "function",
+                                  "function": {"name": c["name"], "arguments": c["args"] or "{}"}} for i, c in enumerate(calls)]
+        messages.append(msg)
+        if not calls:
+            print()
+            return used
+        denied = False
+        for tc in msg["tool_calls"]:
+            try:
+                args = json.loads(tc["function"]["arguments"])
+            except json.JSONDecodeError:
+                args = None
+            name = tc["function"]["name"]
+            out = call_tool(name, args, conf, tools) if isinstance(args, dict) else "error: arguments are not valid JSON"
+            used.append(name + (f":{args.get('action')}" if isinstance(args, dict) and args.get("action") else ""))
+            sys.stderr.write(f"\033[2m[{name}] {plain(out[:200])}\033[0m\n")
+            if out == "denied by the user":
+                denied = True
+                out += ": NOT done. Do not try again, nor another way; tell the user it was not done."
+            messages.append({"role": "tool", "tool_call_id": tc["id"], "content": out})
+        if denied:  # the user said no: one last answer without tools, so the model cannot ask again (it did, 12 times)
+            text, _ = complete(conf, messages, [])
+            messages.append({"role": "assistant", "content": text})
+            print()
+            return used
+    print(f"\n[stopped after {MAX_ROUNDS} tool rounds]")
+    return used
+
+
+def system_text(conf, agent):
+    f = CONF_PATH.parent / "system.md"
+    if f.exists():
+        return f.read_text()
+    return conf["system_prompt"] or (SYSTEM_AGENT.format(workdir=tilde(Path(conf["workdir"]).expanduser())) if agent else SYSTEM_CHAT)
+
+
+NOTES = "Notes kept (local memory):"
+NOTES_ACK = "Noted. I answer each request in its own language, whatever the language of these notes."  # an English question got a French answer after French notes, in chat mode (12/11)
+
+
+def notes_pair(conf):
+    """The memory notes as an exchange of their own, before the conversation: inside the request they set its language
+    (French notes made the model answer an English question in French, on the phone, 12/11)."""
+    text = memory_notes(conf)
+    return [{"role": "user", "content": text.strip()}, {"role": "assistant", "content": NOTES_ACK}] if text else []
+
+
+def memory_notes(conf):
+    # Goes in the first user message, not the system prompt: the system prompt + tools prefix (~1200 tokens, minutes
+    # of prompt processing on this phone) then stays identical between calls and llama-server reuses its cache.
+    mem = DATA / "memory.md"
+    notes = mem.read_text()[-conf["memory_chars"]:] if mem.exists() else ""
+    return f"{NOTES}\n{notes}\n\n" if notes else ""
+
+
+def attach(paths, conf):
+    return "\n".join(f'<file path="{p}">\n{allowed(p, conf).read_text(errors="replace")}\n</file>' for p in paths)
+
+
+def log_task(mode, prompt, used, error=None):
+    DATA.mkdir(parents=True, exist_ok=True)
+    with open(DATA / "history.jsonl", "a") as f:
+        f.write(json.dumps({"t": time.strftime("%Y-%m-%d %H:%M:%S"), "mode": mode, "prompt": prompt[:200],
+                            "tools": used, "error": error}, ensure_ascii=False) + "\n")
+
+
+def save_session(path, messages):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(messages[1:], ensure_ascii=False))
+
+
+def status(conf):
+    url = conf["server"]
+    props = get_json(url + "/props") if server_up(url) else None
+    print(f"server       {'online' if props is not None else 'stopped'} ({url})")
+    running = (props or {}).get("model_path")
+    print(f"model        default {Path(conf['model']).name}" + (f", running {Path(running).name}" if running else ""))
+    if props:
+        print(f"context      {(props.get('default_generation_settings') or {}).get('n_ctx', '?')} tokens")
+    for pid in server_pids():
+        st = Path(f"/proc/{pid}/status").read_text() if Path(f"/proc/{pid}/status").exists() else ""
+        mem = {k: int(v) // 1024 for k, v in re.findall(r"(VmRSS|VmHWM):\s+(\d+)", st)}
+        print(f"memory       llama-server pid {pid}: {mem.get('VmRSS', '?')} MB now, {mem.get('VmHWM', '?')} MB peak")
+    perf = DATA / "perf.jsonl"
+    rows = [json.loads(l) for l in perf.read_text().splitlines()[-20:]] if perf.exists() else []
+    avg = lambda k: sum(r[k] for r in rows if r.get(k)) / max(1, len([r for r in rows if r.get(k)]))
+    if rows:
+        print(f"speed        last {len(rows)} answers: generation {avg('predicted_per_second'):.1f} tok/s, "
+              f"prompt {avg('prompt_per_second'):.1f} tok/s, first token {avg('ttft_s'):.1f} s")
+    print("permissions  " + ", ".join(f"{k}={v}" for k, v in conf["levels"].items()))
+    print("tools        " + ", ".join(f"{n}={policy(conf, n)}" for n in TOOL_LEVEL))
+    print("android      " + ", ".join(f"{k}={policy(conf, 'android', k)}" for k in conf["android_actions"]))
+    print(f"shizuku      {'ready (rish)' if rish_path() else 'not set up'}")
+    hist = DATA / "history.jsonl"
+    for l in (hist.read_text().splitlines()[-5:] if hist.exists() else []):
+        h = json.loads(l)
+        print(f"task         {h['t']} {h['mode']}: {h['prompt'][:60]}" + (f" [{', '.join(h['tools'])}]" if h["tools"] else ""))
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap.add_argument("prompt", nargs="*")
+    ap.add_argument("-f", "--file", action="append", default=[])
+    ap.add_argument("--resume", action="store_true", help="continue the last saved chat")
+    ap.add_argument("--chat", action="store_true", help="conversation only, no tools")
+    ap.add_argument("--models", action="store_true", help="list the models")
+    ap.add_argument("--use", metavar="NAME", help="make a model the default")
+    ap.add_argument("--model", metavar="NAME", help="use a model for this run only")
+    ap.add_argument("--start", action="store_true", help="start llama-server and exit")
+    ap.add_argument("--stop", action="store_true", help="stop llama-server (frees its memory)")
+    ap.add_argument("--status", action="store_true", help="server, model, memory, speed, permissions, last tasks")
+    a = ap.parse_args()
+    conf = load_conf()
+    if a.models:
+        default = Path(conf["model"]).expanduser().resolve()
+        for m in models(conf):
+            print(f"{'*' if m.resolve() == default else ' '} {m.name:55} {m.stat().st_size / 1e9:5.2f} GB")
+        return
+    if a.use:
+        m = find_model(conf, a.use)
+        save_conf(model=tilde(m))
+        print(f"default model: {m.name} (previous config backed up next to {tilde(CONF_PATH)})")
+        if server_up(conf["server"]) and stop_server():
+            print("llama-server stopped: it restarts with this model on next use")
+        return
+    if a.stop:
+        print(f"stopped {stop_server()} llama-server process(es)")
+        return
+    if a.status:
+        status(conf)
+        return
+    model = find_model(conf, a.model) if a.model else Path(conf["model"]).expanduser()
+    conf["_model"] = str(model)
+    try:  # -f paths start where you are, not in the agent's work folder, and are read before the model loads
+        files = attach([str(Path(f).expanduser().resolve()) for f in a.file], conf)
+    except OSError as e:
+        sys.exit(f"cannot read: {e}")
+    ensure_server(conf, model)
+    if a.start:
+        print(f"online: {model.name} on {conf['server']}")
+        return
+    agent = not a.chat
+    tools = make_tools(conf)
+    specs = tool_specs(conf, tools) if agent else []
+    messages = [{"role": "system", "content": system_text(conf, agent)}]
+    mode = "agent" if agent else "chat"
+    stdin_text = None if sys.stdin.isatty() else sys.stdin.read()
+    if a.prompt or stdin_text:
+        prompt = " ".join(a.prompt)
+        piped = f"<stdin>\n{stdin_text}\n</stdin>" if stdin_text else ""
+        messages += notes_pair(conf)
+        messages.append({"role": "user", "content": "\n".join(filter(None, [files, piped, prompt]))})
+        try:
+            log_task(mode, prompt, turn(conf, messages, specs, tools))
+        except KeyboardInterrupt:
+            log_task(mode, prompt, [], "stopped by the user")
+            sys.exit("\n(stopped)")
+        except ServerError as e:
+            log_task(mode, prompt, [], f"server error {str(e)[:80]}")
+            sys.exit(f"\n[server error] {e}")
+        return
+    sessions = DATA / "sessions"
+    session = sessions / time.strftime("%Y%m%d-%H%M%S.json")
+    if a.resume:
+        last = sorted(sessions.glob("*.json"))[-1:] if sessions.exists() else []
+        if last:
+            session = last[0]
+            messages += json.loads(session.read_text())
+            print(f"(resumed {session.name}, {len(messages) - 1} messages)")
+    pending = files
+    print(f"seeker-ai {mode}, {model.name}, offline. /file PATH  /tools  /memory  /forget  /system  /reset  /exit")
+    while True:
+        try:
+            line = input("> ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print()
+            return
+        if not line:
+            continue
+        if line in ("/exit", "/quit"):
+            return
+        if line == "/reset":
+            del messages[1:]
+            session = sessions / time.strftime("%Y%m%d-%H%M%S.json")
+            print("(new conversation)")
+            continue
+        if line == "/tools":
+            status(conf)
+            continue
+        if line == "/system":
+            print(messages[0]["content"])
+            continue
+        if line == "/memory":
+            mem = DATA / "memory.md"
+            print(mem.read_text() if mem.exists() else "(empty)")
+            continue
+        if line == "/forget":
+            if confirm("erase all long-term memory?"):
+                (DATA / "memory.md").unlink(missing_ok=True)
+                print("(memory erased)")
+            continue
+        if line.startswith("/file "):
+            try:
+                pending += "\n" + attach([line[6:].strip()], conf)
+                print("(attached)")
+            except (OSError, PermissionError) as e:
+                print(f"(cannot read: {e})")
+            continue
+        if len(messages) == 1:
+            messages += notes_pair(conf)
+        request = {"role": "user", "content": (pending + "\n" + line).strip()}
+        before = [dict(m) for m in messages]  # forget_oldest cuts and rewrites messages while the turn retries
+        messages.append(request)
+        pending = ""
+        try:
+            log_task(mode, line, turn(conf, messages, specs, tools))
+        except (KeyboardInterrupt, ServerError) as e:  # keep the chat alive, without the unfinished request
+            messages[:] = before
+            error = "stopped by the user" if isinstance(e, KeyboardInterrupt) else f"server error {str(e)[:80]}"
+            log_task(mode, line, [], error)
+            print(f"\n({error}; this request is forgotten)" + ("" if isinstance(e, KeyboardInterrupt) else f"\n{e}"))
+        save_session(session, messages)
+
+
+if __name__ == "__main__":
+    main()

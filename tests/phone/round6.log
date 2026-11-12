@@ -1,0 +1,236 @@
+== start Thu Nov 12 10:54:55 WET 2026
+== deploy seeker-ai v3 and seeker-dash
+stopped 0 llama-server process(es)
+config before: {"model": "~/models/Qwen3.5-4B-Q4_0.gguf", "llama_server": "/data/data/com.termux/files/home/llama.cpp/build-static/bin/llama-server"}
+config now:    {"model": "~/models/Qwen3.5-4B-Q4_0.gguf", "llama_server": "/data/data/com.termux/files/home/llama.cpp/build-static/bin/llama-server"}
+config.json
+config.json.bak-20261112-054951
+config.json.bak-20261112-055534
+config.json.bak-20261112-105458
+  Qwen3-4B-Instruct-2507-Q4_0.gguf                         2.38 GB
+* Qwen3.5-4B-Q4_0.gguf                                     2.58 GB
+  Qwen3.5-4B-Uncensored-HauhauCS-Aggressive-Q4_K_M.gguf    2.71 GB
+server       stopped (http://127.0.0.1:8080)
+model        default Qwen3.5-4B-Q4_0.gguf
+speed        last 20 answers: generation 4.6 tok/s, prompt 14.2 tok/s, first token 0.0 s
+permissions  read=auto, write=auto, exec=ask, sensitive=ask
+tools        read_file=auto, list_dir=auto, write_file=auto, remember=auto, shell=ask, python=ask, fetch_url=ask, system=ask
+android      battery=auto, volume=auto, toast=auto, notify=auto, vibrate=auto, wifi_info=auto, apps=auto, usb_devices=auto, open_url=ask, screenshot=ask, install_apk=ask
+shizuku      ready (rish)
+== llama-server memory options
+-cram, --cache-ram N                    set the maximum cache size in MiB (default: 8192, 0 for decision
+                                        models, -1 - no limit, 0 - disable)[(more
+--
+               total        used        free      shared  buff/cache   available
+Mem:            7494        2643          85           8        4765        5090
+Swap:           7494        1382        6111
+== offline: Wifi is disabled, Active default network: none
+== cool down before hauhau-q4km
+10:55:09 skin 26.444 C
+== bench hauhau-q4km 10:55:09
+== hauhau-q4km: Qwen3.5-4B-Uncensored-HauhauCS-Aggressive-Q4_K_M.gguf, ctx 4096, loaded in 7s, network: Wifi is disabled | Active default network: none
+  cold start (agent prompt + tools, 1153 tokens): first token 45s
+  tool PASS  Quel est le niveau de batterie du téléphone ?           -> android {"action": "battery"}
+  tool PASS  Liste les fichiers du dossier ~/seeker-work.            -> list_dir {"path": "~/seeker-work"}
+  tool PASS  Lis le fichier ~/seeker-work/notes.txt.                 -> read_file {"path": "~/seeker-work/notes.txt"}
+  tool PASS  Crée le fichier ~/seeker-work/hello.py qui affiche Bonj -> write_file {"path": "~/seeker-work/hello.py", "content": "print(\"Bonjour\")\n"}
+  tool PASS  Exécute la commande git --version.                      -> shell {"command": "git --version"}
+  tool PASS  Calcule 2 puissance 100 en exécutant du Python.         -> python {"code": "print(2 ** 100)"}
+  tool PASS  Retiens que je préfère les réponses courtes.            -> remember {"note": "L'utilisateur préfère les réponses courtes."}
+  tool PASS  Envoie une notification sur le téléphone qui dit : test -> android {"action": "notify", "text": "test"}
+  tool PASS  À quel réseau Wi-Fi le téléphone est-il connecté ?      -> android {"action": "wifi_info"}
+  tool PASS  Quelle est la version d'Android ? Utilise getprop avec  -> system {"command": "getprop ro.build.version.release"}
+  tool PASS  Quels périphériques USB sont branchés ?                 -> android {"action": "usb_devices"}
+  tool PASS  Liste les applications installées par l'utilisateur.    -> android {"action": "apps"}
+  tool PASS  Télécharge la page https://example.com et donne son tit -> fetch_url {"url": "https://example.com"}
+  tool PASS  Quelle est la capitale de l'Italie ?                    -> None {}
+  tool PASS  Écris une fonction Python qui additionne deux nombres.  -> None {}
+  tool PASS  Quel est le niveau de batterie du téléphone ?           -> android {"action": "battery"}
+  tool PASS  Liste les fichiers du dossier ~/seeker-work.            -> list_dir {"path": "~/seeker-work"}
+  tool PASS  Lis le fichier ~/seeker-work/notes.txt.                 -> read_file {"path": "~/seeker-work/notes.txt"}
+  tool PASS  Crée le fichier ~/seeker-work/hello.py qui affiche Bonj -> write_file {"path": "~/seeker-work/hello.py", "content": "print(\"Bonjour\")\n"}
+  tool PASS  Exécute la commande git --version.                      -> shell {"command": "git --version"}
+  tool PASS  Calcule 2 puissance 100 en exécutant du Python.         -> python {"code": "2 ** 100"}
+  tool PASS  Retiens que je préfère les réponses courtes.            -> remember {"note": "L'utilisateur préfère les réponses courtes."}
+  tool PASS  Envoie une notification sur le téléphone qui dit : test -> android {"action": "notify", "text": "test"}
+  tool PASS  À quel réseau Wi-Fi le téléphone est-il connecté ?      -> android {"action": "wifi_info"}
+  tool PASS  Quelle est la version d'Android ? Utilise getprop avec  -> system {"command": "getprop ro.build.version.release"}
+  tool PASS  Quels périphériques USB sont branchés ?                 -> android {"action": "usb_devices"}
+  tool PASS  Liste les applications installées par l'utilisateur.    -> android {"action": "apps"}
+  tool PASS  Télécharge la page https://example.com et donne son tit -> fetch_url {"url": "https://example.com"}
+  tool PASS  Quelle est la capitale de l'Italie ?                    -> None {}
+  tool PASS  Écris une fonction Python qui additionne deux nombres.  -> None {}
+  python PASS  est_palindrome
+  python PASS  fizzbuzz
+  python PASS  compte_mots
+  python PASS  fusionne
+  python PASS  premiers
+  python PASS  moyenne_mobile
+  python PASS  est_palindrome
+  python PASS  fizzbuzz
+  python PASS  compte_mots
+  python PASS  fusionne
+  python PASS  premiers
+  python PASS  moyenne_mobile
+  french 385 chars, 5.6 tok/s: 'Une clé privée est un mot de passe secret de 12 à 24 caractères qui débloque vos fonds dan'
+  french 234 chars, 5.6 tok/s: 'Objet : Décalage du rendez-vous – Mardi vers Jeudi\n\nBonjour [Nom du destinataire],\n\nJe vou'
+  french 435 chars, 5.6 tok/s: "L'inconvénient principal est la perte des fonctionnalités d'intelligence artificielle et d"
+    step write_file {"path": "~/seeker-work/bench/fib.py", "content": "def fib(n):\n    if n <= 1:\n -> 'wrote /data/data/com.termux/files/home/seeker-work/bench/fib'
+    step shell {"command": "python fib.py"} -> 'exit 0\n0 1 1 2 3 5 8 13 21 34 '
+    step shell {"command": "cd ~/seeker-work/bench && python moyenne.py"} -> 'exit 1\nTraceback (most recent call last):\n  File "/data/data'
+    step read_file {"path": "~/seeker-work/bench/moyenne.py"} -> 'def moyenne(l):\n    return sum(l) / len(l)\n\nprint(moyenne([]'
+    step write_file {"path": "~/seeker-work/bench/moyenne.py", "content": "def moyenne(l):\n    if n -> 'wrote /data/data/com.termux/files/home/seeker-work/bench/moy'
+    step shell {"command": "cd ~/seeker-work/bench && python moyenne.py"} -> 'exit 0\n0\n'
+    step shell {"command": "cd ~/seeker-work/bench && git init && ls -la"} -> 'exit 0\nInitialized empty Git repository in /data/data/com.te'
+    step shell {"command": "cd ~/seeker-work/bench && git add fib.py && git commit -m \"fib\""} -> 'exit 0\n[master (root-commit) 8fc8a97] fib\n 1 file changed, 7'
+  agent write_and_run: PASS in 2 steps
+  agent fix_bug: PASS in 4 steps
+  agent git_commit: PASS in 2 steps
+  convo turn 1: 5.5 tok/s, first token 1.7s, context 152
+  convo turn 2: 5.6 tok/s, first token 3.9s, context 246
+  convo turn 3: 5.4 tok/s, first token 4.1s, context 342
+  convo turn 4: 5.5 tok/s, first token 4.3s, context 473
+  convo turn 5: 5.5 tok/s, first token 5.6s, context 608
+  convo turn 6: 5.5 tok/s, first token 6.0s, context 727
+  convo turn 7: 5.4 tok/s, first token 5.3s, context 875
+  convo turn 8: 5.4 tok/s, first token 6.7s, context 1028
+  convo turn 9: 5.3 tok/s, first token 6.9s, context 1170
+  convo turn 10: 5.3 tok/s, first token 6.7s, context 1292
+  convo turn 11: 5.2 tok/s, first token 5.7s, context 1317
+  convo turn 12: 5.2 tok/s, first token 2.0s, context 1442
+  ctx 2048 : load 7s, peak RAM 5462 MB, 5.1 tok/s
+  ctx 4096 : load 6s, peak RAM 5335 MB, 5.3 tok/s
+  ctx 8192 : load 7s, peak RAM 5655 MB, 5.1 tok/s
+  ctx 4096 --no-mmap: ERROR llama-server exited (1), see /data/data/com.termux/files/usr/tmp/bench-hauhau-q4km-4096.log
+== summary hauhau-q4km {"speed": {"gen_tps": 5.38, "prompt_tps": 20.42, "ttft_s_median": 2.64, "n": 57}, "probe_tps_start_end": [5.385241821719603, 5.575666305398891], "tool_calls_pass": "30/30", "tool_calls_valid_json": "26/26", "python_pass": "12/12", "agent_tasks_pass": "3/3", "convo_turns_ok": 12, "request_errors": 0, "peak_ram_mb": 5071, "peak_ram_mb_sweep_max": 5655, "cpu_pct_mean_busy": 394.5, "cpu_pct_max": 398, "mem_available_mb_min": 850, "swap_used_mb_max": 1521, "server_rss_mb_max": 5226, "cpu_temp_c_max": 83.531, "skin_temp_c_max": 48.531, "thermal_status_max": 3, "big_core_mhz_busy_min_max": [2500, 2500], "battery_mw_idle": 0.0, "battery_mw_busy_mean": 2655.6, "battery_pct_start_end": [100, 100], "termux_external_connections_max": 0, "termux_open_listen_max": 0, "all_external_connections_max": 0, "minutes": 17.9, "errors": null}
+bench hauhau-q4km exit 0 11:13:06
+== cool down before qwen35-q40
+11:13:07 skin 48.746 C
+11:13:38 skin 47.945 C
+11:14:09 skin 46.938 C
+11:14:40 skin 46.269 C
+11:15:11 skin 45.333 C
+11:15:42 skin 44.733 C
+11:16:12 skin 44.218 C
+11:16:43 skin 42.839 C
+11:17:14 skin 42.151 C
+11:17:45 skin 41.117 C
+11:18:16 skin 40.166 C
+11:18:47 skin 39.284 C
+11:19:18 skin 38.828 C
+11:19:48 skin 38.036 C
+11:20:19 skin 37.679 C
+11:20:50 skin 36.965 C
+11:21:21 skin 36.688 C
+11:21:52 skin 36.009 C
+11:22:23 skin 35.78 C
+11:22:54 skin 35.173 C
+11:23:25 skin 34.963 C
+11:23:55 skin 34.802 C
+11:24:26 skin 34.235 C
+11:24:57 skin 34.063 C
+11:25:28 skin 33.908 C
+11:25:59 skin 33.779 C
+11:26:30 skin 33.258 C
+11:27:01 skin 33.138 C
+11:27:31 skin 33.014 C
+11:28:02 skin 32.897 C
+11:28:33 skin 32.792 C
+11:29:04 skin 32.295 C
+11:29:35 skin 32.202 C
+11:30:06 skin 32.117 C
+11:30:37 skin 32.016 C
+11:31:08 skin 31.936 C
+11:31:38 skin 31.863 C
+11:32:09 skin 31.406 C
+11:32:40 skin 31.334 C
+11:33:11 skin 31.27 C
+11:33:42 skin 31.205 C
+11:34:13 skin 31.148 C
+11:34:44 skin 31.084 C
+11:35:15 skin 31.035 C
+11:35:46 skin 30.987 C
+== bench qwen35-q40 11:35:46
+== qwen35-q40: Qwen3.5-4B-Q4_0.gguf, ctx 4096, loaded in 6s, network: Wifi is disabled | Active default network: none
+  cold start (agent prompt + tools, 1153 tokens): first token 35s
+  tool PASS  Quel est le niveau de batterie du téléphone ?           -> android {"action": "battery"}
+  tool PASS  Liste les fichiers du dossier ~/seeker-work.            -> list_dir {"path": "~/seeker-work"}
+  tool PASS  Lis le fichier ~/seeker-work/notes.txt.                 -> read_file {"path": "~/seeker-work/notes.txt"}
+  tool PASS  Crée le fichier ~/seeker-work/hello.py qui affiche Bonj -> write_file {"path": "~/seeker-work/hello.py", "content": "print(\"Bonjour\")"}
+  tool PASS  Exécute la commande git --version.                      -> shell {"command": "git --version"}
+  tool PASS  Calcule 2 puissance 100 en exécutant du Python.         -> python {"code": "2**100"}
+  tool PASS  Retiens que je préfère les réponses courtes.            -> remember {"note": "L'utilisateur préfère les réponses courtes."}
+  tool PASS  Envoie une notification sur le téléphone qui dit : test -> android {"action": "notify", "text": "test"}
+  tool PASS  À quel réseau Wi-Fi le téléphone est-il connecté ?      -> android {"action": "wifi_info"}
+  tool PASS  Quelle est la version d'Android ? Utilise getprop avec  -> system {"command": "getprop ro.build.version.sdk"}
+  tool PASS  Quels périphériques USB sont branchés ?                 -> android {"action": "usb_devices"}
+  tool PASS  Liste les applications installées par l'utilisateur.    -> android {"action": "apps"}
+  tool PASS  Télécharge la page https://example.com et donne son tit -> fetch_url {"url": "https://example.com"}
+  tool PASS  Quelle est la capitale de l'Italie ?                    -> None {}
+  tool PASS  Écris une fonction Python qui additionne deux nombres.  -> write_file {"path": "~/seeker-work/add_numbers.py", "content": "def add_numbers(a
+  tool PASS  Quel est le niveau de batterie du téléphone ?           -> android {"action": "battery"}
+  tool PASS  Liste les fichiers du dossier ~/seeker-work.            -> list_dir {"path": "~/seeker-work"}
+  tool PASS  Lis le fichier ~/seeker-work/notes.txt.                 -> read_file {"path": "~/seeker-work/notes.txt"}
+  tool PASS  Crée le fichier ~/seeker-work/hello.py qui affiche Bonj -> write_file {"path": "~/seeker-work/hello.py", "content": "print(\"Bonjour\")"}
+  tool PASS  Exécute la commande git --version.                      -> shell {"command": "git --version"}
+  tool PASS  Calcule 2 puissance 100 en exécutant du Python.         -> python {"code": "2 ** 100"}
+  tool PASS  Retiens que je préfère les réponses courtes.            -> remember {"note": "L'utilisateur préfère les réponses courtes."}
+  tool PASS  Envoie une notification sur le téléphone qui dit : test -> android {"action": "notify", "text": "test"}
+  tool PASS  À quel réseau Wi-Fi le téléphone est-il connecté ?      -> android {"action": "wifi_info"}
+  tool PASS  Quelle est la version d'Android ? Utilise getprop avec  -> system {"command": "getprop ro.build.version.release"}
+  tool PASS  Quels périphériques USB sont branchés ?                 -> android {"action": "usb_devices"}
+  tool PASS  Liste les applications installées par l'utilisateur.    -> android {"action": "apps"}
+  tool PASS  Télécharge la page https://example.com et donne son tit -> fetch_url {"url": "https://example.com"}
+  tool PASS  Quelle est la capitale de l'Italie ?                    -> None {}
+  tool PASS  Écris une fonction Python qui additionne deux nombres.  -> None {}
+  python PASS  est_palindrome
+  python PASS  fizzbuzz
+  python PASS  compte_mots
+  python PASS  fusionne
+  python PASS  premiers
+  python PASS  moyenne_mobile
+  python FAIL  est_palindrome
+  python PASS  fizzbuzz
+  python PASS  compte_mots
+  python PASS  fusionne
+  python PASS  premiers
+  python PASS  moyenne_mobile
+  french 428 chars, 5.8 tok/s: "Une clé privée est un mot de passe secret cryptographique qui détermine la propriété d'un "
+  french 338 chars, 5.9 tok/s: 'Objet : Modification de notre rendez-vous – Mardi vers Jeudi\n\nBonjour [Nom du destinataire'
+  french 275 chars, 5.7 tok/s: "Les avantages incluent une meilleure vie privée et la possibilité d'utiliser des services "
+    step write_file {"path": "~/seeker-work/bench/fib.py", "content": "#!/usr/bin/env python3\nfib = -> 'wrote /data/data/com.termux/files/home/seeker-work/bench/fib'
+    step shell {"command": "python ~/seeker-work/bench/fib.py"} -> 'exit 0\n0 1 1 2 3 5 8 13 21 34\n'
+    step shell {"command": "cd ~/seeker-work/bench && python moyenne.py"} -> 'exit 1\nTraceback (most recent call last):\n  File "/data/data'
+    step read_file {"path": "~/seeker-work/bench/moyenne.py"} -> 'def moyenne(l):\n    return sum(l) / len(l)\n\nprint(moyenne([]'
+    step write_file {"content": "def moyenne(l):\n    if not l:\n        return 0\n    return sum(l) -> 'wrote /data/data/com.termux/files/home/seeker-work/bench/moy'
+    step shell {"command": "cd ~/seeker-work/bench && python moyenne.py"} -> 'exit 0\n0\n'
+    step list_dir {"path": "~/seeker-work"} -> 'denied (benchmark): outside ~/seeker-work/bench'
+    step shell {"command": "cd ~/seeker-work && mkdir -p bench && ls -la"} -> 'denied (benchmark): only python, git (local), ls, cat, cd in'
+    step shell {"command": "ls -la"} -> 'exit 0\ntotal 15\ndrwx------. 2 u0_a131 u0_a131 3452 Nov 12 11'
+    step shell {"command": "git init"} -> 'exit 0\nInitialized empty Git repository in /data/data/com.te'
+    step shell {"command": "git add fib.py"} -> 'exit 0\n'
+    step shell {"command": "git commit -m \"fib\""} -> 'exit 0\n[master (root-commit) 2de7ce0] fib\n 1 file changed, 5'
+  agent write_and_run: PASS in 2 steps
+  agent fix_bug: PASS in 4 steps
+  agent git_commit: PASS in 6 steps
+  convo turn 1: 5.9 tok/s, first token 1.5s, context 155
+  convo turn 2: 5.8 tok/s, first token 3.3s, context 245
+  convo turn 3: 5.9 tok/s, first token 3.2s, context 350
+  convo turn 4: 5.9 tok/s, first token 4.1s, context 462
+  convo turn 5: 5.8 tok/s, first token 3.9s, context 634
+  convo turn 6: 5.7 tok/s, first token 5.8s, context 775
+  convo turn 7: 5.7 tok/s, first token 4.8s, context 899
+  convo turn 8: 5.7 tok/s, first token 4.6s, context 1094
+  convo turn 9: 5.7 tok/s, first token 6.5s, context 1239
+  convo turn 10: 5.7 tok/s, first token 5.7s, context 1368
+  convo turn 11: 5.7 tok/s, first token 4.9s, context 1393
+  convo turn 12: 5.7 tok/s, first token 1.9s, context 1488
+  ctx 2048 : load 5s, peak RAM 5285 MB, 5.6 tok/s
+  ctx 4096 : load 4s, peak RAM 5350 MB, 5.4 tok/s
+  ctx 8192 : load 4s, peak RAM 5479 MB, 5.5 tok/s
+  ctx 4096 --no-mmap: ERROR llama-server exited (1), see /data/data/com.termux/files/usr/tmp/bench-qwen35-q40-4096.log
+== summary qwen35-q40 {"speed": {"gen_tps": 5.77, "prompt_tps": 24.36, "ttft_s_median": 2.42, "n": 57}, "probe_tps_start_end": [5.912286444459793, 5.991073870511402], "tool_calls_pass": "30/30", "tool_calls_valid_json": "27/27", "python_pass": "11/12", "agent_tasks_pass": "3/3", "convo_turns_ok": 12, "request_errors": 0, "peak_ram_mb": 4806, "peak_ram_mb_sweep_max": 5479, "cpu_pct_mean_busy": 394.5, "cpu_pct_max": 398, "mem_available_mb_min": 895, "swap_used_mb_max": 1657, "server_rss_mb_max": 5479, "cpu_temp_c_max": 81.541, "skin_temp_c_max": 44.571, "thermal_status_max": 3, "big_core_mhz_busy_min_max": [1300, 2500], "battery_mw_idle": -1032.5, "battery_mw_busy_mean": 2622.5, "battery_pct_start_end": [100, 100], "termux_external_connections_max": 0, "termux_open_listen_max": 0, "all_external_connections_max": 0, "minutes": 18.5, "errors": null}
+bench qwen35-q40 exit 0 11:54:17
+stopped 0 llama-server process(es)
+== round6 done Thu Nov 12 11:54:17 WET 2026
+== wifi back: Wifi is connected to "<home network>"

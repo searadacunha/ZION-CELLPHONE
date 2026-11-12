@@ -1,0 +1,14 @@
+#!/data/data/com.termux/files/usr/bin/bash
+# Inside Termux: install Shizuku's `rish` (taken from the verified Shizuku 13.6.0 APK) into ~/bin.
+# rish = an Android shell with ADB-level rights (uid 2000 "shell"), NOT root. It works only while Shizuku runs:
+# after each reboot, start Shizuku again (from the Mac: adb shell sh /sdcard/Android/data/moe.shizuku.privileged.api/start.sh,
+# or on the phone with Wireless debugging). The first call shows a Shizuku prompt: allow Termux.
+set -euo pipefail
+SRC=$(cd "$(dirname "$0")" && pwd)/shizuku
+[ -f "$SRC/rish" ] && [ -f "$SRC/rish_shizuku.dex" ] || { echo "Put rish and rish_shizuku.dex in $SRC first: Shizuku app > Use Shizuku in terminal apps > Export files"; exit 1; }
+mkdir -p ~/bin
+sed 's/RISH_APPLICATION_ID="PKG"/RISH_APPLICATION_ID="com.termux"/' "$SRC/rish" > ~/bin/rish
+cp "$SRC/rish_shizuku.dex" ~/bin/rish_shizuku.dex
+chmod 700 ~/bin/rish && chmod 400 ~/bin/rish_shizuku.dex   # Android 14+ refuses a writable dex
+grep -q 'HOME/bin' ~/.bashrc 2>/dev/null || echo 'export PATH="$HOME/bin:$PATH"' >> ~/.bashrc
+if out=$(~/bin/rish -c id 2>&1); then echo "rish OK: $out"; else echo "rish installed; Shizuku not reachable yet: $out"; fi

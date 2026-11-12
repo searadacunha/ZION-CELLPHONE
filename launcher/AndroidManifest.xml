@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="zero.seeker.launcher" android:versionCode="6" android:versionName="1.4.1">
+  <uses-sdk android:minSdkVersion="31" android:targetSdkVersion="35"/>
+  <!-- lets the "ai" entry start seeker-ai inside Termux (needs allow-external-apps=true in Termux) -->
+  <uses-permission android:name="com.termux.permission.RUN_COMMAND"/>
+  <!-- only for the "ai agent" status: plain HTTP to llama-server on 127.0.0.1:8080, nothing else -->
+  <uses-permission android:name="android.permission.INTERNET"/>
+  <!-- black wallpaper on the home and lock screens -->
+  <uses-permission android:name="android.permission.SET_WALLPAPER"/>
+  <!-- reading the current wallpaper to back it up first: Android 14+ allows it only with all-files access, which
+       SEEKER-ZERO grants for that moment and takes back (appops, restore/journal.tsv) -->
+  <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>
+  <queries>
+    <intent>
+      <action android:name="android.intent.action.MAIN"/>
+      <category android:name="android.intent.category.LAUNCHER"/>
+    </intent>
+  </queries>
+  <application android:label="Seeker Zero" android:theme="@android:style/Theme.DeviceDefault.NoActionBar"
+      android:usesCleartextTraffic="true">
+    <activity android:name=".Main" android:exported="true" android:launchMode="singleTask"
+        android:stateNotNeeded="true" android:excludeFromRecents="true" android:windowSoftInputMode="adjustResize">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN"/>
+        <category android:name="android.intent.category.HOME"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+        <category android:name="android.intent.category.LAUNCHER"/>
+      </intent-filter>
+    </activity>
+  </application>
+</manifest>

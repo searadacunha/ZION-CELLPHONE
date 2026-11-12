@@ -1,0 +1,7 @@
+backups/apk/
+*.gguf
+apk-manager/cache/
+launcher/build/
+__pycache__/
+backups/wallpaper/
+.serial
