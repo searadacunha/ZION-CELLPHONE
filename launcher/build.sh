@@ -1,5 +1,5 @@
 #!/bin/bash
-# Build the SEEKER ZERO launcher without Gradle: aapt2 + javac + d8 + zipalign + apksigner (debug key).
+# Build the ZION launcher without Gradle: aapt2 + javac + d8 + zipalign + apksigner (debug key).
 # Output: launcher/build/seeker-zero-launcher.apk
 set -euo pipefail
 cd "$(dirname "$0")"
