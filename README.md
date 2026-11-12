@@ -182,7 +182,7 @@ From Termux, after installation:
 | `ai --chat` | Talk to the model without tools |
 | `ai "your task"` | Run a single task |
 | `ai -f file "question"` | Ask about a file |
-| `command \\| ai "question"` | Pipe terminal output to the model |
+| `command \| ai "question"` | Pipe terminal output to the model |
 | `ai --start` | Load the local model |
 | `ai --stop` | Stop it and release roughly 3.5 GB RAM |
 | `ai --status` | Inspect agent/model status |
