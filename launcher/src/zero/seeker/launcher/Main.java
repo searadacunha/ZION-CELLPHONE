@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-/** SEEKER ZERO home screen: black, monospace, one menu, no feeds. */
+/** ZION home screen: black, monospace, one menu, no feeds. */
 public class Main extends Activity {
     static final int FG = 0xFFE6E6E6, DIM = 0xFF808080, BG = 0xFF000000;
     static final String TERMUX = "com.termux", AI = "/data/data/com.termux/files/usr/bin/seeker-ai";
@@ -134,7 +134,7 @@ public class Main extends Activity {
 
     void showHome() {
         atHome = true;
-        menu("SEEKER ZERO", Arrays.asList(
+        menu("ZION", Arrays.asList(
             new Item("terminal", () -> launch(TERMUX), () -> details(TERMUX)),
             new Item("ai", this::showAiAgent, null),
             new Item("applications", this::showApps, null),
