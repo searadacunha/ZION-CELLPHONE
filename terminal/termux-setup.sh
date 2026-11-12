@@ -25,6 +25,7 @@ grep -q 'alias ai=' ~/.bashrc 2>/dev/null || printf 'alias ai=seeker-ai\nalias d
 mkdir -p "$HOME/.config/zion" "$HOME/.termux"
 touch "$HOME/.config/zion/ai-autostart.enabled"
 for rc in "$HOME/.bashrc" "$HOME/.zshrc"; do
+  if [ -f "$rc" ] && [ ! -f "$rc.zion-backup" ]; then cp "$rc" "$rc.zion-backup"; fi
   if ! grep -q '^# >>> ZION AI AUTOSTART >>>
 bash "$PREFIX/bin/install-model" unsloth/Qwen3.5-4B-GGUF Qwen3.5-4B-Q4_0.gguf    # fallback
 
