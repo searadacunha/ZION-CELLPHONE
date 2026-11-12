@@ -1,16 +1,16 @@
-# MATRIX PHONE
+# ZION-CELLPHONE
 
-> ## IN THE MATRIX, THE WAY OUT WAS A PAYPHONE.
+> ## IN THE MATRIX, THE ONLY WAY OUT WAS A PAYPHONE.
 >
 > A ringing public telephone. A hardline. One last connection to the real world.
 >
-> **They took the payphones away.**
+> **They took every last one.**
 >
-> # SO I BUILT ANOTHER EXIT.
+> # THIS IS THE NEW WAY OUT.
 >
-> **And this one fits in my pocket.**
+> **ZION-CELLPHONE. THE LAST HARDLINE.**
 
-**MATRIX PHONE** is a Solana Seeker rebuilt around a simple idea: **the most powerful thing your phone can do is belong to you.**
+**ZION-CELLPHONE** is a Solana Seeker rebuilt around a simple idea: **the most powerful thing your phone can do is belong to you.**
 
 An AI that thinks and works **on the device**. A real Linux command-line environment. Android system controls. A stripped-down, terminal-first home screen. Privacy changes you can audit and reverse. And a hardware wallet left alone.
 
@@ -40,7 +40,7 @@ These are results from the tested device and specific test procedures—not clai
 
 Most AI products make your phone a remote control for someone else's computer.
 
-**Matrix Phone puts the model on your phone.**
+**ZION-CELLPHONE puts the model on your phone.**
 
 The default is **HauhauCS Qwen3.5-4B Uncensored Q4_K_M**, running through **llama.cpp**, compiled for the Seeker's CPU. A standard **Qwen3.5-4B Q4_0** build is available as a fallback.
 
@@ -48,7 +48,9 @@ Turn off Wi-Fi. Start the model. Keep working.
 
 The project is more than a local chat interface: the agent can use tools, inspect errors, revise its own code, and carry a task through to completion—subject to explicit permissions.
 
-### AN AGENT, NOT JUST AN ANSWER BOX
+### OPERATOR: AN AGENT, NOT JUST AN ANSWER BOX
+
+**OPERATOR** is the local AI agent, launched from the terminal with `ai`. It is a project identity, not a separate cloud service.
 
 It can:
 
@@ -90,7 +92,7 @@ No infinite feed. No attention economy. No unnecessary decoration.
 The custom launcher replaces the usual app grid with a black, monospace command-center aesthetic:
 
 ```text
-MATRIX PHONE
+ZION
 ─────────────────────────────────
 > terminal
 > ai
@@ -100,7 +102,7 @@ MATRIX PHONE
 > system
 > seed-vault
 ─────────────────────────────────
-LOCAL FIRST  /  USER CONTROL
+ZION  /  OPERATOR  /  USER CONTROL
 ```
 
 The launcher is written in **Java** and built **without Gradle**. A black wallpaper option covers the home and lock screens, with the previous wallpaper backed up.
@@ -118,13 +120,13 @@ The documented configuration:
 - Journals changes so they can be reversed with a restore script.
 - Checks Android and Seed Vault health after modifications.
 
-**Important:** Google Play Services, the services framework, and the Play Store remain for security updates and wallet-related functionality. Google may still observe activity. Matrix Phone does **not** claim to make the device untraceable.
+**Important:** Google Play Services, the services framework, and the Play Store remain for security updates and wallet-related functionality. Google may still observe activity. ZION-CELLPHONE does **not** claim to make the device untraceable.
 
 See [`debloat/PLAN.md`](debloat/PLAN.md) for the actual trade-offs.
 
 ### THE WALLET IS NOT AN EXPERIMENT
 
-The Solana Seeker includes a **Seed Vault**. Matrix Phone does not flash a new OS, unlock the bootloader, or deliberately modify wallet components.
+The Solana Seeker includes a **Seed Vault**. ZION-CELLPHONE does not flash a new OS, unlock the bootloader, or deliberately modify wallet components.
 
 Before and after changes, scripts check the wallet's package baseline, signatures, secure-hardware services, and verified boot state. Additional manual checks are documented in [`tests/SEEDVAULT_MANUAL.md`](tests/SEEDVAULT_MANUAL.md).
 
@@ -284,7 +286,7 @@ bash tests/seedvault_check.sh
 
 The tests are provided for inspection and reproduction. They do not establish comprehensive security or general reliability on every device.
 
-## WHAT MATRIX PHONE IS NOT
+## WHAT ZION-CELLPHONE IS NOT
 
 **Not a new operating system.** Android remains installed. Termux supplies the Linux command-line environment.
 
@@ -327,8 +329,8 @@ Use the security and network tools only on devices and systems you own or have p
 
 > **They removed the payphones.**
 >
-> **We still need a way out.**
+> **We built our own hardline.**
 >
-> # MATRIX PHONE
+> # ZION-CELLPHONE
 >
-> *The exit is in your pocket.*
+> *The last hardline. The new way out.*
