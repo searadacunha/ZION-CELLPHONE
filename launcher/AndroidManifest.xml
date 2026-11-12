@@ -17,7 +17,7 @@
       <category android:name="android.intent.category.LAUNCHER"/>
     </intent>
   </queries>
-  <application android:label="Seeker Zero" android:theme="@android:style/Theme.DeviceDefault.NoActionBar"
+  <application android:label="ZION" android:theme="@android:style/Theme.DeviceDefault.NoActionBar"
       android:usesCleartextTraffic="true">
     <activity android:name=".Main" android:exported="true" android:launchMode="singleTask"
         android:stateNotNeeded="true" android:excludeFromRecents="true" android:windowSoftInputMode="adjustResize">
