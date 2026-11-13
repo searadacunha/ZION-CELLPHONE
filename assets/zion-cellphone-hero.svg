@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="460" viewBox="0 0 1240 460" role="img" aria-labelledby="title desc">
+<title id="title">ZION-CELLPHONE — The Last Hardline</title>
+<desc id="desc">A dark terminal-inspired banner with a luminous green smartphone, on-device AI and terminal-first architecture.</desc>
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#061512"/><stop offset="0.52" stop-color="#02090a"/><stop offset="1" stop-color="#020507"/></linearGradient>
+  <linearGradient id="phone" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b4ff65"/><stop offset="1" stop-color="#42dfbb"/></linearGradient>
+  <linearGradient id="line" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#b6ff55"/><stop offset="1" stop-color="#55dcc9" stop-opacity="0"/></linearGradient>
+  <pattern id="grid" width="36" height="36" patternUnits="userSpaceOnUse"><path d="M 36 0 L 0 0 0 36" fill="none" stroke="#70ff97" stroke-opacity="0.045" stroke-width="1"/></pattern>
+  <filter id="glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="8"/></filter>
+</defs>
+<rect width="1240" height="460" rx="20" fill="url(#bg)"/>
+<rect width="1240" height="460" rx="20" fill="url(#grid)"/>
+<text x="20" y="40" font-family="monospace" font-size="11" fill="#71ebaa" opacity="0.12" transform="rotate(90 20 40)">01001 00110 01101 10010 10101</text>
+<text x="114" y="76" font-family="monospace" font-size="11" fill="#71ebaa" opacity="0.12" transform="rotate(90 114 76)">01001 00110 01101 10010 10101</text>
+<text x="208" y="112" font-family="monospace" font-size="11" fill="#71ebaa" opacity="0.12" transform="rotate(90 208 112)">01001 00110 01101 10010 10101</text>
+<text x="302" y="148" font-family="monospace" font-size="11" fill="#71ebaa" opacity="0.12" transform="rotate(90 302 148)">01001 00110 01101 10010 10101</text>
+<text x="396" y="40" font-family="monospace" font-size="11" fill="#71ebaa" opacity="0.12" transform="rotate(90 396 40)">01001 00110 01101 10010 10101</text>
+<text x="490" y="76" font-family="monospace" font-size="11" fill="#71ebaa" opacity="0.12" transform="rotate(90 490 76)">01001 00110 01101 10010 10101</text>
+<text x="584" y="112" font-family="monospace" font-size="11" fill="#71ebaa" opacity="0.12" transform="rotate(90 584 112)">01001 00110 01101 10010 10101</text>
+<text x="678" y="148" font-family="monospace" font-size="11" fill="#71ebaa" opacity="0.12" transform="rotate(90 678 148)">01001 00110 01101 10010 10101</text>
+<text x="772" y="40" font-family="monospace" font-size="11" fill="#71ebaa" opacity="0.12" transform="rotate(90 772 40)">01001 00110 01101 10010 10101</text>
+<text x="866" y="76" font-family="monospace" font-size="11" fill="#71ebaa" opacity="0.12" transform="rotate(90 866 76)">01001 00110 01101 10010 10101</text>
+<text x="960" y="112" font-family="monospace" font-size="11" fill="#71ebaa" opacity="0.12" transform="rotate(90 960 112)">01001 00110 01101 10010 10101</text>
+<text x="1054" y="148" font-family="monospace" font-size="11" fill="#71ebaa" opacity="0.12" transform="rotate(90 1054 148)">01001 00110 01101 10010 10101</text>
+<text x="1148" y="40" font-family="monospace" font-size="11" fill="#71ebaa" opacity="0.12" transform="rotate(90 1148 40)">01001 00110 01101 10010 10101</text>
+<circle cx="28" cy="32" r="1.3" fill="#70ff97" opacity="0.09"/>
+<circle cx="98" cy="32" r="1.3" fill="#70ff97" opacity="0.14"/>
+<circle cx="168" cy="32" r="1.3" fill="#70ff97" opacity="0.18"/>
+<circle cx="238" cy="32" r="1.3" fill="#70ff97" opacity="0.23"/>
+<circle cx="308" cy="32" r="1.3" fill="#70ff97" opacity="0.09"/>
+<circle cx="378" cy="32" r="1.3" fill="#70ff97" opacity="0.14"/>
+<circle cx="448" cy="32" r="1.3" fill="#70ff97" opacity="0.18"/>
+<circle cx="518" cy="32" r="1.3" fill="#70ff97" opacity="0.23"/>
+<circle cx="588" cy="32" r="1.3" fill="#70ff97" opacity="0.09"/>
+<circle cx="658" cy="32" r="1.3" fill="#70ff97" opacity="0.14"/>
+<circle cx="728" cy="32" r="1.3" fill="#70ff97" opacity="0.18"/>
+<circle cx="798" cy="32" r="1.3" fill="#70ff97" opacity="0.23"/>
+<circle cx="868" cy="32" r="1.3" fill="#70ff97" opacity="0.09"/>
+<circle cx="938" cy="32" r="1.3" fill="#70ff97" opacity="0.14"/>
+<circle cx="1008" cy="32" r="1.3" fill="#70ff97" opacity="0.18"/>
+<circle cx="1078" cy="32" r="1.3" fill="#70ff97" opacity="0.23"/>
+<circle cx="1148" cy="32" r="1.3" fill="#70ff97" opacity="0.09"/>
+<rect x="1" y="1" width="1238" height="458" rx="19" fill="none" stroke="#91ef9f" stroke-opacity="0.25" stroke-width="2"/>
+<path d="M43 75V43H75 M1197 75V43H1165 M43 385V417H75 M1197 385V417H1165" fill="none" stroke="#b3ff6d" stroke-opacity="0.45" stroke-width="2"/>
+<circle cx="239" cy="224" r="181" fill="none" stroke="#87edac" stroke-opacity="0.08"/>
+<circle cx="239" cy="224" r="152" fill="none" stroke="#87edac" stroke-opacity="0.14" stroke-dasharray="5 13"/>
+<circle cx="239" cy="224" r="120" fill="#7afa8a" fill-opacity="0.05" filter="url(#glow)"/>
+<rect x="145" y="66" width="187" height="329" rx="29" fill="#83ff8e" fill-opacity="0.16" filter="url(#glow)"/>
+<rect x="151" y="69" width="175" height="322" rx="27" fill="#05110e" stroke="url(#phone)" stroke-width="3.5"/>
+<rect x="166" y="90" width="145" height="276" rx="15" fill="#03100e" stroke="#75cfa7" stroke-opacity="0.55"/>
+<rect x="214" y="78" width="49" height="4" rx="2" fill="#a3e9a7" fill-opacity="0.55"/>
+<circle cx="239" cy="377" r="4" fill="#b6ff6e" fill-opacity="0.8"/>
+<text x="181" y="126" font-family="monospace" font-size="13" fill="#65ceb4" letter-spacing="2">ZION / 01</text>
+<path d="M182 140 H294" stroke="#93f6ab" stroke-opacity="0.5" stroke-width="1"/>
+<text x="181" y="186" font-family="monospace" font-size="16" fill="#ccffae">&gt; ai</text>
+<text x="181" y="213" font-family="monospace" font-size="12" fill="#77e7c4">[OK] LOCAL</text>
+<text x="181" y="235" font-family="monospace" font-size="12" fill="#77e7c4">[OK] OFFLINE</text>
+<text x="181" y="257" font-family="monospace" font-size="12" fill="#77e7c4">[OK] TOOLS</text>
+<path d="M181 282 H293" stroke="#78cbb1" stroke-opacity="0.35" stroke-width="1"/>
+<text x="181" y="310" font-family="monospace" font-size="11" fill="#b6ff68">OPERATOR_</text>
+<text x="473" y="116" font-family="monospace" font-size="17" fill="#68dfb4" letter-spacing="4">THE NEW WAY OUT</text>
+<text x="469" y="189" font-family="monospace" font-size="62" font-weight="700" fill="#eaffdf" letter-spacing="-3">ZION-CELLPHONE</text>
+<text x="474" y="241" font-family="monospace" font-size="33" font-weight="700" fill="#baff73" letter-spacing="2">THE LAST HARDLINE.</text>
+<path d="M475 277 H1178" stroke="url(#line)" stroke-width="2"/>
+<text x="475" y="315" font-family="monospace" font-size="17" fill="#b9d3c6">YOUR PHONE. YOUR TERMINAL. YOUR AI.</text>
+<text x="475" y="346" font-family="monospace" font-size="15" fill="#79c6b2">ON-DEVICE AI  /  ROOTLESS LINUX  /  ANDROID</text>
+<rect x="473" y="381" width="221" height="31" rx="6" fill="#b6ff68" fill-opacity="0.08" stroke="#b6ff68" stroke-opacity="0.38"/>
+<text x="488" y="402" font-family="monospace" font-size="13" fill="#b6ff68">NO CLOUD REQUIRED</text>
+<rect x="707" y="381" width="211" height="31" rx="6" fill="#5ad9be" fill-opacity="0.07" stroke="#5ad9be" stroke-opacity="0.35"/>
+<text x="724" y="402" font-family="monospace" font-size="13" fill="#85e5d0">TERMINAL FIRST</text>
+<text x="1161" y="436" font-family="monospace" font-size="11" text-anchor="end" fill="#6d9c8d">SOLANA SEEKER / ZION</text>
+</svg>
