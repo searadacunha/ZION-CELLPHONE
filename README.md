@@ -10,6 +10,10 @@
 >
 > **ZION-CELLPHONE. THE LAST HARDLINE.**
 
+<p align="center">
+  <img src="assets/zion-cellphone-hero.svg" alt="ZION-CELLPHONE — The Last Hardline: on-device AI and terminal-first Android" width="100%" />
+</p>
+
 **ZION-CELLPHONE** is a Solana Seeker rebuilt around a simple idea: **the most powerful thing your phone can do is belong to you.**
 
 An AI that thinks and works **on the device**. A real Linux command-line environment. Android system controls. A stripped-down, terminal-first home screen. Privacy changes you can audit and reverse. And a hardware wallet left alone.
