@@ -74,5 +74,18 @@ vendor and every new app or destination.
 
 ## 8. Before and after
 
-The "after" capture (same 20 minutes, same conditions, AdGuard DNS) is **not done yet**; the comparison will be added
-here. The capture folders stay off the public repository: they describe one person's phone and network.
+"After" capture of 13/11/2026 from 07:30, the same 20 minutes, phone on Wi-Fi with AdGuard DNS, plugged into a
+computer, screen on and not used (the local model server was loaded and idle; it listens on 127.0.0.1 only). One
+window each, at different times of day: an indication, not a controlled comparison.
+
+| Vendor group | Bytes before | Bytes after | Destinations before | Destinations after |
+|---|---:|---:|---:|---:|
+| Android system | 2,885,015 | 394,415 | 5 | 2 |
+| Google | 257,301 | 24,431 | 7 | 2 |
+| Other apps | 62,843 | 29,852 | 7 | 3 |
+| Solana Mobile | 41,420 | 0 | 3 | 0 |
+| Total | 3,246,579 | 448,698 | 22 | 7 |
+
+New destinations in the "after" window: AdGuard DNS (`dns.adguard-dns.com`, the new Private DNS), one Google front
+end for Play Services, and two new addresses of the social app already seen in the baseline. The capture folders stay
+off the public repository: they describe one person's phone and network.

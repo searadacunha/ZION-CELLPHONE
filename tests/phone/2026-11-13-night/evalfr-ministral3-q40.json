@@ -1,0 +1,207 @@
+{
+ "label": "ministral3-q40",
+ "model": "Ministral-3-3B-Instruct-2512-Q4_0.gguf",
+ "started": "2026-11-12 23:54:26",
+ "system_sha256": "f34d3a67dbc0a0ebcb676eeac874a1671e73b745868a55f4d799c0d248a1061f",
+ "items": [
+  {
+   "id": "capitale",
+   "pass": true,
+   "french": true,
+   "answer": "Canberra.",
+   "wall_s": 2.0,
+   "gen_tps": 7.9650810845254405
+  },
+  {
+   "id": "bastille",
+   "pass": true,
+   "french": true,
+   "answer": "La **prise de la Bastille** a eu lieu le **14 juillet 1789**.",
+   "wall_s": 3.3,
+   "gen_tps": 7.943316493502367
+  },
+  {
+   "id": "multiplication",
+   "pass": false,
+   "french": true,
+   "answer": "411",
+   "wall_s": 1.0,
+   "gen_tps": 7.9638758591031085
+  },
+  {
+   "id": "horaire",
+   "pass": true,
+   "french": true,
+   "answer": "Le train arrive à **17 h 15**.",
+   "wall_s": 2.3,
+   "gen_tps": 7.940930068199354
+  },
+  {
+   "id": "chimie",
+   "pass": true,
+   "french": true,
+   "answer": "Au **Zion Zéro**, le symbole de l'or est **Au**.\n\n*(Solana Seeker, bien sûr.)* 🔥⚡",
+   "wall_s": 4.5,
+   "gen_tps": 7.9464844008027935
+  },
+  {
+   "id": "puces",
+   "pass": true,
+   "french": true,
+   "answer": "- **Économies financières** : Réduction des coûts liés aux transports (carburant, péages, abonnements) et accès à des prix plus accessibles pour les équipements.\n- **Santé et bien-être** : Renforcement musculaire, amélioration de la santé cardiovasculaire et réduction du stress grâce à l’exercice régulier.\n- **Environnement** : Zéro émission directe, contribution à la lutte contre le réchauffement climatique et réduction de la pollution urbaine.",
+   "wall_s": 14.1,
+   "gen_tps": 7.893884539985006
+  },
+  {
+   "id": "oui_non",
+   "pass": true,
+   "french": true,
+   "answer": "Non.",
+   "wall_s": 0.7,
+   "gen_tps": 7.954816641476414
+  },
+  {
+   "id": "json",
+   "pass": true,
+   "french": true,
+   "answer": "```json\n{\"ville\": \"Tokyo\", \"pays\": \"Japon\"}\n```",
+   "wall_s": 3.3,
+   "gen_tps": 7.771071151495738
+  },
+  {
+   "id": "traduction",
+   "pass": false,
+   "french": true,
+   "answer": "La réunion est reportée jusqu'à demain (lundi suivant).",
+   "wall_s": 2.0,
+   "gen_tps": 7.930059316843689
+  },
+  {
+   "id": "conjugaison",
+   "pass": true,
+   "french": true,
+   "answer": "Nous irons.",
+   "wall_s": 1.1,
+   "gen_tps": 7.955512772575757
+  },
+  {
+   "id": "accord",
+   "pass": true,
+   "french": true,
+   "answer": "La phrase correcte est :\n*« Ils se sont **échangé** des mots hier. »*\n*(ou *« Ils ont échangé des mots hier » si le contexte est clair.)*\n\nSi tu veux une version plus naturelle :\n*« Ils se sont **parlé** hier. »* (si c'est un dialogue oral).\nMais *« se sont parlés »* est correct aussi, mais moins courant.",
+   "wall_s": 11.2,
+   "gen_tps": 7.8932850957354415
+  },
+  {
+   "id": "seed_phrase",
+   "pass": true,
+   "french": true,
+   "answer": "Sur **ZION ZERO**, la **phrase de récupération (seed phrase)** est un ensemble de **12 mots** généré lors de la création de ton portefeuille Solana.\n\n**Ne jamais la partager** :\n- C’est le seul moyen de **récupérer tes fonds** en cas de perte d’accès.\n- Si quelqu’un la connaît, il peut **voler tes fonds** (même si tu ne lui donnes pas ton **private key**).\n\n**À faire** :\n- Conserver la phrase **sécrètement** (hors écran, hors vue).\n- La sauvegarder **physiquement** (ex. : dans un coffre, un endroit sûr).\n\n⚠️ **Risque** : Si quelqu’un la connaît, même sans ton mot de passe, il peut **accéder à ton portefeuille**.",
+   "wall_s": 25.1,
+   "gen_tps": 7.533828545957844
+  },
+  {
+   "id": "fleuve",
+   "pass": true,
+   "french": true,
+   "answer": "Le plus long fleuve de France est la **loire** (environ **1 000 km**).",
+   "wall_s": 3.2,
+   "gen_tps": 7.9250749009635815
+  },
+  {
+   "id": "minutes",
+   "pass": false,
+   "french": true,
+   "answer": "Trois heures et demie = **195 minutes**.",
+   "wall_s": 1.9,
+   "gen_tps": 7.935253620624781
+  },
+  {
+   "id": "auteur",
+   "pass": true,
+   "french": true,
+   "answer": "Victor Hugo.",
+   "wall_s": 0.7,
+   "gen_tps": 7.937977932421347
+  },
+  {
+   "id": "pommes",
+   "pass": true,
+   "french": true,
+   "answer": "Tu en as maintenant **7**.",
+   "wall_s": 1.8,
+   "gen_tps": 7.890248892265413
+  },
+  {
+   "id": "court",
+   "pass": true,
+   "french": true,
+   "answer": "La lumière du soleil est dispersée par l'atmosphère → **rayons bleus dominent** (effet Rayleigh).",
+   "wall_s": 3.5,
+   "gen_tps": 7.922519031475218
+  },
+  {
+   "id": "linux",
+   "pass": true,
+   "french": true,
+   "answer": "Sur **ZION ZERO**, utilise :\n\n```bash\nls\n```\n\nPour voir les fichiers du dossier actuel.\nSi tu veux filtrer ou afficher des détails (permis, taille, etc.), ajoute :\n```bash\nls -lh\n```",
+   "wall_s": 7.1,
+   "gen_tps": 7.905701980094934
+  },
+  {
+   "id": "lettres",
+   "pass": true,
+   "french": true,
+   "answer": "Un mille deux cent quarante-cinq.",
+   "wall_s": 1.5,
+   "gen_tps": 7.948520837047374
+  },
+  {
+   "id": "pluriel",
+   "pass": true,
+   "french": true,
+   "answer": "Sur **Zion Zero**, le pluriel de **\"cheval\"** est :\n**« chevaux »** *(ou parfois \"chevaux\" selon la langue, mais ici, c'est la forme correcte en français standard).* 🐎",
+   "wall_s": 6.6,
+   "gen_tps": 7.884452041259995
+  },
+  {
+   "id": "resume",
+   "pass": true,
+   "french": true,
+   "answer": "Le **Seed Vault** stocke vos clés privées dans un espace isolé du téléphone, hors de l'OS Android, et les protège strictement sans les partager avec les apps.",
+   "wall_s": 6.0,
+   "gen_tps": 7.894477954366678
+  },
+  {
+   "id": "racine",
+   "pass": true,
+   "french": true,
+   "answer": "La racine carrée de **144** est **12**.",
+   "wall_s": 2.6,
+   "gen_tps": 7.927369441179909
+  },
+  {
+   "id": "jour",
+   "pass": false,
+   "french": true,
+   "answer": "Si c'est **lundi**, dans **10 jours**, ce sera **mercredi**.",
+   "wall_s": 2.9,
+   "gen_tps": 7.813139315264695
+  },
+  {
+   "id": "chmod",
+   "pass": true,
+   "french": true,
+   "answer": "La commande **`chmod 700 fichier`** donne **l'accès complet (lecture, écriture, exécution) uniquement au propriétaire** du fichier et **rien aux autres utilisateurs**.",
+   "wall_s": 5.8,
+   "gen_tps": 7.91981526465194
+  }
+ ],
+ "summary": {
+  "pass": 20,
+  "french": 24,
+  "n": 24,
+  "pass_and_french": 20,
+  "gen_tps_mean": 7.9
+ }
+}

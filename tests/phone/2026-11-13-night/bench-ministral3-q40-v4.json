@@ -1,0 +1,1644 @@
+{
+ "label": "ministral3-q40-v4",
+ "model": "Ministral-3-3B-Instruct-2512-Q4_0.gguf",
+ "ctx": 4096,
+ "server": "/data/data/com.termux/files/home/llama.cpp/build-static/bin/llama-server",
+ "threads": 4,
+ "server_args": [
+  "--cache-ram",
+  "0",
+  "--load-mode",
+  "none"
+ ],
+ "started": "2026-11-13 00:01:26",
+ "errors": {},
+ "network": "Wifi is enabled | Active default network: 100",
+ "power_start": [
+  [
+   "AC powered",
+   "false"
+  ],
+  [
+   "USB powered",
+   "true"
+  ],
+  [
+   "Wireless powered",
+   "false"
+  ],
+  [
+   "Max charging current",
+   "500000"
+  ],
+  [
+   "level",
+   "25"
+  ],
+  [
+   "level",
+   "3"
+  ]
+ ],
+ "file_read_s": 1.0,
+ "samples": {
+  "t": [
+   3,
+   14,
+   24,
+   34,
+   45,
+   55,
+   65,
+   76,
+   86,
+   96,
+   107,
+   117,
+   127,
+   139,
+   149,
+   159,
+   171,
+   181,
+   191,
+   202,
+   212,
+   222,
+   234,
+   244,
+   254,
+   265,
+   275,
+   285,
+   297,
+   307,
+   317,
+   329,
+   339,
+   349,
+   361,
+   371
+  ],
+  "cpu_pct": [
+   null,
+   null,
+   null,
+   null,
+   null,
+   395,
+   396,
+   395,
+   395,
+   397,
+   394,
+   393,
+   393,
+   392,
+   393,
+   394,
+   392,
+   394,
+   395,
+   392,
+   399,
+   390,
+   398,
+   395,
+   396,
+   395,
+   395,
+   393,
+   398,
+   395,
+   395,
+   395,
+   397,
+   399,
+   397,
+   396
+  ],
+  "mem_available_mb": [
+   5453,
+   5534,
+   5534,
+   5619,
+   2808,
+   2807,
+   2807,
+   2795,
+   2792,
+   2795,
+   2784,
+   2784,
+   2784,
+   2783,
+   2779,
+   2777,
+   2782,
+   2782,
+   2783,
+   2776,
+   2773,
+   2782,
+   2789,
+   2782,
+   2783,
+   2781,
+   2779,
+   2785,
+   2777,
+   2777,
+   2777,
+   2775,
+   2775,
+   2775,
+   2773,
+   2770
+  ],
+  "swap_used_mb": [
+   1559,
+   1559,
+   1559,
+   1559,
+   1559,
+   1559,
+   1559,
+   1559,
+   1549,
+   1561,
+   1561,
+   1561,
+   1561,
+   1561,
+   1561,
+   1561,
+   1561,
+   1561,
+   1561,
+   1561,
+   1561,
+   1561,
+   1561,
+   1561,
+   1561,
+   1561,
+   1561,
+   1561,
+   1561,
+   1561,
+   1561,
+   1561,
+   1561,
+   1561,
+   1561,
+   1561
+  ],
+  "server_rss_mb": [
+   null,
+   null,
+   null,
+   null,
+   2823,
+   2824,
+   2824,
+   2825,
+   2825,
+   2826,
+   2828,
+   2827,
+   2828,
+   2828,
+   2828,
+   2828,
+   2828,
+   2828,
+   2828,
+   2829,
+   2829,
+   2828,
+   2829,
+   2829,
+   2829,
+   2829,
+   2829,
+   2828,
+   2829,
+   2829,
+   2829,
+   2829,
+   2829,
+   2829,
+   2829,
+   2829
+  ],
+  "cpu_c": [
+   39.546,
+   null,
+   null,
+   37.996,
+   null,
+   null,
+   64.426,
+   null,
+   null,
+   64.227,
+   null,
+   null,
+   65.679,
+   null,
+   null,
+   66.374,
+   null,
+   null,
+   69.439,
+   null,
+   null,
+   69.48,
+   null,
+   null,
+   67.887,
+   null,
+   null,
+   69.895,
+   null,
+   null,
+   69.362,
+   null,
+   null,
+   69.324,
+   null,
+   null
+  ],
+  "skin_c": [
+   32.084,
+   null,
+   null,
+   32.259,
+   null,
+   null,
+   32.991,
+   null,
+   null,
+   34.316,
+   null,
+   null,
+   35.57,
+   null,
+   null,
+   36.222,
+   null,
+   null,
+   37.124,
+   null,
+   null,
+   37.516,
+   null,
+   null,
+   37.859,
+   null,
+   null,
+   38.481,
+   null,
+   null,
+   38.806,
+   null,
+   null,
+   39.401,
+   null,
+   null
+  ],
+  "battery_c": [
+   32.0,
+   null,
+   null,
+   32.0,
+   null,
+   null,
+   32.0,
+   null,
+   null,
+   32.0,
+   null,
+   null,
+   33.0,
+   null,
+   null,
+   33.0,
+   null,
+   null,
+   34.0,
+   null,
+   null,
+   34.0,
+   null,
+   null,
+   34.0,
+   null,
+   null,
+   35.0,
+   null,
+   null,
+   35.0,
+   null,
+   null,
+   36.0,
+   null,
+   null
+  ],
+  "thermal_status": [
+   0,
+   null,
+   null,
+   0,
+   null,
+   null,
+   0,
+   null,
+   null,
+   0,
+   null,
+   null,
+   0,
+   null,
+   null,
+   0,
+   null,
+   null,
+   0,
+   null,
+   null,
+   0,
+   null,
+   null,
+   0,
+   null,
+   null,
+   0,
+   null,
+   null,
+   0,
+   null,
+   null,
+   1,
+   null,
+   null
+  ],
+  "big_mhz": [
+   1300,
+   null,
+   null,
+   1500,
+   null,
+   null,
+   2500,
+   null,
+   null,
+   2500,
+   null,
+   null,
+   2500,
+   null,
+   null,
+   2500,
+   null,
+   null,
+   2500,
+   null,
+   null,
+   2500,
+   null,
+   null,
+   2500,
+   null,
+   null,
+   2500,
+   null,
+   null,
+   2500,
+   null,
+   null,
+   2500,
+   null,
+   null
+  ],
+  "battery_mw": [
+   -1341,
+   null,
+   null,
+   -1120,
+   null,
+   null,
+   1941,
+   null,
+   null,
+   2004,
+   null,
+   null,
+   2274,
+   null,
+   null,
+   2131,
+   null,
+   null,
+   1591,
+   null,
+   null,
+   1992,
+   null,
+   null,
+   2173,
+   null,
+   null,
+   2240,
+   null,
+   null,
+   2190,
+   null,
+   null,
+   1998,
+   null,
+   null
+  ],
+  "charge_uah": [
+   736500,
+   null,
+   null,
+   736500,
+   null,
+   null,
+   736500,
+   null,
+   null,
+   707040,
+   null,
+   null,
+   707040,
+   null,
+   null,
+   707040,
+   null,
+   null,
+   707040,
+   null,
+   null,
+   707040,
+   null,
+   null,
+   707040,
+   null,
+   null,
+   707040,
+   null,
+   null,
+   707040,
+   null,
+   null,
+   677580,
+   null,
+   null
+  ],
+  "battery_pct": [
+   25,
+   null,
+   null,
+   25,
+   null,
+   null,
+   25,
+   null,
+   null,
+   24,
+   null,
+   null,
+   24,
+   null,
+   null,
+   24,
+   null,
+   null,
+   24,
+   null,
+   null,
+   24,
+   null,
+   null,
+   24,
+   null,
+   null,
+   24,
+   null,
+   null,
+   24,
+   null,
+   null,
+   23,
+   null,
+   null
+  ],
+  "all_ext_conn": [
+   1,
+   null,
+   null,
+   1,
+   null,
+   null,
+   1,
+   null,
+   null,
+   2,
+   null,
+   null,
+   1,
+   null,
+   null,
+   1,
+   null,
+   null,
+   1,
+   null,
+   null,
+   1,
+   null,
+   null,
+   1,
+   null,
+   null,
+   1,
+   null,
+   null,
+   1,
+   null,
+   null,
+   1,
+   null,
+   null
+  ],
+  "termux_ext_conn": [
+   0,
+   null,
+   null,
+   0,
+   null,
+   null,
+   0,
+   null,
+   null,
+   0,
+   null,
+   null,
+   0,
+   null,
+   null,
+   0,
+   null,
+   null,
+   0,
+   null,
+   null,
+   0,
+   null,
+   null,
+   0,
+   null,
+   null,
+   0,
+   null,
+   null,
+   0,
+   null,
+   null,
+   0,
+   null,
+   null
+  ],
+  "termux_open_listen": [
+   0,
+   null,
+   null,
+   0,
+   null,
+   null,
+   0,
+   null,
+   null,
+   0,
+   null,
+   null,
+   0,
+   null,
+   null,
+   0,
+   null,
+   null,
+   0,
+   null,
+   null,
+   0,
+   null,
+   null,
+   0,
+   null,
+   null,
+   0,
+   null,
+   null,
+   0,
+   null,
+   null,
+   0,
+   null,
+   null
+  ]
+ },
+ "timeline": [
+  [
+   75,
+   6.47,
+   4
+  ],
+  [
+   95,
+   7.64,
+   64
+  ],
+  [
+   98,
+   5.44,
+   11
+  ],
+  [
+   101,
+   6.71,
+   14
+  ],
+  [
+   104,
+   6.71,
+   17
+  ],
+  [
+   109,
+   6.63,
+   29
+  ],
+  [
+   112,
+   6.69,
+   12
+  ],
+  [
+   115,
+   6.69,
+   15
+  ],
+  [
+   117,
+   6.7,
+   12
+  ],
+  [
+   120,
+   6.67,
+   17
+  ],
+  [
+   123,
+   6.67,
+   12
+  ],
+  [
+   126,
+   6.69,
+   15
+  ],
+  [
+   129,
+   5.43,
+   11
+  ],
+  [
+   131,
+   6.71,
+   10
+  ],
+  [
+   134,
+   6.69,
+   14
+  ],
+  [
+   136,
+   6.71,
+   9
+  ],
+  [
+   142,
+   6.68,
+   31
+  ],
+  [
+   144,
+   6.67,
+   11
+  ],
+  [
+   147,
+   6.69,
+   14
+  ],
+  [
+   150,
+   6.64,
+   16
+  ],
+  [
+   155,
+   6.66,
+   27
+  ],
+  [
+   157,
+   6.67,
+   12
+  ],
+  [
+   161,
+   5.62,
+   15
+  ],
+  [
+   164,
+   6.68,
+   15
+  ],
+  [
+   167,
+   6.67,
+   17
+  ],
+  [
+   170,
+   6.69,
+   12
+  ],
+  [
+   173,
+   6.69,
+   15
+  ],
+  [
+   176,
+   6.69,
+   16
+  ],
+  [
+   178,
+   6.65,
+   10
+  ],
+  [
+   186,
+   6.66,
+   46
+  ],
+  [
+   188,
+   6.71,
+   10
+  ],
+  [
+   192,
+   5.95,
+   18
+  ],
+  [
+   200,
+   8.16,
+   52
+  ],
+  [
+   215,
+   8.1,
+   105
+  ],
+  [
+   222,
+   8.12,
+   48
+  ],
+  [
+   235,
+   8.13,
+   91
+  ],
+  [
+   250,
+   8.12,
+   118
+  ],
+  [
+   259,
+   7.87,
+   67
+  ],
+  [
+   266,
+   8.15,
+   47
+  ],
+  [
+   278,
+   8.1,
+   81
+  ],
+  [
+   285,
+   8.17,
+   50
+  ],
+  [
+   298,
+   8.14,
+   91
+  ],
+  [
+   312,
+   8.12,
+   110
+  ],
+  [
+   322,
+   7.89,
+   69
+  ],
+  [
+   334,
+   8.15,
+   100
+  ],
+  [
+   351,
+   7.98,
+   124
+  ],
+  [
+   363,
+   8.15,
+   98
+  ],
+  [
+   372,
+   7.64,
+   64
+  ]
+ ],
+ "idle": {
+  "battery_mw": [
+   -1341,
+   -1120
+  ],
+  "skin_c": [
+   32.084,
+   32.259
+  ],
+  "mem_available_mb": 5619
+ },
+ "load_s": 4.065009117126465,
+ "rss_after_load_mb": 2743,
+ "server_memory_log": [],
+ "cold_start": {
+  "ttft": 32.10313391685486,
+  "wall": 32.56684422492981,
+  "prompt_n": 1317,
+  "prompt_tps": 41.09137955274233,
+  "gen_tps": 6.466910972192283
+ },
+ "probe_tps": [
+  7.644606839083696,
+  7.636135015109246
+ ],
+ "tools": [
+  {
+   "prompt": "Quel est le niveau de batterie du téléphone ?",
+   "seed": 1,
+   "tool": "android",
+   "args": {
+    "action": "battery"
+   },
+   "valid_json": true,
+   "pass": true,
+   "text": "",
+   "ttft": 1.1596853733062744,
+   "gen_tps": 5.436853931851211,
+   "prompt_tps": 13.761158579463121,
+   "prompt_n": 10,
+   "gen_n": 11
+  },
+  {
+   "prompt": "Liste les fichiers du dossier ~/seeker-work.",
+   "seed": 1,
+   "tool": "list_dir",
+   "args": {
+    "path": "~/seeker-work"
+   },
+   "valid_json": true,
+   "pass": true,
+   "text": "",
+   "ttft": 1.1907281875610352,
+   "gen_tps": 6.709718976323982,
+   "prompt_tps": 17.21170395869191,
+   "prompt_n": 12,
+   "gen_n": 14
+  },
+  {
+   "prompt": "Lis le fichier ~/seeker-work/notes.txt.",
+   "seed": 1,
+   "tool": "read_file",
+   "args": {
+    "path": "~/seeker-work/notes.txt"
+   },
+   "valid_json": true,
+   "pass": true,
+   "text": "",
+   "ttft": 1.2712013721466064,
+   "gen_tps": 6.709127054512915,
+   "prompt_tps": 16.124710995564463,
+   "prompt_n": 13,
+   "gen_n": 17
+  },
+  {
+   "prompt": "Crée le fichier ~/seeker-work/hello.py qui affiche Bonjour.",
+   "seed": 1,
+   "tool": "write_file",
+   "args": {
+    "path": "~/seeker-work/hello.py",
+    "content": "print(\"Bonjour\")"
+   },
+   "valid_json": true,
+   "pass": true,
+   "text": "",
+   "ttft": 1.6814041137695312,
+   "gen_tps": 6.625396754786021,
+   "prompt_tps": 15.210744870176292,
+   "prompt_n": 18,
+   "gen_n": 29
+  },
+  {
+   "prompt": "Exécute la commande git --version.",
+   "seed": 1,
+   "tool": "shell",
+   "args": {
+    "command": "git --version"
+   },
+   "valid_json": true,
+   "pass": true,
+   "text": "",
+   "ttft": 0.9880375862121582,
+   "gen_tps": 6.6881335486507005,
+   "prompt_tps": 14.891300948724783,
+   "prompt_n": 10,
+   "gen_n": 12
+  },
+  {
+   "prompt": "Calcule 2 puissance 100 en exécutant du Python.",
+   "seed": 1,
+   "tool": "python",
+   "args": {
+    "code": "2 ** 100"
+   },
+   "valid_json": true,
+   "pass": true,
+   "text": "",
+   "ttft": 1.236401081085205,
+   "gen_tps": 6.6932260249839,
+   "prompt_tps": 17.393081467019456,
+   "prompt_n": 16,
+   "gen_n": 15
+  },
+  {
+   "prompt": "Retiens que je préfère les réponses courtes.",
+   "seed": 1,
+   "tool": null,
+   "args": {},
+   "valid_json": null,
+   "pass": false,
+   "text": "D'accord !  Je suis prêt. 😊",
+   "ttft": 0.8780267238616943,
+   "gen_tps": 6.699718611818304,
+   "prompt_tps": 15.72983405025077,
+   "prompt_n": 13,
+   "gen_n": 12
+  },
+  {
+   "prompt": "Envoie une notification sur le téléphone qui dit : test.",
+   "seed": 1,
+   "tool": "android",
+   "args": {
+    "action": "toast",
+    "text": "test"
+   },
+   "valid_json": true,
+   "pass": false,
+   "text": "",
+   "ttft": 1.1888964176177979,
+   "gen_tps": 6.666097270858114,
+   "prompt_tps": 15.475619352142958,
+   "prompt_n": 13,
+   "gen_n": 17
+  },
+  {
+   "prompt": "À quel réseau Wi-Fi le téléphone est-il connecté ?",
+   "seed": 1,
+   "tool": "android",
+   "args": {
+    "action": "wifi_info"
+   },
+   "valid_json": true,
+   "pass": true,
+   "text": "",
+   "ttft": 1.1644210815429688,
+   "gen_tps": 6.669900557846228,
+   "prompt_tps": 15.925556598203107,
+   "prompt_n": 13,
+   "gen_n": 12
+  },
+  {
+   "prompt": "Quelle est la version d'Android ? Utilise getprop avec l'outil system.",
+   "seed": 1,
+   "tool": "system",
+   "args": {
+    "command": "getprop ro.build.version.release"
+   },
+   "valid_json": true,
+   "pass": true,
+   "text": "",
+   "ttft": 1.5195040702819824,
+   "gen_tps": 6.685877421123362,
+   "prompt_tps": 17.075730008802537,
+   "prompt_n": 20,
+   "gen_n": 15
+  },
+  {
+   "prompt": "Quels périphériques USB sont branchés ?",
+   "seed": 1,
+   "tool": "system",
+   "args": {
+    "command": "lsusb"
+   },
+   "valid_json": true,
+   "pass": true,
+   "text": "",
+   "ttft": 0.9324722290039062,
+   "gen_tps": 5.431564996822535,
+   "prompt_tps": 15.3927195856964,
+   "prompt_n": 9,
+   "gen_n": 11
+  },
+  {
+   "prompt": "Liste les applications installées par l'utilisateur.",
+   "seed": 1,
+   "tool": "android",
+   "args": {
+    "action": "apps"
+   },
+   "valid_json": true,
+   "pass": true,
+   "text": "",
+   "ttft": 1.158792495727539,
+   "gen_tps": 6.705888664365801,
+   "prompt_tps": 13.349109553714998,
+   "prompt_n": 11,
+   "gen_n": 10
+  },
+  {
+   "prompt": "Télécharge la page https://example.com et donne son titre.",
+   "seed": 1,
+   "tool": "fetch_url",
+   "args": {
+    "url": "https://example.com"
+   },
+   "valid_json": true,
+   "pass": true,
+   "text": "",
+   "ttft": 1.421308994293213,
+   "gen_tps": 6.687442320809984,
+   "prompt_tps": 17.298400654744466,
+   "prompt_n": 16,
+   "gen_n": 14
+  },
+  {
+   "prompt": "Quelle est la capitale de l'Italie ?",
+   "seed": 1,
+   "tool": null,
+   "args": {},
+   "valid_json": null,
+   "pass": true,
+   "text": "Rome est la capitale de l'Italie.",
+   "ttft": 0.757911205291748,
+   "gen_tps": 6.712800387328583,
+   "prompt_tps": 14.07742867318827,
+   "prompt_n": 10,
+   "gen_n": 9
+  },
+  {
+   "prompt": "Écris une fonction Python qui additionne deux nombres. Montre seulement le code.",
+   "seed": 1,
+   "tool": "write_file",
+   "args": {
+    "path": "addition.py",
+    "content": "def addition(a, b):\n    return a + b"
+   },
+   "valid_json": true,
+   "pass": true,
+   "text": "",
+   "ttft": 1.783707618713379,
+   "gen_tps": 6.679214684654237,
+   "prompt_tps": 14.765125705617585,
+   "prompt_n": 19,
+   "gen_n": 31
+  },
+  {
+   "prompt": "Quel est le niveau de batterie du téléphone ?",
+   "seed": 2,
+   "tool": "android",
+   "args": {
+    "action": "battery"
+   },
+   "valid_json": true,
+   "pass": true,
+   "text": "",
+   "ttft": 1.0593814849853516,
+   "gen_tps": 6.66663555570074,
+   "prompt_tps": 14.107595811736957,
+   "prompt_n": 10,
+   "gen_n": 11
+  },
+  {
+   "prompt": "Liste les fichiers du dossier ~/seeker-work.",
+   "seed": 2,
+   "tool": "list_dir",
+   "args": {
+    "path": "~/seeker-work"
+   },
+   "valid_json": true,
+   "pass": true,
+   "text": "",
+   "ttft": 1.195889949798584,
+   "gen_tps": 6.69152137915344,
+   "prompt_tps": 17.204325740968805,
+   "prompt_n": 12,
+   "gen_n": 14
+  },
+  {
+   "prompt": "Lis le fichier ~/seeker-work/notes.txt.",
+   "seed": 2,
+   "tool": "read_file",
+   "args": {
+    "path": "/seeker-work/notes.txt"
+   },
+   "valid_json": true,
+   "pass": true,
+   "text": "",
+   "ttft": 1.3355076313018799,
+   "gen_tps": 6.643608914660185,
+   "prompt_tps": 15.61034653768518,
+   "prompt_n": 13,
+   "gen_n": 16
+  },
+  {
+   "prompt": "Crée le fichier ~/seeker-work/hello.py qui affiche Bonjour.",
+   "seed": 2,
+   "tool": "write_file",
+   "args": {
+    "path": "~/seeker-work/hello.py",
+    "content": "print('Bonjour')"
+   },
+   "valid_json": true,
+   "pass": true,
+   "text": "",
+   "ttft": 1.6172432899475098,
+   "gen_tps": 6.661670413856274,
+   "prompt_tps": 15.63441865151402,
+   "prompt_n": 18,
+   "gen_n": 27
+  },
+  {
+   "prompt": "Exécute la commande git --version.",
+   "seed": 2,
+   "tool": "shell",
+   "args": {
+    "command": "git --version"
+   },
+   "valid_json": true,
+   "pass": true,
+   "text": "",
+   "ttft": 1.0515310764312744,
+   "gen_tps": 6.67329547350368,
+   "prompt_tps": 14.227584440713656,
+   "prompt_n": 10,
+   "gen_n": 12
+  },
+  {
+   "prompt": "Calcule 2 puissance 100 en exécutant du Python.",
+   "seed": 2,
+   "tool": "python",
+   "args": {
+    "code": "2 ** 100"
+   },
+   "valid_json": true,
+   "pass": true,
+   "text": "",
+   "ttft": 1.3212363719940186,
+   "gen_tps": 5.616318775835066,
+   "prompt_tps": 16.473531667790642,
+   "prompt_n": 16,
+   "gen_n": 15
+  },
+  {
+   "prompt": "Retiens que je préfère les réponses courtes.",
+   "seed": 2,
+   "tool": null,
+   "args": {},
+   "valid_json": null,
+   "pass": false,
+   "text": "D'accord, je suis prêt. Que puis-je faire pour toi ?",
+   "ttft": 0.8428525924682617,
+   "gen_tps": 6.676118142494111,
+   "prompt_tps": 15.738441627935975,
+   "prompt_n": 13,
+   "gen_n": 15
+  },
+  {
+   "prompt": "Envoie une notification sur le téléphone qui dit : test.",
+   "seed": 2,
+   "tool": "android",
+   "args": {
+    "action": "toast",
+    "text": "test"
+   },
+   "valid_json": true,
+   "pass": false,
+   "text": "",
+   "ttft": 1.1859228610992432,
+   "gen_tps": 6.670744159033877,
+   "prompt_tps": 15.559750038600148,
+   "prompt_n": 13,
+   "gen_n": 17
+  },
+  {
+   "prompt": "À quel réseau Wi-Fi le téléphone est-il connecté ?",
+   "seed": 2,
+   "tool": "android",
+   "args": {
+    "action": "wifi_info"
+   },
+   "valid_json": true,
+   "pass": true,
+   "text": "",
+   "ttft": 1.1754214763641357,
+   "gen_tps": 6.689504228678878,
+   "prompt_tps": 15.707862751945058,
+   "prompt_n": 13,
+   "gen_n": 12
+  },
+  {
+   "prompt": "Quelle est la version d'Android ? Utilise getprop avec l'outil system.",
+   "seed": 2,
+   "tool": "system",
+   "args": {
+    "command": "getprop ro.build.version.release"
+   },
+   "valid_json": true,
+   "pass": true,
+   "text": "",
+   "ttft": 1.5719313621520996,
+   "gen_tps": 6.689170948930569,
+   "prompt_tps": 16.36876871666398,
+   "prompt_n": 20,
+   "gen_n": 15
+  },
+  {
+   "prompt": "Quels périphériques USB sont branchés ?",
+   "seed": 2,
+   "tool": "system",
+   "args": {
+    "command": "ls /dev/bus/usb"
+   },
+   "valid_json": true,
+   "pass": true,
+   "text": "",
+   "ttft": 0.9117567539215088,
+   "gen_tps": 6.689368898180669,
+   "prompt_tps": 15.083461822082189,
+   "prompt_n": 9,
+   "gen_n": 16
+  },
+  {
+   "prompt": "Liste les applications installées par l'utilisateur.",
+   "seed": 2,
+   "tool": "android",
+   "args": {
+    "action": "apps"
+   },
+   "valid_json": true,
+   "pass": true,
+   "text": "",
+   "ttft": 1.1550838947296143,
+   "gen_tps": 6.6518699515078685,
+   "prompt_tps": 13.709095486342626,
+   "prompt_n": 11,
+   "gen_n": 10
+  },
+  {
+   "prompt": "Télécharge la page https://example.com et donne son titre.",
+   "seed": 2,
+   "tool": null,
+   "args": {},
+   "valid_json": null,
+   "pass": false,
+   "text": "Je ne peux pas accéder à des URLs externes depuis un environnement local ou offline. Utilisez un navigateur ou un outil connecté pour vérifier le titre. Souhaitez-vous vérifier quelque chose sur ce té",
+   "ttft": 0.9809978008270264,
+   "gen_tps": 6.657414340159254,
+   "prompt_tps": 17.205651626417986,
+   "prompt_n": 16,
+   "gen_n": 46
+  },
+  {
+   "prompt": "Quelle est la capitale de l'Italie ?",
+   "seed": 2,
+   "tool": null,
+   "args": {},
+   "valid_json": null,
+   "pass": true,
+   "text": "La capitale de l'Italie est **Rome**.",
+   "ttft": 0.720963716506958,
+   "gen_tps": 6.714724196434034,
+   "prompt_tps": 14.88821924987196,
+   "prompt_n": 10,
+   "gen_n": 10
+  },
+  {
+   "prompt": "Écris une fonction Python qui additionne deux nombres. Montre seulement le code.",
+   "seed": 2,
+   "tool": null,
+   "args": {},
+   "valid_json": null,
+   "pass": true,
+   "text": "```python\ndef additionner(a, b):\n    return a + b\n```",
+   "ttft": 1.3460524082183838,
+   "gen_tps": 5.953929891424835,
+   "prompt_tps": 14.660414642822143,
+   "prompt_n": 19,
+   "gen_n": 18
+  }
+ ],
+ "peak_ram_mb": 2829,
+ "summary": {
+  "speed": {
+   "gen_tps": 7.06,
+   "prompt_tps": 29.19,
+   "ttft_s_median": 1.18,
+   "n": 45
+  },
+  "probe_tps_start_end": [
+   7.644606839083696,
+   7.636135015109246
+  ],
+  "tool_calls_pass": "25/30",
+  "tool_calls_valid_json": "24/24",
+  "python_pass": "11/12",
+  "agent_tasks_pass": null,
+  "convo_turns_ok": 0,
+  "request_errors": 0,
+  "peak_ram_mb": 2829,
+  "peak_ram_mb_sweep_max": null,
+  "cpu_pct_mean_busy": 394.9,
+  "cpu_pct_max": 399,
+  "mem_available_mb_min": 2770,
+  "swap_used_mb_max": 1561,
+  "server_rss_mb_max": 2829,
+  "cpu_temp_c_max": 69.895,
+  "skin_temp_c_max": 39.401,
+  "thermal_status_max": 1,
+  "big_core_mhz_busy_min_max": [
+   2500,
+   2500
+  ],
+  "battery_mw_idle": -1230.5,
+  "battery_mw_busy_mean": 2053.4,
+  "battery_pct_start_end": [
+   25,
+   23
+  ],
+  "termux_external_connections_max": 0,
+  "termux_open_listen_max": 0,
+  "all_external_connections_max": 2,
+  "minutes": 6.2,
+  "errors": null
+ },
+ "python": [
+  {
+   "task": "est_palindrome",
+   "seed": 1,
+   "pass": true,
+   "error": "",
+   "code": "import re\n\ndef est_palindrome(s):\n    s_lim = re.sub(r'[^a-zA-Z0-9]', '', s.lower())\n    return s_lim == s_lim[::-1]\n",
+   "ttft": 2.201408863067627,
+   "gen_tps": 8.158660674263713,
+   "prompt_tps": 44.58013555118742,
+   "prompt_n": 97,
+   "gen_n": 52
+  },
+  {
+   "task": "fizzbuzz",
+   "seed": 1,
+   "pass": false,
+   "error": "= 15 and r[0] == '1' and r[2] == 'Fizz' and r[4] == 'Buzz' and r[14] == 'FizzBuzz'\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+   "code": "def fizzbuzz(n):\n    return [\n        str(i) if i % 15 != 0 and i % 3 != 0 and i % 5 != 0\n        else ('Fizz' if i % 3 == 0 else 'Buzz')\n        if i % 15 == 0 or i % 3 == 0\n        else 'FizzBuzz'\n        for i in range(1, n+1)\n    ]\n",
+   "ttft": 1.663945198059082,
+   "gen_tps": 8.103232691183308,
+   "prompt_tps": 42.30953656954278,
+   "prompt_n": 69,
+   "gen_n": 105
+  },
+  {
+   "task": "compte_mots",
+   "seed": 1,
+   "pass": true,
+   "error": "",
+   "code": "import re\n\ndef compte_mots(texte):\n    mots = re.findall(r'\\b\\w+\\b', texte.lower())\n    return {mot: mots.count(mot) for mot in set(mots)}\n",
+   "ttft": 1.2408747673034668,
+   "gen_tps": 8.12301634212624,
+   "prompt_tps": 38.075719362082715,
+   "prompt_n": 46,
+   "gen_n": 48
+  },
+  {
+   "task": "fusionne",
+   "seed": 1,
+   "pass": true,
+   "error": "",
+   "code": "def fusionne(a, b):\n    c = []\n    i = j = 0\n    while i < len(a) and j < len(b):\n        if a[i] < b[j]:\n            c.append(a[i])\n            i += 1\n        else:\n            c.append(b[j])\n            j += 1\n    c.extend(a[i:])\n    c.extend(b[j:])\n    return c\n",
+   "ttft": 1.4100456237792969,
+   "gen_tps": 8.131975088688224,
+   "prompt_tps": 31.218667892180882,
+   "prompt_n": 43,
+   "gen_n": 91
+  },
+  {
+   "task": "premiers",
+   "seed": 1,
+   "pass": true,
+   "error": "",
+   "code": "def premiers(n):\n    if n < 2:\n        return []\n    sieve = [True] * (n + 1)\n    sieve[0] = sieve[1] = False\n    for i in range(2, int(n ** 0.5) + 1):\n        if sieve[i]:\n            sieve[i*i : n+1 : i] = [False] * len(sieve[i*i : n+1 : i])\n    return [i for i, is_prime in enumerate(sieve) if is_prime]\n",
+   "ttft": 0.8495802879333496,
+   "gen_tps": 8.119781912373812,
+   "prompt_tps": 40.329972502291476,
+   "prompt_n": 33,
+   "gen_n": 118
+  },
+  {
+   "task": "moyenne_mobile",
+   "seed": 1,
+   "pass": true,
+   "error": "",
+   "code": "def moyenne_mobile(valeurs, k):\n    moyennes = []\n    for i in range(len(valeurs) - k + 1):\n        fenetre = valeurs[i:i+k]\n        moy = sum(fenetre) / k\n        moyennes.append(moy)\n    return moyennes\n",
+   "ttft": 1.047999620437622,
+   "gen_tps": 7.8678149861848325,
+   "prompt_tps": 37.480298185361775,
+   "prompt_n": 38,
+   "gen_n": 67
+  },
+  {
+   "task": "est_palindrome",
+   "seed": 2,
+   "pass": true,
+   "error": "",
+   "code": "import re\n\ndef est_palindrome(s):\n    s = re.sub(r'[^a-zA-Z0-9]', '', s).lower()\n    return s == s[::-1]\n",
+   "ttft": 1.0940046310424805,
+   "gen_tps": 8.149863950423315,
+   "prompt_tps": 41.46190922668828,
+   "prompt_n": 44,
+   "gen_n": 47
+  },
+  {
+   "task": "fizzbuzz",
+   "seed": 2,
+   "pass": true,
+   "error": "",
+   "code": "def fizzbuzz(n):\n    return [\n        \"FizzBuzz\" if i % 15 == 0 else\n        \"Fizz\" if i % 3 == 0 else\n        \"Buzz\" if i % 5 == 0 else\n        str(i)\n        for i in range(1, n+1)\n    ]\n",
+   "ttft": 1.6649096012115479,
+   "gen_tps": 8.102741957750077,
+   "prompt_tps": 42.26806776122584,
+   "prompt_n": 69,
+   "gen_n": 81
+  },
+  {
+   "task": "compte_mots",
+   "seed": 2,
+   "pass": true,
+   "error": "",
+   "code": "import re\n\ndef compte_mots(texte):\n    mots = re.findall(r\"\\b[\\w'-]+\\b\", texte.lower())\n    return {mot: mots.count(mot) for mot in set(mots)}\n",
+   "ttft": 1.2259273529052734,
+   "gen_tps": 8.168441941381928,
+   "prompt_tps": 38.07149661536119,
+   "prompt_n": 46,
+   "gen_n": 50
+  },
+  {
+   "task": "fusionne",
+   "seed": 2,
+   "pass": true,
+   "error": "",
+   "code": "def fusionne(a, b):\n    res = []\n    i = j = 0\n    while i < len(a) and j < len(b):\n        if a[i] <= b[j]:\n            res.append(a[i])\n            i += 1\n        else:\n            res.append(b[j])\n            j += 1\n    res.extend(a[i:])\n    res.extend(b[j:])\n    return res\n",
+   "ttft": 1.4100854396820068,
+   "gen_tps": 8.143550895835839,
+   "prompt_tps": 31.194480173006035,
+   "prompt_n": 43,
+   "gen_n": 91
+  },
+  {
+   "task": "premiers",
+   "seed": 2,
+   "pass": true,
+   "error": "",
+   "code": "def premiers(n):\n    if n < 2:\n        return []\n    sieve = [True] * (n + 1)\n    sieve[0] = sieve[1] = False\n    for i in range(2, int(n ** 0.5) + 1):\n        if sieve[i]:\n            sieve[i*i::i] = [False] * len(sieve[i*i::i])\n    return [i for i, is_prime in enumerate(sieve) if is_prime]\n",
+   "ttft": 0.8353676795959473,
+   "gen_tps": 8.124681814353256,
+   "prompt_tps": 41.11903587075166,
+   "prompt_n": 33,
+   "gen_n": 110
+  },
+  {
+   "task": "moyenne_mobile",
+   "seed": 2,
+   "pass": true,
+   "error": "",
+   "code": "def moyenne_mobile(valeurs, k):\n    moyennes = []\n    for i in range(len(valeurs) - k + 1):\n        fenêtre = valeurs[i:i+k]\n        moy_mobile = sum(fenêtre) / k\n        moyennes.append(moy_mobile)\n    return moyennes\n",
+   "ttft": 1.0395572185516357,
+   "gen_tps": 7.887674870041857,
+   "prompt_tps": 37.73109051787908,
+   "prompt_n": 38,
+   "gen_n": 69
+  }
+ ],
+ "french": [
+  {
+   "prompt": "Explique en trois phrases ce qu'est une clé privée et pourquoi il ne faut jamais la partager.",
+   "answer": "En crypto, la **clé privée** est un mot de passe unique lié à un portefeuille numérique qui permet de signer et valider les transactions. Sans elle, personne ne peut accéder à tes fonds ou les dépenser sans ton autorisation.\n\nÉchanger cette clé par texto, email ou même en face-à-face expose tes actifs à des pirates ou usurpateurs. Même une erreur de copier-coller peut compromettre tes avoirs solanais ou cryptos.",
+   "cjk_chars": 0,
+   "ttft": 0.6172637939453125,
+   "gen_tps": 8.154063367450265,
+   "prompt_tps": 34.86744559433222,
+   "prompt_n": 21,
+   "gen_n": 100
+  },
+  {
+   "prompt": "Rédige un court e-mail professionnel pour décaler un rendez-vous de mardi à jeudi.",
+   "answer": "Objet : Décalage du rendez-vous prévu le mardi\n\nBonjour [Nom du destinataire],\n\nJe souhaiterais vous informer que, pour des raisons imprévues, je ne pourrai malheureusement pas assister à notre rendez-vous initialement prévu pour **mardi**. Ce dernier sera donc reporté au **jeudi [date si besoin]**.\n\nMerci de bien vouloir confirmer la date et l’heure préférentielle pour vous. N’hésitez pas à me faire savoir si vous avez besoin d’adaptations.\n\nBien cordialement,\n[Votre prénom et nom]",
+   "cjk_chars": 0,
+   "ttft": 0.7614483833312988,
+   "gen_tps": 7.982098813061906,
+   "prompt_tps": 31.26095832506504,
+   "prompt_n": 23,
+   "gen_n": 124
+  },
+  {
+   "prompt": "Résume en deux phrases les avantages et les inconvénients d'un téléphone sans services Google.",
+   "answer": "Téléphones sans Google offrent une **sécurité renforcée** (pas de suivi ou données collectées) et une **indépendance des services cloud** (pas de dépendance aux mises à jour forçées ou publicité ciblée).\n\nInconvénients : moins de fonctionnalités pratiques (recherche instantanée, apps optimisées, intégration avec les services cloud) et **compatibilité réduite** avec certains logiciels ou plateformes.",
+   "cjk_chars": 0,
+   "ttft": 0.6004090309143066,
+   "gen_tps": 8.149637425151461,
+   "prompt_tps": 35.66836572643722,
+   "prompt_n": 21,
+   "gen_n": 98
+  }
+ ],
+ "power_end": [
+  [
+   "AC powered",
+   "false"
+  ],
+  [
+   "USB powered",
+   "true"
+  ],
+  [
+   "Wireless powered",
+   "false"
+  ],
+  [
+   "Max charging current",
+   "500000"
+  ],
+  [
+   "level",
+   "23"
+  ],
+  [
+   "level",
+   "3"
+  ]
+ ],
+ "finished": "2026-11-13 00:07:38"
+}

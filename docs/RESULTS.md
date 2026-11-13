@@ -72,8 +72,25 @@ by `tests/bench_decide.py` with a rule written before the measurements.
 
 The run of 12/11 16:31 measured only the first layout (a script bug, fixed): 4 threads, prompt 512 tokens and
 generation 128 tokens: HauhauCS Q4_K_M 26.13 and 5.61 tokens/s, Qwen3.5-4B Q4_0 33.64 and 5.54 tokens/s
-(`tests/phone/p6-sweep.jsonl`). The full sweep (big cores only, 2-3-4-8 threads, polling) runs in
-`tests/termux-chain.sh`; results will be added here.
+(`tests/phone/p6-sweep.jsonl`).
+
+Full sweep, 12/11 21:47-22:13 (`tests/termux-chain.sh`): prompt 512 tokens and generation 128 tokens, 2 runs each
+(mean ± standard deviation), the phone cooled down to thermal status 0 and CPU under 55 °C before each layout, plugged
+into a computer's USB port (500 mA), battery from 25 % at the start to 22 % soon after the end. "big" = cores 4-7 only
+(`-C 0xF0`/`0x70`/`0x30 --cpu-strict 1`).
+
+| Layout | HauhauCS Q4_K_M, prompt | generation | Qwen3.5-4B Q4_0, prompt | generation |
+|---|---|---|---|---|
+| 4 threads (current) | 24.66 ± 0.19 | 5.23 ± 0.10 | 33.43 ± 0.02 | 5.71 ± 0.02 |
+| 4 big, poll 0 | 25.20 ± 0.03 | 5.40 ± 0.01 | 33.83 ± 0.12 | 5.88 ± 0.00 |
+| 4 big, poll 50 | 25.75 ± 0.06 | 5.49 ± 0.00 | 33.45 ± 0.05 | 5.83 ± 0.02 |
+| 3 big, poll 0 | 19.95 ± 0.03 | 5.59 ± 0.00 | 25.24 ± 0.01 | 5.92 ± 0.00 |
+| 2 big, poll 0 | 14.53 ± 0.03 | 5.14 ± 0.00 | 17.95 ± 0.01 | 5.64 ± 0.01 |
+| 8 threads | 27.40 ± 0.43 | 4.41 ± 0.03 | 35.01 ± 0.03 | 4.83 ± 0.02 |
+
+Tokens per second. Pinning the 4 threads to the big cores gains 2 to 5 % in generation; 3 big cores generate a bit
+faster but read prompts 19 to 25 % slower; 8 threads read fastest and generate slowest. No rule was written before this
+sweep, so the server keeps its 4 threads. Raw: `tests/phone/2026-11-13-night/p6-sweep.jsonl`.
 
 ### Other models
 
@@ -81,14 +98,30 @@ Candidates: Qwen3.5-4B Q4_0, Qwen3-4B-Instruct-2507 Q4_0, Ministral-3-3B-Instruc
 The rule was written before any of them ran: a candidate becomes the default only with at least 2 more correct French
 answers out of 24 (`tests/eval_fr.py`), no more than 1 tool call and 1 Python task lost, no server error, at least
 90 % of the default's generation and prompt speed, and at most 300 MB more memory. It is applied by
-`python3 tests/bench_decide.py --p5 DIR`. Results will be added here.
+`python3 tests/bench_decide.py --p5 DIR`.
+
+Measured 12/11 22:34 to 13/11 00:26, one run per model, the default measured again the same night with the same
+scripts (context 4,096, 4 threads, OPERATOR's prompts); each step started cooled down and with the battery at 25 % or
+more (this MediaTek phone carries low-battery CPU throttling drivers; their threshold could not be read):
+
+| Model | French (eval_fr, of 24) | Tool calls (of 30) | Python (of 12) | Server errors | Generation | Prompt, cold | Server peak |
+|---|---|---|---|---|---|---|---|
+| HauhauCS Qwen3.5-4B Q4_K_M (default) | 21 | 26 | 12 | 0 | 5.94 | 27.5 | 3,898 MB |
+| Qwen3.5-4B Q4_0 | 21 | 27 | 12 | 0 | 5.67 | 32.5 | 3,778 MB |
+| Qwen3-4B-Instruct-2507 Q4_0 | 18 | 26 | 11 | 0 | 5.67 | 33.2 | 3,287 MB |
+| Ministral-3-3B-Instruct-2512 Q4_0 | 20 | 25 | 11 | 0 | 7.06 | 41.1 | 2,829 MB |
+| granite-4.0-micro Q4_0 | 19 | 26 | 12 | 0 | 7.19 | 39.8 | 2,546 MB |
+
+Speeds in tokens per second. **Decision: the default stays.** No candidate reaches the default + 2 in French (the
+first condition); the two fastest, Ministral and Granite, answer worse in French. Raw:
+`tests/phone/2026-11-13-night/` (`evalfr-*.json`, `bench-*-v4.json`, `chain-summary.txt`).
 
 ## 4. Battery and temperature
 
 | Measurement | Result |
 |---|---|
 | Peak CPU / skin temperature during the 12/11 benchmark, default model | 83.5 / 48.5 °C (thermal status 3 reached) |
-| Drain at rest and during inference, unplugged | **not measured yet** |
+| Drain at rest and during inference, unplugged | **not measured** (the test needs the phone unplugged by hand; it was skipped on 13/11) |
 
 `tests/bench_power.py` measures, unplugged: 20 minutes at rest (screen off), then 8 minutes of continuous generation
 for each thread layout, with energy per token from the battery's charge counter, current, temperatures, thermal
@@ -101,5 +134,10 @@ current reads **positive while charging**, checked against the charge counter on
   Settings > Wi-Fi is opened (then it connects in 4 to 6 s). Cause not found.
 - Android killed Termux once for lack of memory during a benchmark with a 4B model; benchmarks run with
   `--cache-ram 0`.
+- On 12/11 at 21:08, OPERATOR was opened twice during the speed sweep: the first session started loading a second
+  model, Android closed Termux and the measurements with it; the second could not bind the server's port and gave the shell
+  back, where the next sentence ran as a command. Since then, a long job writes `~/.cache/seeker-ai/busy` and OPERATOR
+  pauses while that job lives (every line gets the job's message; the job's own steps still start and stop their
+  servers), and a second session waits for the first one's server instead of starting another.
 - `rish` mixes its standard output and error at random; the tools read both.
 - On this phone `llama-server` shows up as `linker64` in the process list.

@@ -4,10 +4,13 @@
 #   1 battery test (tests/bench_power.py) as soon as the battery is >= 70 %: a notification (and a buzz) asks to unplug,
 #     another one to plug back in; if nobody unplugs within 2 h it is tried again at the very end
 #   2 speed sweep (llama-bench)   3 model downloads   4 French eval + quick agent bench, every model (cooled down first)
-# Heavy steps wait while the battery is under 15 %. A finished step leaves $D/chain-done/<step>, so a re-run skips it.
+# Heavy steps wait while the battery is under 25 % (CHAIN_MIN_PCT). A finished step leaves $D/chain-done/<step>, so a re-run skips it.
 # Everything goes to $D: chain.log, chain-summary.txt and each step's own files.
 D=${CHAIN_DIR:-/sdcard/Download/seeker-zero}; LOG=$D/chain.log; RISH=${RISH:-$HOME/bin/rish}
 NAP=${CHAIN_NAP:-300}; RETRY=${CHAIN_RETRY_S:-60}  # dry runs (tests/test_chain_dry.sh) set them to 0
+# battery floor of the heavy steps: MediaTek's battery-percentage throttling (bp-thl, present on this phone) caps the
+# CPU at low charge, usually from 15 %: a model measured there would look slower than one measured earlier
+MIN=${CHAIN_MIN_PCT:-25}
 mkdir -p "$D/chain-done"
 exec >> "$LOG" 2>&1 </dev/null  # termux-api, rish and llama-bench read stdin: nothing here may give them a list to eat
 MODELS='hauhau-q4km HauhauCS/Qwen3.5-4B-Uncensored-HauhauCS-Aggressive Qwen3.5-4B-Uncensored-HauhauCS-Aggressive-Q4_K_M.gguf
@@ -60,13 +63,16 @@ battery_test() {  # $1: minutes to wait for 70 %, $2: hours to wait for the unpl
   notify "Test batterie fini : rebranche le téléphone au chargeur."
   wait_plugged 60; }
 
-trap 'termux-wake-unlock; [ -f "$D/chain-done/all" ] || notify "Mesures ZION ZERO arrêtées avant la fin : voir chain.log."' EXIT
+# OPERATOR loads no model while this file names a live chain (12/11 21:08: a 2nd model got Termux closed, the chain with it)
+BUSY=${SEEKER_AI_BUSY:-$HOME/.cache/seeker-ai/busy}
+mkdir -p "${BUSY%/*}" && printf '%s\n%s\n' "$$" "Mesures ZION ZERO en cours : l'IA est en pause jusqu'à la notification « Mesures ZION ZERO finies ». Deux modèles ne tiennent pas en mémoire, Android fermerait Termux et arrêterait les mesures." > "$BUSY"
+trap 'rm -f "$BUSY"; termux-wake-unlock; [ -f "$D/chain-done/all" ] || notify "Mesures ZION ZERO arrêtées avant la fin : voir chain.log."' EXIT
 termux-wake-lock
 step "start, battery $(pct)"
 battery_test "${CHAIN_BATTERY_WAIT_MIN:-120}" 2  # 0: do not wait for 70 % now, keep the test for the end
 
 step "speed sweep"
-if ! done_ sweep; then guard 15; cool 300; bash "$D/tests/termux-p6-sweep.sh" && mark sweep || note "sweep: FAILED rc=$?"; fi
+if ! done_ sweep; then guard "$MIN"; cool 300; bash "$D/tests/termux-p6-sweep.sh" && mark sweep || note "sweep: FAILED rc=$?"; fi
 
 step "model downloads"
 while read -r -u 3 label repo file; do
@@ -77,10 +83,10 @@ while read -r -u 3 label repo file; do
   done_ "model-$label" && continue
   [ -f "$HOME/models/$file" ] || { note "model-$label: MISSING $file"; continue; }
   ok=1
-  guard 15; cool 600; step "$label: eval_fr, battery $(pct)"
+  guard "$MIN"; cool 600; step "$label: eval_fr, battery $(pct)"
   if seeker-ai --model "$file" --start >/dev/null 2>&1; then python3 "$D/tests/eval_fr.py" --label "$label" || ok=0; else ok=0; fi
   seeker-ai --stop >/dev/null 2>&1
-  guard 15; cool 600; step "$label: bench_agent --quick, battery $(pct)"
+  guard "$MIN"; cool 600; step "$label: bench_agent --quick, battery $(pct)"
   python3 "$D/tests/bench_agent.py" "$HOME/models/$file" --label "$label-v4" --quick > "$D/bench-$label-v4.out" 2>&1 || ok=0
   tail -25 "$D/bench-$label-v4.out"
   [ $ok = 1 ] && mark "model-$label" || note "model-$label: FAILED (see chain.log and bench-$label-v4.out)"

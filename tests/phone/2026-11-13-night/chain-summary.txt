@@ -1,0 +1,8 @@
+2026-11-12 20:47:54 battery: postponed (under 70 %)
+2026-11-12 21:32:27 battery: postponed (under 70 %)
+2026-11-12 22:13:48 sweep: OK
+2026-11-12 22:51:33 model-hauhau-q4km: OK
+2026-11-12 23:18:29 model-qwen35-q40: OK
+2026-11-12 23:44:17 model-qwen3-2507-q40: OK
+2026-11-13 00:07:39 model-ministral3-q40: OK
+2026-11-13 00:26:17 model-granite4micro-q40: OK

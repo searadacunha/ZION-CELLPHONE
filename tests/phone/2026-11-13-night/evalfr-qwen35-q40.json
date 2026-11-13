@@ -1,0 +1,207 @@
+{
+ "label": "qwen35-q40",
+ "model": "Qwen3.5-4B-Q4_0.gguf",
+ "started": "2026-11-12 23:06:46",
+ "system_sha256": "f34d3a67dbc0a0ebcb676eeac874a1671e73b745868a55f4d799c0d248a1061f",
+ "items": [
+  {
+   "id": "capitale",
+   "pass": true,
+   "french": true,
+   "answer": "Canberra",
+   "wall_s": 2.8,
+   "gen_tps": 6.130474897237915
+  },
+  {
+   "id": "bastille",
+   "pass": true,
+   "french": true,
+   "answer": "La prise de la Bastille a eu lieu le 14 juillet 1789.",
+   "wall_s": 4.2,
+   "gen_tps": 6.154541143569135
+  },
+  {
+   "id": "multiplication",
+   "pass": true,
+   "french": true,
+   "answer": "391",
+   "wall_s": 1.5,
+   "gen_tps": 6.1229238185818495
+  },
+  {
+   "id": "horaire",
+   "pass": true,
+   "french": true,
+   "answer": "Le train arrive à 17 h 15.",
+   "wall_s": 3.3,
+   "gen_tps": 6.1556833885805915
+  },
+  {
+   "id": "chimie",
+   "pass": true,
+   "french": true,
+   "answer": "Au",
+   "wall_s": 1.0,
+   "gen_tps": 6.128990739094993
+  },
+  {
+   "id": "puces",
+   "pass": true,
+   "french": true,
+   "answer": "- Économique\n- Écologique\n- Santé",
+   "wall_s": 3.2,
+   "gen_tps": 6.143487289124799
+  },
+  {
+   "id": "oui_non",
+   "pass": true,
+   "french": true,
+   "answer": "Non",
+   "wall_s": 1.2,
+   "gen_tps": 6.126662623069335
+  },
+  {
+   "id": "json",
+   "pass": true,
+   "french": true,
+   "answer": "{\"ville\": \"Tokyo\", \"pays\": \"Japon\"}",
+   "wall_s": 4.0,
+   "gen_tps": 6.153432138309463
+  },
+  {
+   "id": "traduction",
+   "pass": true,
+   "french": true,
+   "answer": "La réunion est reportée au mardi prochain.",
+   "wall_s": 2.6,
+   "gen_tps": 6.154873018130888
+  },
+  {
+   "id": "conjugaison",
+   "pass": true,
+   "french": true,
+   "answer": "Nous irons.",
+   "wall_s": 1.9,
+   "gen_tps": 6.147320536661082
+  },
+  {
+   "id": "accord",
+   "pass": true,
+   "french": true,
+   "answer": "La phrase corrigée est : « Ils se sont parlé hier. »\n\n**Explication :** Le verbe *parler* est un verbe pronominal qui se conjugue avec le participe passé **parlé** (invariable) lorsqu'il est suivi d'un complément d'objet direct (COD). Ici, « hier » est un complément de temps, donc il n'y a pas de COD. La phrase correcte est donc « Ils se sont parlé hier ».",
+   "wall_s": 16.9,
+   "gen_tps": 6.138631791053251
+  },
+  {
+   "id": "seed_phrase",
+   "pass": true,
+   "french": true,
+   "answer": "La phrase de récupération (seed phrase) est une série de 12 à 24 mots qui sert de mot de passe unique pour générer vos clés privées et accéder à vos fonds Solana.\n\n**Non, vous ne devez jamais la donner à quelqu'un.** Si elle est compromise, votre portefeuille sera piraté et vous perdrez tout accès à vos fonds. Gardez-la secrète et sécurisée.",
+   "wall_s": 15.2,
+   "gen_tps": 6.139843532227425
+  },
+  {
+   "id": "fleuve",
+   "pass": false,
+   "french": true,
+   "answer": "Le plus long fleuve de France est la **Seine**, avec une longueur d'environ 770 km.",
+   "wall_s": 4.9,
+   "gen_tps": 6.149615533723851
+  },
+  {
+   "id": "minutes",
+   "pass": true,
+   "french": true,
+   "answer": "Il y a 210 minutes dans trois heures et demie.",
+   "wall_s": 3.5,
+   "gen_tps": 6.151728697281223
+  },
+  {
+   "id": "auteur",
+   "pass": true,
+   "french": true,
+   "answer": "Victor Hugo.",
+   "wall_s": 1.4,
+   "gen_tps": 6.151092357113969
+  },
+  {
+   "id": "pommes",
+   "pass": true,
+   "french": true,
+   "answer": "Tu as maintenant 7 pommes.",
+   "wall_s": 2.6,
+   "gen_tps": 6.157754636349401
+  },
+  {
+   "id": "court",
+   "pass": true,
+   "french": true,
+   "answer": "La diffusion de la lumière bleue par la diffusion Rayleigh.",
+   "wall_s": 3.2,
+   "gen_tps": 6.069935934160806
+  },
+  {
+   "id": "linux",
+   "pass": true,
+   "french": true,
+   "answer": "La commande est `ls` (ou `ls -l` pour une liste détaillée).",
+   "wall_s": 4.0,
+   "gen_tps": 6.152421382578609
+  },
+  {
+   "id": "lettres",
+   "pass": true,
+   "french": true,
+   "answer": "Mille deux cent quarante-cinq.",
+   "wall_s": 2.5,
+   "gen_tps": 6.160876925530744
+  },
+  {
+   "id": "pluriel",
+   "pass": true,
+   "french": true,
+   "answer": "Le pluriel de « cheval » est **chevaux**.",
+   "wall_s": 3.1,
+   "gen_tps": 6.159797465859322
+  },
+  {
+   "id": "resume",
+   "pass": true,
+   "french": true,
+   "answer": "Le Seed Vault sécurise les clés privées dans une zone isolée du téléphone, les protégeant de l'accès d'Android et des applications.",
+   "wall_s": 6.8,
+   "gen_tps": 6.150250622712876
+  },
+  {
+   "id": "racine",
+   "pass": true,
+   "french": true,
+   "answer": "La racine carrée de 144 est 12.",
+   "wall_s": 3.4,
+   "gen_tps": 6.158464686542359
+  },
+  {
+   "id": "jour",
+   "pass": false,
+   "french": true,
+   "answer": "Nous serons un mardi.",
+   "wall_s": 2.0,
+   "gen_tps": 6.157243689338322
+  },
+  {
+   "id": "chmod",
+   "pass": false,
+   "french": true,
+   "answer": "La commande `chmod 700 fichier` rend le fichier totalement privé en lui donnant les droits de lecture, écriture et exécution pour l'utilisateur, mais en retirant tous les accès pour les groupes et les autres utilisateurs.",
+   "wall_s": 8.8,
+   "gen_tps": 6.15506306320464
+  }
+ ],
+ "summary": {
+  "pass": 21,
+  "french": 24,
+  "n": 24,
+  "pass_and_french": 21,
+  "gen_tps_mean": 6.14
+ }
+}

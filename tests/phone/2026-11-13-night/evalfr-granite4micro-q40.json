@@ -1,0 +1,207 @@
+{
+ "label": "granite4micro-q40",
+ "model": "granite-4.0-micro-Q4_0.gguf",
+ "started": "2026-11-13 00:17:47",
+ "system_sha256": "f34d3a67dbc0a0ebcb676eeac874a1671e73b745868a55f4d799c0d248a1061f",
+ "items": [
+  {
+   "id": "capitale",
+   "pass": true,
+   "french": true,
+   "answer": "Canberra.",
+   "wall_s": 2.0,
+   "gen_tps": 8.466516338965448
+  },
+  {
+   "id": "bastille",
+   "pass": true,
+   "french": true,
+   "answer": "La prise de la Bastille a eu lieu en 1789.",
+   "wall_s": 2.2,
+   "gen_tps": 8.499575931872256
+  },
+  {
+   "id": "multiplication",
+   "pass": true,
+   "french": true,
+   "answer": "391",
+   "wall_s": 0.7,
+   "gen_tps": 8.445161344807492
+  },
+  {
+   "id": "horaire",
+   "pass": true,
+   "french": true,
+   "answer": "Le train arrive à 17h15.",
+   "wall_s": 1.9,
+   "gen_tps": 8.47569359425913
+  },
+  {
+   "id": "chimie",
+   "pass": true,
+   "french": true,
+   "answer": "Le symbole chimique de l'or est Au.",
+   "wall_s": 2.0,
+   "gen_tps": 8.506752944045415
+  },
+  {
+   "id": "puces",
+   "pass": true,
+   "french": true,
+   "answer": "- Le vélo est une activité physique excellente pour maintenir un bon état de santé cardiovasculaire.\n- Il permet de réduire le stress et d'améliorer le bien-être général.\n- Le vélo est respectueux de l'environnement, contribuant à la réduction des émissions de carbone.",
+   "wall_s": 9.5,
+   "gen_tps": 8.408808226617381
+  },
+  {
+   "id": "oui_non",
+   "pass": true,
+   "french": true,
+   "answer": "Non.",
+   "wall_s": 0.8,
+   "gen_tps": 8.499101220045981
+  },
+  {
+   "id": "json",
+   "pass": false,
+   "french": true,
+   "answer": "{\"ville\": \"Tokio\", \"pays\": \"Japon\"}",
+   "wall_s": 2.7,
+   "gen_tps": 8.468638655044684
+  },
+  {
+   "id": "traduction",
+   "pass": true,
+   "french": true,
+   "answer": "La réunion est reportée jusqu'au mardi prochain.",
+   "wall_s": 2.2,
+   "gen_tps": 8.503313559080112
+  },
+  {
+   "id": "conjugaison",
+   "pass": false,
+   "french": true,
+   "answer": "Nous allons.",
+   "wall_s": 1.2,
+   "gen_tps": 8.484354849657231
+  },
+  {
+   "id": "accord",
+   "pass": true,
+   "french": true,
+   "answer": "La faute est que le temps passé n'est pas correct. La phrase corrigée est : « Ils se sont parlé hier. »",
+   "wall_s": 4.3,
+   "gen_tps": 8.474316246871442
+  },
+  {
+   "id": "seed_phrase",
+   "pass": true,
+   "french": true,
+   "answer": "La phrase de récupération (seed phrase) d'un portefeuille Solana est une série de mots alphanumériques générés lors de la création du portefeuille. Elle est essentielle pour accéder au portefeuille et récupérer les fonds en cas de perte ou de défaillance du dispositif. Elle ne doit jamais être partagée avec personne, car elle permet l'accès à vos fonds. Donner cette phrase à quelqu'un pourrait entraîner la perte de vos fonds.",
+   "wall_s": 14.7,
+   "gen_tps": 8.408256821216469
+  },
+  {
+   "id": "fleuve",
+   "pass": false,
+   "french": true,
+   "answer": "Le plus long fleuve de France est le Rhône.",
+   "wall_s": 2.1,
+   "gen_tps": 8.512984593462422
+  },
+  {
+   "id": "minutes",
+   "pass": true,
+   "french": true,
+   "answer": "Il y a 210 minutes dans trois heures et demie.",
+   "wall_s": 2.0,
+   "gen_tps": 8.51368148614824
+  },
+  {
+   "id": "auteur",
+   "pass": true,
+   "french": true,
+   "answer": "Victor Hugo a écrit \"Les Misérables\".",
+   "wall_s": 1.7,
+   "gen_tps": 8.508255328101528
+  },
+  {
+   "id": "pommes",
+   "pass": true,
+   "french": true,
+   "answer": "You have 7 apples now.",
+   "wall_s": 1.7,
+   "gen_tps": 8.482802330104617
+  },
+  {
+   "id": "court",
+   "pass": false,
+   "french": true,
+   "answer": "Le ciel est bleu en raison de la diffusion de la lumière du soleil par les molécules de l'atmosphère.",
+   "wall_s": 4.2,
+   "gen_tps": 8.490766291657822
+  },
+  {
+   "id": "linux",
+   "pass": true,
+   "french": true,
+   "answer": "La commande Linux pour afficher la liste des fichiers d'un dossier est `ls`.",
+   "wall_s": 2.6,
+   "gen_tps": 8.50394370389268
+  },
+  {
+   "id": "lettres",
+   "pass": true,
+   "french": true,
+   "answer": "Mille deux cent quarante-cinq.",
+   "wall_s": 1.6,
+   "gen_tps": 8.521863788422953
+  },
+  {
+   "id": "pluriel",
+   "pass": true,
+   "french": true,
+   "answer": "Le pluriel de « cheval » est « chevaux ».",
+   "wall_s": 2.3,
+   "gen_tps": 8.508683111114893
+  },
+  {
+   "id": "resume",
+   "pass": true,
+   "french": true,
+   "answer": "Le Seed Vault stocke les clés privées dans une zone sécurisée isolée du téléphone, inaccessible aux applications.",
+   "wall_s": 4.1,
+   "gen_tps": 8.464805876606832
+  },
+  {
+   "id": "racine",
+   "pass": true,
+   "french": true,
+   "answer": "La racine carrée de 144 est 12.",
+   "wall_s": 1.9,
+   "gen_tps": 8.518280585063906
+  },
+  {
+   "id": "jour",
+   "pass": false,
+   "french": false,
+   "answer": "If today is Monday, in 10 days it will be Thursday.",
+   "wall_s": 2.3,
+   "gen_tps": 8.48783723238304
+  },
+  {
+   "id": "chmod",
+   "pass": true,
+   "french": true,
+   "answer": "La commande « chmod 700 fichier » donne les droits d'accès strictement personnels (lecture, écriture et exécution) uniquement au propriétaire du fichier.",
+   "wall_s": 5.0,
+   "gen_tps": 8.455563840992436
+  }
+ ],
+ "summary": {
+  "pass": 19,
+  "french": 23,
+  "n": 24,
+  "pass_and_french": 19,
+  "gen_tps_mean": 8.48
+ }
+}

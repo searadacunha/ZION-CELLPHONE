@@ -1,0 +1,48 @@
+== hauhau-q4km-v4: Qwen3.5-4B-Uncensored-HauhauCS-Aggressive-Q4_K_M.gguf, ctx 4096, loaded in 6s, network: Wifi is enabled | Active default network: 100
+  cold start (agent prompt + tools, 1508 tokens): first token 55s
+  tool PASS  Quel est le niveau de batterie du téléphone ?           -> android {"action": "battery"}
+  tool PASS  Liste les fichiers du dossier ~/seeker-work.            -> list_dir {"path": "~/seeker-work"}
+  tool PASS  Lis le fichier ~/seeker-work/notes.txt.                 -> read_file {"path": "~/seeker-work/notes.txt"}
+  tool PASS  Crée le fichier ~/seeker-work/hello.py qui affiche Bonj -> write_file {"path": "~/seeker-work/hello.py", "content": "print(\"Bonjour\")\n"}
+  tool FAIL  Exécute la commande git --version.                      -> git {"args": "--version", "repo": "~/seeker-work"}
+  tool PASS  Calcule 2 puissance 100 en exécutant du Python.         -> python {"code": "2 ** 100"}
+  tool FAIL  Retiens que je préfère les réponses courtes.            -> None {}
+  tool PASS  Envoie une notification sur le téléphone qui dit : test -> android {"action": "notify", "text": "test"}
+  tool PASS  À quel réseau Wi-Fi le téléphone est-il connecté ?      -> android {"action": "wifi_info"}
+  tool PASS  Quelle est la version d'Android ? Utilise getprop avec  -> system {"command": "getprop ro.build.version.release"}
+  tool PASS  Quels périphériques USB sont branchés ?                 -> android {"action": "usb_devices"}
+  tool PASS  Liste les applications installées par l'utilisateur.    -> android {"action": "apps"}
+  tool PASS  Télécharge la page https://example.com et donne son tit -> fetch_url {"url": "https://example.com"}
+  tool PASS  Quelle est la capitale de l'Italie ?                    -> None {}
+  tool PASS  Écris une fonction Python qui additionne deux nombres.  -> None {}
+  tool PASS  Quel est le niveau de batterie du téléphone ?           -> android {"action": "battery"}
+  tool PASS  Liste les fichiers du dossier ~/seeker-work.            -> list_dir {"path": "~/seeker-work"}
+  tool PASS  Lis le fichier ~/seeker-work/notes.txt.                 -> read_file {"path": "~/seeker-work/notes.txt"}
+  tool PASS  Crée le fichier ~/seeker-work/hello.py qui affiche Bonj -> write_file {"path": "~/seeker-work/hello.py", "content": "print(\"Bonjour\")\n"}
+  tool FAIL  Exécute la commande git --version.                      -> git {"args": "--version", "repo": "~/seeker-work"}
+  tool PASS  Calcule 2 puissance 100 en exécutant du Python.         -> python {"code": "2 ** 100"}
+  tool PASS  Retiens que je préfère les réponses courtes.            -> remember {"note": "L'utilisateur préfère les réponses courtes."}
+  tool PASS  Envoie une notification sur le téléphone qui dit : test -> android {"action": "notify", "text": "test"}
+  tool PASS  À quel réseau Wi-Fi le téléphone est-il connecté ?      -> android {"action": "wifi_info"}
+  tool PASS  Quelle est la version d'Android ? Utilise getprop avec  -> system {"command": "getprop ro.build.version.release"}
+  tool PASS  Quels périphériques USB sont branchés ?                 -> android {"action": "usb_devices"}
+  tool FAIL  Liste les applications installées par l'utilisateur.    -> android {"action": "app_info"}
+  tool PASS  Télécharge la page https://example.com et donne son tit -> fetch_url {"url": "https://example.com"}
+  tool PASS  Quelle est la capitale de l'Italie ?                    -> None {}
+  tool PASS  Écris une fonction Python qui additionne deux nombres.  -> None {}
+  python PASS  est_palindrome
+  python PASS  fizzbuzz
+  python PASS  compte_mots
+  python PASS  fusionne
+  python PASS  premiers
+  python PASS  moyenne_mobile
+  python PASS  est_palindrome
+  python PASS  fizzbuzz
+  python PASS  compte_mots
+  python PASS  fusionne
+  python PASS  premiers
+  python PASS  moyenne_mobile
+  french 476 chars, 6.0 tok/s: 'Une clé privée est un mot de passe secret de 12 à 24 caractères qui sert à signer toutes v'
+  french 189 chars, 6.2 tok/s: 'Objet : Modification de rendez-vous\n\nBonjour,\n\nJe vous prie de bien vouloir déplacer notre'
+  french 401 chars, 6.0 tok/s: 'Les avantages incluent une meilleure confidentialité des données, une réduction de la dépe'
+== summary hauhau-q4km-v4 {"speed": {"gen_tps": 5.94, "prompt_tps": 21.32, "ttft_s_median": 2.42, "n": 45}, "probe_tps_start_end": [6.198812445286872, 6.187384041793717], "tool_calls_pass": "26/30", "tool_calls_valid_json": "25/25", "python_pass": "12/12", "agent_tasks_pass": null, "convo_turns_ok": 0, "request_errors": 0, "peak_ram_mb": 3898, "peak_ram_mb_sweep_max": null, "cpu_pct_mean_busy": 394.2, "cpu_pct_max": 398, "mem_available_mb_min": 1685, "swap_used_mb_max": 1438, "server_rss_mb_max": 3898, "cpu_temp_c_max": 73.635, "skin_temp_c_max": 41.788, "thermal_status_max": 3, "big_core_mhz_busy_min_max": [2500, 2500], "battery_mw_idle": -1335.0, "battery_mw_busy_mean": 2447.2, "battery_pct_start_end": [25, 23], "termux_external_connections_max": 0, "termux_open_listen_max": 0, "all_external_connections_max": 3, "minutes": 9.3, "errors": null}

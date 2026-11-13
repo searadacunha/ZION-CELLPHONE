@@ -1,0 +1,207 @@
+{
+ "label": "hauhau-q4km",
+ "model": "Qwen3.5-4B-Uncensored-HauhauCS-Aggressive-Q4_K_M.gguf",
+ "started": "2026-11-12 22:34:33",
+ "system_sha256": "f34d3a67dbc0a0ebcb676eeac874a1671e73b745868a55f4d799c0d248a1061f",
+ "items": [
+  {
+   "id": "capitale",
+   "pass": true,
+   "french": true,
+   "answer": "Canberra",
+   "wall_s": 3.6,
+   "gen_tps": 4.94510928691524
+  },
+  {
+   "id": "bastille",
+   "pass": true,
+   "french": true,
+   "answer": "La prise de la Bastille a eu lieu en **1789**.",
+   "wall_s": 4.2,
+   "gen_tps": 5.3691239133396556
+  },
+  {
+   "id": "multiplication",
+   "pass": true,
+   "french": true,
+   "answer": "391",
+   "wall_s": 1.8,
+   "gen_tps": 5.362965505405868
+  },
+  {
+   "id": "horaire",
+   "pass": true,
+   "french": true,
+   "answer": "Le train arrive à **17 h 15**.\n\n*Calcul : 14 h 40 + 2 h 35 = 17 h 15.*",
+   "wall_s": 9.0,
+   "gen_tps": 5.336034005039679
+  },
+  {
+   "id": "chimie",
+   "pass": true,
+   "french": true,
+   "answer": "Au.",
+   "wall_s": 1.5,
+   "gen_tps": 5.341965950309032
+  },
+  {
+   "id": "puces",
+   "pass": true,
+   "french": true,
+   "answer": "- Économique sur le long terme\n- Améliore la santé physique\n- Réduit l'empreinte carbone",
+   "wall_s": 6.3,
+   "gen_tps": 5.373869794574154
+  },
+  {
+   "id": "oui_non",
+   "pass": true,
+   "french": true,
+   "answer": "Non",
+   "wall_s": 1.5,
+   "gen_tps": 5.344878270397392
+  },
+  {
+   "id": "json",
+   "pass": true,
+   "french": true,
+   "answer": "{\"ville\": \"Tokyo\", \"pays\": \"Japon\"}",
+   "wall_s": 4.8,
+   "gen_tps": 5.354305075452867
+  },
+  {
+   "id": "traduction",
+   "pass": true,
+   "french": true,
+   "answer": "La réunion est reportée à mardi prochain.",
+   "wall_s": 3.0,
+   "gen_tps": 5.356017455856002
+  },
+  {
+   "id": "conjugaison",
+   "pass": true,
+   "french": true,
+   "answer": "Nous irons.",
+   "wall_s": 2.3,
+   "gen_tps": 5.359423004519333
+  },
+  {
+   "id": "accord",
+   "pass": true,
+   "french": true,
+   "answer": "La phrase corrigée est : « Ils se sont parlé hier. »",
+   "wall_s": 4.3,
+   "gen_tps": 5.358431204441374
+  },
+  {
+   "id": "seed_phrase",
+   "pass": true,
+   "french": true,
+   "answer": "La **phrase de récupération** (ou seed phrase) est une suite de 12 mots aléatoires qui sert de clé privée unique pour accéder et contrôler vos fonds sur Solana. Elle est la seule chose qui prouve que vous êtes le propriétaire de votre portefeuille.\n\n**Peut-on la donner à quelqu'un ?**\n*   **Oui**, si vous voulez autoriser cette personne à gérer vos actifs, à signer des transactions pour vous ou à récupérer vos fonds en cas d'urgence.\n*   **Non**, si vous voulez garder le contrôle total et éviter que quelqu'un d'autre ne vole vos fonds.\n\n**Conseil de sécurité :** Ne la donnez jamais à personne qui ne vous a pas explicitement autorisé, et ne la stockez jamais sur un support numérique (comme un fichier ou une photo) accessible à tous.",
+   "wall_s": 34.3,
+   "gen_tps": 5.352330703165214
+  },
+  {
+   "id": "fleuve",
+   "pass": false,
+   "french": true,
+   "answer": "Le plus long fleuve de France est la **Seine**.\n\nIl a une longueur d'environ **777,8 km** (mesurée de la source à l'embouchure à Paris).\n\n*Note : Si l'on considère uniquement les fleuves entièrement français, le **Rhône** est souvent cité comme le plus long, avec environ 812 km, bien qu'il traverse aussi l'Italie.*",
+   "wall_s": 17.8,
+   "gen_tps": 5.360352400407965
+  },
+  {
+   "id": "minutes",
+   "pass": true,
+   "french": true,
+   "answer": "Il y a 210 minutes dans trois heures et demie.",
+   "wall_s": 4.1,
+   "gen_tps": 5.377055244940998
+  },
+  {
+   "id": "auteur",
+   "pass": true,
+   "french": true,
+   "answer": "**Victor Hugo** a écrit *Les Misérables*.",
+   "wall_s": 3.3,
+   "gen_tps": 5.369287181694201
+  },
+  {
+   "id": "pommes",
+   "pass": true,
+   "french": true,
+   "answer": "Vous avez maintenant 7 pommes.\n\n(Calculation : 5 - 2 = 3 ; 3 + 4 = 7)",
+   "wall_s": 7.4,
+   "gen_tps": 5.364162246596976
+  },
+  {
+   "id": "court",
+   "pass": true,
+   "french": true,
+   "answer": "La diffusion de la lumière bleue par les molécules d'air.",
+   "wall_s": 4.1,
+   "gen_tps": 5.375945225569287
+  },
+  {
+   "id": "linux",
+   "pass": true,
+   "french": true,
+   "answer": "La commande pour afficher la liste des fichiers d'un dossier est :\n\n**`ls`**\n\nVous pouvez aussi utiliser **`ls -l`** pour obtenir une liste détaillée (incluant les permissions, la taille et la date).",
+   "wall_s": 10.4,
+   "gen_tps": 5.365750479081031
+  },
+  {
+   "id": "lettres",
+   "pass": false,
+   "french": true,
+   "answer": "Onze cent quarante-cinq.",
+   "wall_s": 2.7,
+   "gen_tps": 5.368522206892109
+  },
+  {
+   "id": "pluriel",
+   "pass": true,
+   "french": true,
+   "answer": "Le pluriel de « cheval » est « chevaux ».",
+   "wall_s": 3.3,
+   "gen_tps": 5.376043008344067
+  },
+  {
+   "id": "resume",
+   "pass": true,
+   "french": true,
+   "answer": "Le Seed Vault protège les clés privées dans une zone sécurisée du téléphone, les gardant hors de portée d'Android et invisibles aux applications.",
+   "wall_s": 8.0,
+   "gen_tps": 5.368822520236131
+  },
+  {
+   "id": "racine",
+   "pass": true,
+   "french": true,
+   "answer": "La racine carrée de 144 est **12**.",
+   "wall_s": 4.0,
+   "gen_tps": 5.364175674607673
+  },
+  {
+   "id": "jour",
+   "pass": false,
+   "french": true,
+   "answer": "Nous serons un **mardi**.",
+   "wall_s": 2.8,
+   "gen_tps": 5.361840451735057
+  },
+  {
+   "id": "chmod",
+   "pass": true,
+   "french": true,
+   "answer": "La commande `chmod 700 fichier` supprime tous les droits d'accès (lecture, écriture, exécution) pour l'utilisateur, le groupe et les autres, rendant le fichier strictement privé et accessible uniquement par son propriétaire.",
+   "wall_s": 11.0,
+   "gen_tps": 5.347633394355772
+  }
+ ],
+ "summary": {
+  "pass": 21,
+  "french": 24,
+  "n": 24,
+  "pass_and_french": 21,
+  "gen_tps_mean": 5.34
+ }
+}

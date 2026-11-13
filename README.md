@@ -300,7 +300,7 @@ bash tests/test_chain_dry.sh
 bash tests/test_journal_ops.sh
 ```
 
-The agent test suite covers **48 scenarios**, including approval boundaries, protected folders, quote-based bypass attempts, git reads that reach outside a repository, escape sequences hidden in tool names, a remote model server off the phone, interrupted sessions, command injection through notifications, context handling, and stopping during a task. `terminal/test_zion_shell.py` opens real bash and zsh terminals to check when OPERATOR may start, and that removing the integration gives your shell files back byte for byte.
+The agent test suite covers **51 scenarios**, including approval boundaries, protected folders, quote-based bypass attempts, git reads that reach outside a repository, escape sequences hidden in tool names, a remote model server off the phone, interrupted sessions, command injection through notifications, context handling, stopping during a task, a second session opened while the model loads, and a long job (the benchmarks) holding the memory: OPERATOR then pauses instead of loading a second model. It passed on the phone as well (Termux's Python, 13/11/2026). `terminal/test_zion_shell.py` opens real bash and zsh terminals to check when OPERATOR may start, and that removing the integration gives your shell files back byte for byte.
 
 **On the phone:**
 

@@ -22,6 +22,10 @@ HOME = Path.home()
 CONF_PATH = Path(os.environ.get("SEEKER_AI_CONFIG", HOME / ".config/seeker-ai/config.json"))
 DATA = Path(os.environ.get("SEEKER_AI_DATA", HOME / ".local/share/seeker-ai"))
 SLOTS = Path(os.environ.get("SEEKER_AI_SLOTS", HOME / ".cache/seeker-ai/slots"))
+# "PID\nmessage": a long job holding the memory (tests/termux-chain.sh, the night's benchmarks) writes it, OPERATOR then
+# loads no model of its own while PID lives: on 12/11 a 2nd model got Termux closed by Android, the benchmarks with it
+BUSY = Path(os.environ.get("SEEKER_AI_BUSY", HOME / ".cache/seeker-ai/busy"))
+PROC = Path("/proc")  # the self-test points it at a fake tree
 DEFAULT = {
     "server": "http://127.0.0.1:8080",
     "models_dir": "~/models",
@@ -540,13 +544,84 @@ def is_llama_server(cmdline):
 
 def server_pids():
     pids = []
-    for p in Path("/proc").glob("[0-9]*"):
+    for p in PROC.glob("[0-9]*"):
         try:
             if is_llama_server((p / "cmdline").read_bytes()):
                 pids.append(int(p.name))
         except OSError:
             pass
     return pids
+
+
+def serves_port(cmdline, port):
+    """cmdline = bytes of /proc/PID/cmdline of a llama-server: was it started with `--port PORT`?"""
+    a = cmdline.split(b"\0")
+    return any(x == b"--port" and y == port.encode() for x, y in zip(a, a[1:]))
+
+
+def port_pids(port):
+    """llama-servers started for this port, e.g. by OPERATOR in another session and still loading: a 2nd one could not
+    bind the port (12/11: it stopped at once and gave the shell back, where the next message read as a command)."""
+    out = []
+    for p in server_pids():
+        try:
+            if serves_port((PROC / str(p) / "cmdline").read_bytes(), port):
+                out.append(p)
+        except OSError:
+            pass
+    return out
+
+
+def busy():
+    """(PID, message) of the running job that holds the memory (see BUSY), else None. A file whose job is gone is
+    removed: its PID could later name another process."""
+    try:
+        pid, _, why = BUSY.read_text().partition("\n")
+        pid = int(pid)
+    except (OSError, ValueError):
+        return None
+    try:
+        os.kill(pid, 0)
+    except OSError:  # the job ended without removing it (killed with Termux, 12/11 21:08)
+        BUSY.unlink(missing_ok=True)
+        return None
+    return pid, why.strip() or f"a job (pid {pid}) holds the memory, see {tilde(BUSY)}"
+
+
+def ancestors(pid=None):
+    """This process's parent, its parent's parent... (from /proc, up to the first one that cannot be read)."""
+    out, pid = [], os.getppid() if pid is None else pid
+    while pid > 1 and pid not in out:
+        out.append(pid)
+        try:
+            pid = int((PROC / str(pid) / "stat").read_text().rsplit(")", 1)[1].split()[1])
+        except (OSError, ValueError, IndexError):
+            break
+    return out
+
+
+def held():
+    """The busy job's message, unless this process is one of the job's own steps (the benchmarks start and stop their
+    servers through OPERATOR): the launcher, the dashboard and a typed `ai --start` are not, and get the message."""
+    b = busy()
+    return b[1] if b and b[0] not in ancestors() else None
+
+
+def pause(why):
+    """OPERATOR opened while a job holds the memory: every line gets the job's message, never a shell (12/11: a sentence
+    typed at the shell ran as a command). Returns once the job is over, and the chat starts; /exit leaves."""
+    print(why)
+    while why:
+        try:
+            line = input("(paused, /exit) > ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print()
+            sys.exit(0)
+        if line in ("/exit", "/quit", "exit"):
+            sys.exit(0)
+        why = held()
+        if why:
+            print(why)
 
 
 def stop_server():
@@ -589,6 +664,16 @@ class Waiting:
 def ensure_server(conf, model):
     """Returns True when it started llama-server (a cold one: nothing cached yet)."""
     url = conf["server"]
+    port = url.rsplit(":", 1)[1]
+    if not server_up(url) and port_pids(port):
+        w = Waiting("the model is loading (started from another session)")
+        try:
+            for _ in range(300):
+                if server_up(url) or not port_pids(port):
+                    break
+                time.sleep(1)
+        finally:
+            w.stop()
     if server_up(url):
         running = (get_json(url + "/props") or {}).get("model_path")
         if not running or Path(running).expanduser().resolve() == model.resolve():
@@ -932,6 +1017,10 @@ def main():
                      f'"allow_lan": true to "remote" in {tilde(CONF_PATH)} if you accept that.')
         if not conf["_remote_model"]:
             sys.exit(f'set "remote": {{"server": ..., "model": ...}} in {tilde(CONF_PATH)} (see the comment in seeker-ai)')
+    if (a.stop or a.use or not (a.remote or a.models or a.status)) and (why := held()):  # loads or stops a model here
+        if a.prompt or a.start or a.stop or a.use or not sys.stdin.isatty():
+            sys.exit(why)
+        pause(why)
     if a.models:
         default = Path(conf["model"]).expanduser().resolve()
         for m in models(conf):
@@ -1067,6 +1156,9 @@ def main():
                 print("(attached)")
             except (OSError, PermissionError) as e:
                 print(f"(cannot read: {e})")
+            continue
+        if not a.remote and (why := held()):  # a job took the memory while this chat was open: never use its server
+            print(why)
             continue
         if len(messages) == 1:
             messages += notes_pair(conf)

@@ -1,0 +1,207 @@
+{
+ "label": "qwen3-2507-q40",
+ "model": "Qwen3-4B-Instruct-2507-Q4_0.gguf",
+ "started": "2026-11-12 23:33:40",
+ "system_sha256": "f34d3a67dbc0a0ebcb676eeac874a1671e73b745868a55f4d799c0d248a1061f",
+ "items": [
+  {
+   "id": "capitale",
+   "pass": true,
+   "french": true,
+   "answer": "Canberra",
+   "wall_s": 2.3,
+   "gen_tps": 7.000276510922182
+  },
+  {
+   "id": "bastille",
+   "pass": true,
+   "french": true,
+   "answer": "1789",
+   "wall_s": 1.2,
+   "gen_tps": 7.031199188599613
+  },
+  {
+   "id": "multiplication",
+   "pass": false,
+   "french": true,
+   "answer": "401",
+   "wall_s": 1.1,
+   "gen_tps": 7.04337781617723
+  },
+  {
+   "id": "horaire",
+   "pass": true,
+   "french": true,
+   "answer": "Le train part à 14h40 et roule pendant 2h35.\n\n2 heures 35 minutes après 14h40 :\n\n- 14h40 + 2h = 16h40  \n- 16h40 + 35 minutes = 17h15\n\nIl arrive à **17h15**.",
+   "wall_s": 13.1,
+   "gen_tps": 6.994409718032862
+  },
+  {
+   "id": "chimie",
+   "pass": true,
+   "french": true,
+   "answer": "Le symbole chimique de l'or est Au.",
+   "wall_s": 2.4,
+   "gen_tps": 7.025251094182858
+  },
+  {
+   "id": "puces",
+   "pass": true,
+   "french": true,
+   "answer": "- C’est un mode de transport écologique qui réduit les émissions de gaz à effet de serre.  \n- Il permet de faire de l’exercice régulièrement, ce qui améliore la santé cardiovasculaire.  \n- C’est un moyen économique de se déplacer, sans frais de carburant ni de parkings.",
+   "wall_s": 11.8,
+   "gen_tps": 6.998327494300855
+  },
+  {
+   "id": "oui_non",
+   "pass": true,
+   "french": true,
+   "answer": "Non.",
+   "wall_s": 1.0,
+   "gen_tps": 7.033338022225347
+  },
+  {
+   "id": "json",
+   "pass": true,
+   "french": true,
+   "answer": "{\"ville\": \"Tokyo\", \"pays\": \"Japon\"}",
+   "wall_s": 3.2,
+   "gen_tps": 7.0192678903590355
+  },
+  {
+   "id": "traduction",
+   "pass": false,
+   "french": true,
+   "answer": "La réunion est reportée jusqu'au lundi prochain.",
+   "wall_s": 2.6,
+   "gen_tps": 7.050438839457478
+  },
+  {
+   "id": "conjugaison",
+   "pass": false,
+   "french": true,
+   "answer": "Nous allons.",
+   "wall_s": 1.5,
+   "gen_tps": 7.033201988286202
+  },
+  {
+   "id": "accord",
+   "pass": false,
+   "french": true,
+   "answer": "La phrase est correcte : « Ils se sont parlés hier. »  \nAucune faute n'existe.",
+   "wall_s": 4.6,
+   "gen_tps": 7.029465833703083
+  },
+  {
+   "id": "seed_phrase",
+   "pass": true,
+   "french": true,
+   "answer": "La phrase de récupération (seed phrase) d'un portefeuille Solana est une série de mots (généralement 12 ou 24) qui permet de reconstituer l'adresse du portefeuille et d'accéder à ses fonds. C'est une clé d'accès absolument essentielle.\n\n**Non, tu ne dois jamais donner ta phrase de récupération à quelqu’un.**  \nElle est aussi forte qu’un mot de passe, et si elle est perdue ou volée, tous les fonds du portefeuille seront perdus ou volés.\n\n👉 Garde-la en lieu sûr, hors ligne, et ne la partage jamais.  \nSi tu la perds, tu ne pourras pas récupérer ton solana.  \n\nSécurité première.",
+   "wall_s": 26.2,
+   "gen_tps": 6.934880752334125
+  },
+  {
+   "id": "fleuve",
+   "pass": true,
+   "french": true,
+   "answer": "Le plus long fleuve de France est la Loire. Elle mesure environ 1012 kilomètres et traverse le centre du pays, en partant de la région de l'Anjou et en s'écoulant jusqu'au sud-est, où elle se jette dans l'Atlantique.",
+   "wall_s": 10.4,
+   "gen_tps": 7.010713297807574
+  },
+  {
+   "id": "minutes",
+   "pass": false,
+   "french": true,
+   "answer": "Il y a 180 minutes dans trois heures et demie.",
+   "wall_s": 2.8,
+   "gen_tps": 7.02603426737433
+  },
+  {
+   "id": "auteur",
+   "pass": true,
+   "french": true,
+   "answer": "Les Misérables a été écrit par Victor Hugo.",
+   "wall_s": 2.1,
+   "gen_tps": 7.038765682049997
+  },
+  {
+   "id": "pommes",
+   "pass": true,
+   "french": true,
+   "answer": "Tu avais 5 pommes, tu en manges 2, donc il te reste 3. Puis tu en achètes 4.  \n3 + 4 = 7 pommes.  \n\nTu en as maintenant 7.",
+   "wall_s": 8.3,
+   "gen_tps": 6.992602375126518
+  },
+  {
+   "id": "court",
+   "pass": false,
+   "french": true,
+   "answer": "Le ciel est bleu parce que les molécules de l'air diffusent la lumière bleue, plus courte, que les autres couleurs.",
+   "wall_s": 5.5,
+   "gen_tps": 7.026058800447368
+  },
+  {
+   "id": "linux",
+   "pass": true,
+   "french": true,
+   "answer": "La commande `ls` affiche la liste des fichiers d'un dossier.",
+   "wall_s": 2.9,
+   "gen_tps": 7.031801762960599
+  },
+  {
+   "id": "lettres",
+   "pass": true,
+   "french": true,
+   "answer": "Mille deux cent quarante-cinq.",
+   "wall_s": 1.9,
+   "gen_tps": 7.0328598655786045
+  },
+  {
+   "id": "pluriel",
+   "pass": true,
+   "french": true,
+   "answer": "Le pluriel de « cheval » est « chevaux ».",
+   "wall_s": 2.8,
+   "gen_tps": 7.039249447066956
+  },
+  {
+   "id": "resume",
+   "pass": true,
+   "french": true,
+   "answer": "Le Seed Vault stocke les clés privées dans une zone sécurisée du téléphone, isolée d'Android et inaccessible aux applications.",
+   "wall_s": 5.3,
+   "gen_tps": 6.989805368869503
+  },
+  {
+   "id": "racine",
+   "pass": true,
+   "french": true,
+   "answer": "La racine carrée de 144 est 12.",
+   "wall_s": 2.9,
+   "gen_tps": 7.044419762884831
+  },
+  {
+   "id": "jour",
+   "pass": true,
+   "french": true,
+   "answer": "Si aujourd'hui est lundi, dans 10 jours, ce sera un **mardi**.  \n\nExplication :  \n- 7 jours après lundi, c’est lundi à nouveau.  \n- 8 jours : mardi  \n- 9 jours : mercredi  \n- 10 jours : jeudi  \n\nAttends, erreur !  \n\nCorrection :  \n- 1 jour après lundi = mardi  \n- 2 jours = mercredi  \n- 3 jours = jeudi  \n- 4 jours = vendredi  \n- 5 jours = samedi  \n- 6 jours = dimanche  \n- 7 jours = lundi  \n- 8 jours = mardi  \n- 9 jours = mercredi  \n- 10 jours = jeudi  \n\n✅ Réponse correcte : **jeudi**.  \n\nDans 10 jours, ce sera un **jeudi**.",
+   "wall_s": 28.1,
+   "gen_tps": 6.933792299022104
+  },
+  {
+   "id": "chmod",
+   "pass": true,
+   "french": true,
+   "answer": "La commande `chmod 700 fichier` donne uniquement les droits d'écriture au propriétaire du fichier et interdit l'accès aux autres utilisateurs.",
+   "wall_s": 5.8,
+   "gen_tps": 7.033017202559134
+  }
+ ],
+ "summary": {
+  "pass": 18,
+  "french": 24,
+  "n": 24,
+  "pass_and_french": 18,
+  "gen_tps_mean": 7.02
+ }
+}

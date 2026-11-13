@@ -1,0 +1,48 @@
+== ministral3-q40-v4: Ministral-3-3B-Instruct-2512-Q4_0.gguf, ctx 4096, loaded in 4s, network: Wifi is enabled | Active default network: 100
+  cold start (agent prompt + tools, 1317 tokens): first token 32s
+  tool PASS  Quel est le niveau de batterie du téléphone ?           -> android {"action": "battery"}
+  tool PASS  Liste les fichiers du dossier ~/seeker-work.            -> list_dir {"path": "~/seeker-work"}
+  tool PASS  Lis le fichier ~/seeker-work/notes.txt.                 -> read_file {"path": "~/seeker-work/notes.txt"}
+  tool PASS  Crée le fichier ~/seeker-work/hello.py qui affiche Bonj -> write_file {"path": "~/seeker-work/hello.py", "content": "print(\"Bonjour\")"}
+  tool PASS  Exécute la commande git --version.                      -> shell {"command": "git --version"}
+  tool PASS  Calcule 2 puissance 100 en exécutant du Python.         -> python {"code": "2 ** 100"}
+  tool FAIL  Retiens que je préfère les réponses courtes.            -> None {}
+  tool FAIL  Envoie une notification sur le téléphone qui dit : test -> android {"action": "toast", "text": "test"}
+  tool PASS  À quel réseau Wi-Fi le téléphone est-il connecté ?      -> android {"action": "wifi_info"}
+  tool PASS  Quelle est la version d'Android ? Utilise getprop avec  -> system {"command": "getprop ro.build.version.release"}
+  tool PASS  Quels périphériques USB sont branchés ?                 -> system {"command": "lsusb"}
+  tool PASS  Liste les applications installées par l'utilisateur.    -> android {"action": "apps"}
+  tool PASS  Télécharge la page https://example.com et donne son tit -> fetch_url {"url": "https://example.com"}
+  tool PASS  Quelle est la capitale de l'Italie ?                    -> None {}
+  tool PASS  Écris une fonction Python qui additionne deux nombres.  -> write_file {"path": "addition.py", "content": "def addition(a, b):\n    return a 
+  tool PASS  Quel est le niveau de batterie du téléphone ?           -> android {"action": "battery"}
+  tool PASS  Liste les fichiers du dossier ~/seeker-work.            -> list_dir {"path": "~/seeker-work"}
+  tool PASS  Lis le fichier ~/seeker-work/notes.txt.                 -> read_file {"path": "/seeker-work/notes.txt"}
+  tool PASS  Crée le fichier ~/seeker-work/hello.py qui affiche Bonj -> write_file {"path": "~/seeker-work/hello.py", "content": "print('Bonjour')"}
+  tool PASS  Exécute la commande git --version.                      -> shell {"command": "git --version"}
+  tool PASS  Calcule 2 puissance 100 en exécutant du Python.         -> python {"code": "2 ** 100"}
+  tool FAIL  Retiens que je préfère les réponses courtes.            -> None {}
+  tool FAIL  Envoie une notification sur le téléphone qui dit : test -> android {"action": "toast", "text": "test"}
+  tool PASS  À quel réseau Wi-Fi le téléphone est-il connecté ?      -> android {"action": "wifi_info"}
+  tool PASS  Quelle est la version d'Android ? Utilise getprop avec  -> system {"command": "getprop ro.build.version.release"}
+  tool PASS  Quels périphériques USB sont branchés ?                 -> system {"command": "ls /dev/bus/usb"}
+  tool PASS  Liste les applications installées par l'utilisateur.    -> android {"action": "apps"}
+  tool FAIL  Télécharge la page https://example.com et donne son tit -> None {}
+  tool PASS  Quelle est la capitale de l'Italie ?                    -> None {}
+  tool PASS  Écris une fonction Python qui additionne deux nombres.  -> None {}
+  python PASS  est_palindrome
+  python FAIL  fizzbuzz
+  python PASS  compte_mots
+  python PASS  fusionne
+  python PASS  premiers
+  python PASS  moyenne_mobile
+  python PASS  est_palindrome
+  python PASS  fizzbuzz
+  python PASS  compte_mots
+  python PASS  fusionne
+  python PASS  premiers
+  python PASS  moyenne_mobile
+  french 415 chars, 8.2 tok/s: 'En crypto, la **clé privée** est un mot de passe unique lié à un portefeuille numérique qu'
+  french 487 chars, 8.0 tok/s: 'Objet : Décalage du rendez-vous prévu le mardi\n\nBonjour [Nom du destinataire],\n\nJe souhait'
+  french 402 chars, 8.1 tok/s: 'Téléphones sans Google offrent une **sécurité renforcée** (pas de suivi ou données collect'
+== summary ministral3-q40-v4 {"speed": {"gen_tps": 7.06, "prompt_tps": 29.19, "ttft_s_median": 1.18, "n": 45}, "probe_tps_start_end": [7.644606839083696, 7.636135015109246], "tool_calls_pass": "25/30", "tool_calls_valid_json": "24/24", "python_pass": "11/12", "agent_tasks_pass": null, "convo_turns_ok": 0, "request_errors": 0, "peak_ram_mb": 2829, "peak_ram_mb_sweep_max": null, "cpu_pct_mean_busy": 394.9, "cpu_pct_max": 399, "mem_available_mb_min": 2770, "swap_used_mb_max": 1561, "server_rss_mb_max": 2829, "cpu_temp_c_max": 69.895, "skin_temp_c_max": 39.401, "thermal_status_max": 1, "big_core_mhz_busy_min_max": [2500, 2500], "battery_mw_idle": -1230.5, "battery_mw_busy_mean": 2053.4, "battery_pct_start_end": [25, 23], "termux_external_connections_max": 0, "termux_open_listen_max": 0, "all_external_connections_max": 2, "minutes": 6.2, "errors": null}

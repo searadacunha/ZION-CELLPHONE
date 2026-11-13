@@ -1,0 +1,48 @@
+== qwen35-q40-v4: Qwen3.5-4B-Q4_0.gguf, ctx 4096, loaded in 5s, network: Wifi is enabled | Active default network: 100
+  cold start (agent prompt + tools, 1508 tokens): first token 46s
+  tool PASS  Quel est le niveau de batterie du téléphone ?           -> android {"action": "battery"}
+  tool PASS  Liste les fichiers du dossier ~/seeker-work.            -> list_dir {"path": "~/seeker-work"}
+  tool PASS  Lis le fichier ~/seeker-work/notes.txt.                 -> read_file {"path": "~/seeker-work/notes.txt"}
+  tool PASS  Crée le fichier ~/seeker-work/hello.py qui affiche Bonj -> write_file {"path": "~/seeker-work/hello.py", "content": "print(\"Bonjour\")"}
+  tool FAIL  Exécute la commande git --version.                      -> git {"args": "--version", "repo": "."}
+  tool PASS  Calcule 2 puissance 100 en exécutant du Python.         -> python {"code": "2**100"}
+  tool PASS  Retiens que je préfère les réponses courtes.            -> remember {"note": "L'utilisateur préfère les réponses courtes."}
+  tool PASS  Envoie une notification sur le téléphone qui dit : test -> android {"action": "notify", "text": "test"}
+  tool PASS  À quel réseau Wi-Fi le téléphone est-il connecté ?      -> android {"action": "wifi_info"}
+  tool PASS  Quelle est la version d'Android ? Utilise getprop avec  -> system {"command": "getprop ro.build.version.sdk"}
+  tool PASS  Quels périphériques USB sont branchés ?                 -> android {"action": "usb_devices"}
+  tool PASS  Liste les applications installées par l'utilisateur.    -> android {"action": "apps"}
+  tool PASS  Télécharge la page https://example.com et donne son tit -> fetch_url {"url": "https://example.com"}
+  tool PASS  Quelle est la capitale de l'Italie ?                    -> None {}
+  tool PASS  Écris une fonction Python qui additionne deux nombres.  -> None {}
+  tool PASS  Quel est le niveau de batterie du téléphone ?           -> android {"action": "battery"}
+  tool PASS  Liste les fichiers du dossier ~/seeker-work.            -> list_dir {"path": "~/seeker-work"}
+  tool PASS  Lis le fichier ~/seeker-work/notes.txt.                 -> read_file {"path": "~/seeker-work/notes.txt"}
+  tool PASS  Crée le fichier ~/seeker-work/hello.py qui affiche Bonj -> write_file {"path": "~/seeker-work/hello.py", "content": "print(\"Bonjour\")"}
+  tool FAIL  Exécute la commande git --version.                      -> git {"args": "--version", "repo": "~/seeker-work"}
+  tool PASS  Calcule 2 puissance 100 en exécutant du Python.         -> python {"code": "2 ** 100"}
+  tool PASS  Retiens que je préfère les réponses courtes.            -> remember {"note": "L'utilisateur préfère les réponses courtes."}
+  tool PASS  Envoie une notification sur le téléphone qui dit : test -> android {"action": "notify", "text": "test"}
+  tool PASS  À quel réseau Wi-Fi le téléphone est-il connecté ?      -> android {"action": "wifi_info"}
+  tool PASS  Quelle est la version d'Android ? Utilise getprop avec  -> system {"command": "getprop ro.build.version.release"}
+  tool PASS  Quels périphériques USB sont branchés ?                 -> android {"action": "usb_devices"}
+  tool FAIL  Liste les applications installées par l'utilisateur.    -> android {"action": "app_info"}
+  tool PASS  Télécharge la page https://example.com et donne son tit -> fetch_url {"url": "https://example.com"}
+  tool PASS  Quelle est la capitale de l'Italie ?                    -> None {}
+  tool PASS  Écris une fonction Python qui additionne deux nombres.  -> write_file {"path": "~/seeker-work/add_numbers.py", "content": "def add_numbers(a
+  python PASS  est_palindrome
+  python PASS  fizzbuzz
+  python PASS  compte_mots
+  python PASS  fusionne
+  python PASS  premiers
+  python PASS  moyenne_mobile
+  python PASS  est_palindrome
+  python PASS  fizzbuzz
+  python PASS  compte_mots
+  python PASS  fusionne
+  python PASS  premiers
+  python PASS  moyenne_mobile
+  french 494 chars, 5.8 tok/s: 'Une clé privée est un mot de passe secret qui sert de signature numérique pour authentifie'
+  french 376 chars, 5.9 tok/s: 'Objet : Modification de notre rendez-vous\n\nBonjour [Nom du destinataire],\n\nJe me permets d'
+  french 326 chars, 5.7 tok/s: "Les inconvénients incluent la perte de l'assistance vocale intégrée, des fonctionnalités d"
+== summary qwen35-q40-v4 {"speed": {"gen_tps": 5.67, "prompt_tps": 22.44, "ttft_s_median": 2.44, "n": 45}, "probe_tps_start_end": [5.6906312698562385, 5.910056260921291], "tool_calls_pass": "27/30", "tool_calls_valid_json": "27/27", "python_pass": "12/12", "agent_tasks_pass": null, "convo_turns_ok": 0, "request_errors": 0, "peak_ram_mb": 3778, "peak_ram_mb_sweep_max": null, "cpu_pct_mean_busy": 394.1, "cpu_pct_max": 398, "mem_available_mb_min": 1839, "swap_used_mb_max": 1514, "server_rss_mb_max": 3778, "cpu_temp_c_max": 72.717, "skin_temp_c_max": 41.748, "thermal_status_max": 3, "big_core_mhz_busy_min_max": [2500, 2500], "battery_mw_idle": -1182.0, "battery_mw_busy_mean": 2300.4, "battery_pct_start_end": [25, 23], "termux_external_connections_max": 0, "termux_open_listen_max": 0, "all_external_connections_max": 2, "minutes": 9.9, "errors": null}

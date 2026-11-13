@@ -1,0 +1,48 @@
+== qwen3-2507-q40-v4: Qwen3-4B-Instruct-2507-Q4_0.gguf, ctx 4096, loaded in 4s, network: Wifi is enabled | Active default network: 100
+  cold start (agent prompt + tools, 1384 tokens): first token 42s
+  tool PASS  Quel est le niveau de batterie du téléphone ?           -> android {"action": "battery"}
+  tool PASS  Liste les fichiers du dossier ~/seeker-work.            -> list_dir {"path": "~/seeker-work"}
+  tool PASS  Lis le fichier ~/seeker-work/notes.txt.                 -> read_file {"path": "~/seeker-work/notes.txt"}
+  tool PASS  Crée le fichier ~/seeker-work/hello.py qui affiche Bonj -> write_file {"path": "~/seeker-work/hello.py", "content": "print(\"Bonjour\")"}
+  tool FAIL  Exécute la commande git --version.                      -> git {"args": "version", "repo": ""}
+  tool PASS  Calcule 2 puissance 100 en exécutant du Python.         -> python {"code": "print(2 ** 100)"}
+  tool FAIL  Retiens que je préfère les réponses courtes.            -> None {}
+  tool PASS  Envoie une notification sur le téléphone qui dit : test -> android {"action": "notify", "text": "test"}
+  tool PASS  À quel réseau Wi-Fi le téléphone est-il connecté ?      -> android {"action": "wifi_info"}
+  tool PASS  Quelle est la version d'Android ? Utilise getprop avec  -> system {"command": "getprop ro.build.version.release"}
+  tool PASS  Quels périphériques USB sont branchés ?                 -> android {"action": "usb_devices"}
+  tool PASS  Liste les applications installées par l'utilisateur.    -> android {"action": "apps"}
+  tool PASS  Télécharge la page https://example.com et donne son tit -> fetch_url {"url": "https://example.com"}
+  tool PASS  Quelle est la capitale de l'Italie ?                    -> None {}
+  tool PASS  Écris une fonction Python qui additionne deux nombres.  -> None {}
+  tool PASS  Quel est le niveau de batterie du téléphone ?           -> android {"action": "battery"}
+  tool PASS  Liste les fichiers du dossier ~/seeker-work.            -> list_dir {"path": "~/seeker-work"}
+  tool PASS  Lis le fichier ~/seeker-work/notes.txt.                 -> read_file {"path": "~/seeker-work/notes.txt"}
+  tool PASS  Crée le fichier ~/seeker-work/hello.py qui affiche Bonj -> write_file {"path": "/home/user/seeker-work/hello.py", "content": "print(\"Bonjou
+  tool FAIL  Exécute la commande git --version.                      -> git {"args": "version", "repo": ""}
+  tool PASS  Calcule 2 puissance 100 en exécutant du Python.         -> python {"code": "print(2 ** 100)"}
+  tool FAIL  Retiens que je préfère les réponses courtes.            -> None {}
+  tool PASS  Envoie une notification sur le téléphone qui dit : test -> android {"action": "notify", "text": "test"}
+  tool PASS  À quel réseau Wi-Fi le téléphone est-il connecté ?      -> android {"action": "wifi_info"}
+  tool PASS  Quelle est la version d'Android ? Utilise getprop avec  -> system {"command": "getprop ro.build.version.release"}
+  tool PASS  Quels périphériques USB sont branchés ?                 -> android {"action": "usb_devices"}
+  tool PASS  Liste les applications installées par l'utilisateur.    -> android {"action": "apps"}
+  tool PASS  Télécharge la page https://example.com et donne son tit -> fetch_url {"url": "https://example.com"}
+  tool PASS  Quelle est la capitale de l'Italie ?                    -> None {}
+  tool PASS  Écris une fonction Python qui additionne deux nombres.  -> None {}
+  python PASS  est_palindrome
+  python PASS  fizzbuzz
+  python PASS  compte_mots
+  python PASS  fusionne
+  python PASS  premiers
+  python PASS  moyenne_mobile
+  python PASS  est_palindrome
+  python PASS  fizzbuzz
+  python PASS  compte_mots
+  python PASS  fusionne
+  python PASS  premiers
+  python FAIL  moyenne_mobile
+  french 330 chars, 6.6 tok/s: "Une clé privée est un code secret qui permet d'accéder à votre compte sur une blockchain e"
+  french 293 chars, 6.8 tok/s: 'Subject : Décalage de rendez-vous – Mardi à Jeudi  \n\nBonjour [Nom du destinataire],  \n\nJe '
+  french 325 chars, 6.8 tok/s: 'Un téléphone sans services Google offre plus de confidentialité et une meilleure autonomie'
+== summary qwen3-2507-q40-v4 {"speed": {"gen_tps": 5.67, "prompt_tps": 19.19, "ttft_s_median": 2.71, "n": 45}, "probe_tps_start_end": [6.829843554302623, 6.629789602048458], "tool_calls_pass": "26/30", "tool_calls_valid_json": "24/24", "python_pass": "11/12", "agent_tasks_pass": null, "convo_turns_ok": 0, "request_errors": 0, "peak_ram_mb": 3287, "peak_ram_mb_sweep_max": null, "cpu_pct_mean_busy": 395.4, "cpu_pct_max": 399, "mem_available_mb_min": 2301, "swap_used_mb_max": 1562, "server_rss_mb_max": 3287, "cpu_temp_c_max": 72.891, "skin_temp_c_max": 41.284, "thermal_status_max": 3, "big_core_mhz_busy_min_max": [2500, 2500], "battery_mw_idle": -920.5, "battery_mw_busy_mean": 2142.2, "battery_pct_start_end": [25, 23], "termux_external_connections_max": 0, "termux_open_listen_max": 0, "all_external_connections_max": 3, "minutes": 8.1, "errors": null}

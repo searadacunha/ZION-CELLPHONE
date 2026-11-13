@@ -63,7 +63,7 @@ for d in (work, data, fakebin, mdir): d.mkdir()
 (work / "note.txt").write_text("seeker-marker-42")
 (tmp / "outside.txt").write_text("secret")
 (fakebin / "termux-battery-status").write_text('#!/bin/sh\necho \'{"percentage": 77}\'\n')
-(fakebin / "termux-sms-send").write_text(f'#!/bin/sh\necho "$@" > {tmp}/sms_sent\n')
+(fakebin / "termux-sms-send").write_text(f'#!/bin/sh\nprintf "%s\\n" "$*" > {tmp}/sms_sent\n')  # dash\'s echo eats "-n"
 for f in fakebin.iterdir(): f.chmod(0o755)
 for m in ("Alpha-Q4_0.gguf", "Beta-Uncensored-Q4_K_M.gguf", "mmproj-Beta-BF16.gguf"): (mdir / m).write_text("x")
 conf = tmp / "config.json"
@@ -75,7 +75,7 @@ def setconf(**extra):
 
 def run(prompt, confirm="no", *extra):
     env = dict(os.environ, SEEKER_AI_CONFIG=str(conf), SEEKER_AI_DATA=str(data), SEEKER_AI_CONFIRM=confirm,
-               SEEKER_AI_SLOTS=str(tmp / "slots"), PATH=f"{fakebin}:{os.environ['PATH']}")
+               SEEKER_AI_SLOTS=str(tmp / "slots"), SEEKER_AI_BUSY=str(tmp / "busy"), PATH=f"{fakebin}:{os.environ['PATH']}")
     args = [sys.executable, str(HERE / "seeker-ai"), *extra] + ([prompt] if prompt else [])
     return subprocess.run(args, capture_output=True, text=True, env=env, stdin=subprocess.DEVNULL, timeout=30)
 
@@ -478,4 +478,69 @@ setconf(server="http://127.0.0.1:9", llama_server=str(old_srv))
 r = run("", "no", "--start")
 assert r.returncode != 0 and "older than OPERATOR expects (invalid argument: --load-mode)" in r.stderr, r.stderr
 setconf()
-print("seeker-ai self-test: OK (48 scenarios)")
+# 49. while a job holds the memory (busy file, PID alive and not an ancestor): chat, --start, --stop and --use refuse with
+#     its message and touch nothing (the launcher's status page and the dashboard both offer --start); the job's own steps
+#     (its descendants: the chain runs `seeker-ai --model X --start`) go through; a file whose job is gone is removed
+job = subprocess.Popen(["sleep", "60"])
+n = len(requests)
+(tmp / "busy").write_text(f"{job.pid}\nbenchmarks running-49\n")
+for extra in ((), ("--start",), ("--stop",), ("--use", "Beta")):
+    r = run("" if extra else "hello", "no", *extra)
+    assert r.returncode != 0 and "benchmarks running-49" in r.stderr, (extra, r.stdout + r.stderr)
+assert len(requests) == n and json.loads(conf.read_text())["model"] == str(mdir / "Alpha-Q4_0.gguf")
+(tmp / "busy").write_text(f"{os.getpid()}\nbenchmarks running-49\n")  # this test is the parent of seeker-ai, as the chain is
+r = run("", "no", "--start")
+assert r.returncode == 0 and "online:" in r.stdout, r.stdout + r.stderr
+job.kill(); job.wait()
+(tmp / "busy").write_text(f"{job.pid}\nstale-49\n")
+r = run("hello")
+assert "stale-49" not in r.stderr and "plain answer" in r.stdout and not (tmp / "busy").exists(), r.stdout + r.stderr
+# 50. a 2nd session while the 1st one's llama-server still loads: it waits for that server and starts none on the same
+#     port (12/11: the 2nd could not bind it, stopped at once, and the next message went to the shell)
+L2 = b"/system/bin/linker64\0/x/llama-server\0-m\0a.gguf\0--port\0"
+assert sa.serves_port(L2 + b"8080\0--metrics\0", "8080") and not sa.serves_port(L2 + b"8091\0", "8080")
+assert not sa.serves_port(b"/x/llama-server\0-m\0a.gguf\0", "8080")
+checks = []
+def loading_then_up(url):  # the other session's server answers on the 3rd look
+    checks.append(url); return len(checks) > 2
+def no_second(*a, **k): raise AssertionError("a 2nd llama-server was started")
+saved = sa.server_up, sa.port_pids, sa.get_json, sa.subprocess.Popen
+sa.server_up, sa.port_pids = loading_then_up, lambda port: [4242] if port == "8080" else []
+sa.get_json = lambda url, timeout=2: {"model_path": str(mdir / "Alpha-Q4_0.gguf")}
+sa.subprocess.Popen = no_second
+try:
+    assert sa.ensure_server({**sa.DEFAULT, "server": "http://127.0.0.1:8080"}, mdir / "Alpha-Q4_0.gguf") is False and len(checks) > 2
+finally:
+    sa.server_up, sa.port_pids, sa.get_json, sa.subprocess.Popen = saved
+fake = tmp / "proc"  # the real /proc reading, on a copy of its layout: cmdline NUL-separated, stat "pid (comm) state ppid ..."
+for pid, tail in ((4242, b"8080\0"), (4243, b"8091\0")):
+    (fake / str(pid)).mkdir(parents=True); (fake / str(pid) / "cmdline").write_bytes(L2 + tail)
+(fake / "4244").mkdir(); (fake / "4244" / "cmdline").write_bytes(b"/system/bin/linker64\0/x/llama-bench\0-m\0a.gguf\0")
+for pid, ppid in ((300, 200), (200, 100), (100, 1)):
+    (fake / str(pid)).mkdir(); (fake / str(pid) / "stat").write_text(f"{pid} (odd) name) S {ppid} 0 0\n")
+saved, sa.PROC = sa.PROC, fake
+try:
+    assert sa.port_pids("8080") == [4242] and sorted(sa.server_pids()) == [4242, 4243], sa.port_pids("8080")
+    assert sa.ancestors(300) == [300, 200, 100], sa.ancestors(300)
+finally:
+    sa.PROC = saved
+# 51. OPERATOR opened during the job (launcher "ai", interactive): every line gets the message, none reaches a shell; once
+#     the job is over it returns and the chat starts; /exit leaves
+lines, states = iter(["bonjour", "convertis 5 euros -> dollars", "encore"]), iter(["paused-51", "paused-51", None])
+saved = sa.held
+sa.input, sa.held = (lambda prompt="": next(lines)), (lambda: next(states))
+out = io.StringIO()
+try:
+    with contextlib.redirect_stdout(out):
+        assert sa.pause("paused-51") is None
+    sa.input = lambda prompt="": "/exit"
+    try:
+        with contextlib.redirect_stdout(io.StringIO()):
+            sa.pause("paused-51")
+        raise AssertionError("/exit did not leave")
+    except SystemExit as e:
+        assert not e.code
+finally:
+    sa.held = saved; del sa.input
+assert out.getvalue().count("paused-51") == 3 and not (work / "dollars").exists(), out.getvalue()
+print("seeker-ai self-test: OK (51 scenarios)")

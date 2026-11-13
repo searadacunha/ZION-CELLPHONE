@@ -1,0 +1,387 @@
+
+== 2026-11-12 20:19:41 start, battery 18 PLUGGED_USB
+
+== 2026-11-12 20:19:41 battery test: waiting for 70 % (at most 120 min)
+20:19:42 battery 18% (PLUGGED_USB): waiting for 70 %
+20:24:43 battery 19% (PLUGGED_USB): waiting for 70 %
+20:29:44 battery 19% (PLUGGED_USB): waiting for 70 %
+20:34:45 battery 20% (PLUGGED_USB): waiting for 70 %
+20:39:46 battery 21% (PLUGGED_USB): waiting for 70 %
+20:44:47 battery 21% (PLUGGED_USB): waiting for 70 %
+
+== 2026-11-12 20:47:53 start, battery 22 PLUGGED_USB
+
+== 2026-11-12 20:47:53 battery test: waiting for 70 % (at most 0 min)
+20:47:54 battery 22% (PLUGGED_USB) after 0 min: going on
+2026-11-12 20:47:54 battery: postponed (under 70 %)
+
+== 2026-11-12 20:47:54 speed sweep
+20:53:12 cool: status=0 cpu=47C after 200s
+
+== 2026-11-12 21:32:26 start, battery 23 PLUGGED_USB
+
+== 2026-11-12 21:32:26 battery test: waiting for 70 % (at most 0 min)
+21:32:27 battery 23% (PLUGGED_USB) after 0 min: going on
+2026-11-12 21:32:27 battery: postponed (under 70 %)
+
+== 2026-11-12 21:32:27 speed sweep
+21:32:28 battery 23% (PLUGGED_USB): waiting for 25 %
+21:37:29 battery 23% (PLUGGED_USB): waiting for 25 %
+21:42:30 battery 24% (PLUGGED_USB): waiting for 25 %
+21:47:32 cool: status=0 cpu=47C after 0s
+2026-11-12 22:13:48 sweep: OK
+
+== 2026-11-12 22:13:48 model downloads
+already there: ~/models/Qwen3.5-4B-Uncensored-HauhauCS-Aggressive-Q4_K_M.gguf
+already there: ~/models/Qwen3.5-4B-Q4_0.gguf
+already there: ~/models/Qwen3-4B-Instruct-2507-Q4_0.gguf
+  % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
+                                 Dload  Upload  Total   Spent   Left   Speed
+  0      0   0      0   0      0      0      0                              0100   1140 100   1140   0      0   5609      0                              0100   1140 100   1140   0      0   5601      0                              0
+  0      0   0      0   0      0      0      0                              0  0  1.90G   0  2.51M   0      0  1.71M      0   18:59   00:01   18:58  2.51M  0  1.90G   0 13.93M   0      0  5.64M      0   05:45   00:02   05:43  6.96M  1  1.90G   1 24.86M   0      0  7.16M      0   04:32   00:03   04:29  8.28M  1  1.90G   1 36.96M   0      0  8.26M      0   03:56   00:04   03:52  9.23M  2  1.90G   2 46.33M   0      0  8.45M      0   03:50   00:05   03:45  9.25M  2  1.90G   2 55.67M   0      0  8.59M      0   03:47   00:06   03:41 10.61M  3  1.90G   3 66.59M   0      0  8.90M      0   03:39   00:07   03:32 10.51M  4  1.90G   4 79.83M   0      0  9.41M      0   03:27   00:08   03:19 10.97M  4  1.90G   4 93.57M   0      0  9.87M      0   03:17   00:09   03:08 11.30M  5  1.90G   5 103.9M   0      0  9.91M      0   03:16   00:10   03:06 11.51M  5  1.90G   5 112.5M   0      0  9.80M      0   03:18   00:11   03:07 11.38M  6  1.90G   6 120.0M   0      0  9.61M      0   03:23   00:12   03:11 10.66M  6  1.90G   6 132.3M   0      0  9.81M      0   03:18   00:13   03:05 10.48M  7  1.90G   7 146.5M   0      0 10.10M      0   03:13   00:14   02:59 10.55M  8  1.90G   8 159.2M   0      0 10.27M      0   03:09   00:15   02:54 11.02M  8  1.90G   8 172.0M   0      0 10.43M      0   03:07   00:16   02:51 11.86M  9  1.90G   9 185.2M   0      0 10.58M      0   03:04   00:17   02:47 13.02M 10  1.90G  10 197.2M   0      0 10.66M      0   03:02   00:18   02:44 12.97M 10  1.90G  10 207.7M   0      0 10.65M      0   03:03   00:19   02:44 12.25M 11  1.90G  11 221.6M   0      0 10.81M      0   03:00   00:20   02:40 12.47M 12  1.90G  12 235.4M   0      0 10.95M      0   02:58   00:21   02:37 12.67M 12  1.90G  12 244.6M   0      0 10.87M      0   02:59   00:22   02:37 11.89M 13  1.90G  13 254.2M   0      0 10.82M      0   03:00   00:23   02:37 11.39M 13  1.90G  13 268.1M   0      0 10.94M      0   02:58   00:24   02:34 12.07M 14  1.90G  14 276.8M   0      0 10.86M      0   02:59   00:25   02:34 11.04M 14  1.90G  14 288.0M   0      0 10.87M      0   02:59   00:26   02:33 10.52M 15  1.90G  15 300.1M   0      0 10.91M      0   02:58   00:27   02:31 11.09M 15  1.90G  15 308.1M   0      0 10.81M      0   03:00   00:28   02:32 10.78M 16  1.90G  16 320.2M   0      0 10.85M      0   02:59   00:29   02:30 10.41M 17  1.90G  17 332.8M   0      0 10.91M      0   02:58   00:30   02:28 11.18M 17  1.90G  17 346.2M   0      0 10.99M      0   02:57   00:31   02:26 11.62M 18  1.90G  18 357.0M   0      0 10.98M      0   02:57   00:32   02:25 11.36M 18  1.90G  18 369.0M   0      0 11.01M      0   02:57   00:33   02:24 12.17M 19  1.90G  19 382.1M   0      0 11.07M      0   02:56   00:34   02:22 12.36M 20  1.90G  20 395.3M   0      0 11.13M      0   02:55   00:35   02:20 12.48M 20  1.90G  20 408.6M   0      0 11.19M      0   02:54   00:36   02:18 12.45M 21  1.90G  21 417.2M   0      0 11.12M      0   02:55   00:37   02:18 12.02M 22  1.90G  22 430.1M   0      0 11.17M      0   02:54   00:38   02:16 12.20M 22  1.90G  22 443.6M   0      0 11.22M      0   02:53   00:39   02:14 12.29M 23  1.90G  23 457.5M   0      0 11.29M      0   02:52   00:40   02:12 12.39M 24  1.90G  24 471.7M   0      0 11.36M      0   02:51   00:41   02:10 12.57M 24  1.90G  24 485.0M   0      0 11.40M      0   02:51   00:42   02:09 13.51M 25  1.90G  25 497.6M   0      0 11.43M      0   02:50   00:43   02:07 13.43M 26  1.90G  26 511.5M   0      0 11.48M      0   02:49   00:44   02:05 13.52M 26  1.90G  26 525.8M   0      0 11.55M      0   02:48   00:45   02:03 13.65M 27  1.90G  27 539.7M   0      0 11.60M      0   02:48   00:46   02:02 13.58M 28  1.90G  28 553.7M   0      0 11.64M      0   02:47   00:47   02:00 13.62M 28  1.90G  28 564.4M   0      0 11.62M      0   02:47   00:48   01:59 13.24M 29  1.90G  29 578.3M   0      0 11.66M      0   02:47   00:49   01:58 13.21M 30  1.90G  30 591.6M   0      0 11.69M      0   02:46   00:50   01:56 13.01M 30  1.90G  30 604.6M   0      0 11.72M      0   02:46   00:51   01:55 12.84M 31  1.90G  31 617.1M   0      0 11.73M      0   02:46   00:52   01:54 12.62M 32  1.90G  32 630.8M   0      0 11.77M      0   02:45   00:53   01:52 13.22M 32  1.90G  32 643.7M   0      0 11.79M      0   02:45   00:54   01:51 13.06M 33  1.90G  33 656.2M   0      0 11.80M      0   02:45   00:55   01:50 12.90M 34  1.90G  34 669.2M   0      0 11.82M      0   02:45   00:56   01:49 12.90M 34  1.90G  34 681.5M   0      0 11.83M      0   02:44   00:57   01:47 12.87M 35  1.90G  35 694.3M   0      0 11.84M      0   02:44   00:58   01:46 12.66M 36  1.90G  36 708.0M   0      0 11.87M      0   02:44   00:59   01:45 12.81M 36  1.90G  36 720.2M   0      0 11.88M      0   02:44   01:00   01:44 12.76M 37  1.90G  37 729.5M   0      0 11.84M      0   02:44   01:01   01:43 12.03M 38  1.90G  38 742.6M   0      0 11.86M      0   02:44   01:02   01:42 12.19M 38  1.90G  38 756.1M   0      0 11.88M      0   02:44   01:03   01:41 12.35M 39  1.90G  39 769.7M   0      0 11.91M      0   02:43   01:04   01:39 12.34M 40  1.90G  40 782.6M   0      0 11.92M      0   02:43   01:05   01:38 12.47M 40  1.90G  40 795.4M   0      0 11.94M      0   02:43   01:06   01:37 13.17M 41  1.90G  41 808.6M   0      0 11.96M      0   02:43   01:07   01:36 13.18M 41  1.90G  41 818.2M   0      0 11.92M      0   02:43   01:08   01:35 12.42M 42  1.90G  42 829.5M   0      0 11.91M      0   02:43   01:09   01:34 11.95M 43  1.90G  43 840.6M   0      0 11.90M      0   02:43   01:10   01:33 11.59M 43  1.90G  43 849.6M   0      0 11.86M      0   02:44   01:11   01:33 10.82M 43  1.90G  43 856.5M   0      0 11.79M      0   02:45   01:12   01:33  9.58M 44  1.90G  44 865.7M   0      0 11.76M      0   02:45   01:13   01:32  9.48M 44  1.90G  44 875.2M   0      0 11.73M      0   02:46   01:14   01:32  9.12M 45  1.90G  45 886.5M   0      0 11.72M      0   02:46   01:15   01:31  9.17M 45  1.90G  45 896.4M   0      0 11.70M      0   02:46   01:16   01:30  9.35M 46  1.90G  46 909.5M   0      0 11.71M      0   02:46   01:17   01:29 10.58M 47  1.90G  47 923.1M   0      0 11.74M      0   02:46   01:18   01:28 11.47M 47  1.90G  47 936.5M   0      0 11.76M      0   02:45   01:19   01:26 12.24M 48  1.90G  48 947.8M   0      0 11.75M      0   02:45   01:20   01:25 12.25M 49  1.90G  49 961.5M   0      0 11.78M      0   02:45   01:21   01:24 13.00M 49  1.90G  49 974.2M   0      0 11.79M      0   02:45   01:22   01:23 12.94M 50  1.90G  50 988.1M   0      0 11.81M      0   02:45   01:23   01:22 13.00M 51  1.90G  51  0.97G   0      0 11.84M      0   02:44   01:24   01:20 13.07M 51  1.90G  51  0.98G   0      0 11.82M      0   02:45   01:25   01:20 12.89M 52  1.90G  52  1.00G   0      0 11.83M      0   02:44   01:26   01:18 12.72M 52  1.90G  52  1.00G   0      0 11.80M      0   02:45   01:27   01:18 11.98M 53  1.90G  53  1.01G   0      0 11.78M      0   02:45   01:28   01:17 11.19M 54  1.90G  54  1.03G   0      0 11.78M      0   02:45   01:29   01:16 10.85M 54  1.90G  54  1.04G   0      0 11.78M      0   02:45   01:30   01:15 11.15M 55  1.90G  55  1.05G   0      0 11.79M      0   02:45   01:31   01:14 10.98M 55  1.90G  55  1.06G   0      0 11.79M      0   02:45   01:32   01:13 11.66M 56  1.90G  56  1.08G   0      0 11.82M      0   02:45   01:33   01:12 12.49M 57  1.90G  57  1.09G   0      0 11.83M      0   02:44   01:34   01:10 12.70M 58  1.90G  58  1.10G   0      0 11.83M      0   02:44   01:35   01:09 12.73M 58  1.90G  58  1.11G   0      0 11.84M      0   02:44   01:36   01:08 12.91M 59  1.90G  59  1.12G   0      0 11.84M      0   02:44   01:37   01:07 12.82M 59  1.90G  59  1.13G   0      0 11.82M      0   02:45   01:38   01:07 11.89M 60  1.90G  60  1.15G   0      0 11.83M      0   02:44   01:39   01:05 11.83M 61  1.90G  61  1.16G   0      0 11.84M      0   02:44   01:40   01:04 11.99M 61  1.90G  61  1.17G   0      0 11.86M      0   02:44   01:41   01:03 12.13M 62  1.90G  62  1.19G   0      0 11.88M      0   02:44   01:42   01:02 12.54M 63  1.90G  63  1.20G   0      0 11.90M      0   02:43   01:43   01:00 13.41M 63  1.90G  63  1.21G   0      0 11.91M      0   02:43   01:44   00:59 13.39M 64  1.90G  64  1.23G   0      0 11.92M      0   02:43   01:45   00:58 13.62M 65  1.90G  65  1.24G   0      0 11.94M      0   02:43   01:46   00:57 13.68M 66  1.90G  66  1.25G   0      0 11.96M      0   02:43   01:47   00:56 13.70M 66  1.90G  66  1.26G   0      0 11.94M      0   02:43   01:48   00:55 12.84M 67  1.90G  67  1.28G   0      0 11.96M      0   02:43   01:49   00:54 13.11M 67  1.90G  67  1.29G   0      0 11.96M      0   02:43   01:50   00:53 12.69M 68  1.90G  68  1.30G   0      0 11.97M      0   02:42   01:51   00:51 12.49M 69  1.90G  69  1.31G   0      0 11.95M      0   02:43   01:52   00:51 11.74M 69  1.90G  69  1.32G   0      0 11.95M      0   02:43   01:53   00:50 12.25M 70  1.90G  70  1.33G   0      0 11.95M      0   02:43   01:54   00:49 11.68M 70  1.90G  70  1.34G   0      0 11.95M      0   02:43   01:55   00:48 11.69M 71  1.90G  71  1.36G   0      0 11.97M      0   02:42   01:56   00:46 12.12M 72  1.90G  72  1.37G   0      0 11.98M      0   02:42   01:57   00:45 12.58M 72  1.90G  72  1.38G   0      0 11.98M      0   02:42   01:58   00:44 12.58M 73  1.90G  73  1.40G   0      0 11.98M      0   02:42   01:59   00:43 12.64M 74  1.90G  74  1.41G   0      0 11.99M      0   02:42   02:00   00:42 13.01M 74  1.90G  74  1.42G   0      0 12.01M      0   02:42   02:01   00:41 12.83M 75  1.90G  75  1.44G   0      0 12.02M      0   02:42   02:02   00:40 13.04M 76  1.90G  76  1.45G   0      0 12.04M      0   02:41   02:03   00:38 13.51M 76  1.90G  76  1.46G   0      0 12.02M      0   02:42   02:04   00:38 13.15M 77  1.90G  77  1.47G   0      0 12.01M      0   02:42   02:05   00:37 12.57M 78  1.90G  78  1.48G   0      0 12.03M      0   02:42   02:06   00:36 12.53M 78  1.90G  78  1.50G   0      0 12.04M      0   02:42   02:07   00:35 12.41M 79  1.90G  79  1.51G   0      0 12.05M      0   02:41   02:08   00:33 12.22M 79  1.90G  79  1.52G   0      0 12.03M      0   02:42   02:09   00:33 12.12M 80  1.90G  80  1.53G   0      0 12.03M      0   02:42   02:10   00:32 12.38M 81  1.90G  81  1.54G   0      0 12.05M      0   02:41   02:11   00:30 12.48M 82  1.90G  82  1.56G   0      0 12.06M      0   02:41   02:12   00:29 12.64M 82  1.90G  82  1.57G   0      0 12.06M      0   02:41   02:13   00:28 12.33M 83  1.90G  83  1.58G   0      0 12.04M      0   02:41   02:14   00:27 12.43M 83  1.90G  83  1.59G   0      0 12.06M      0   02:41   02:15   00:26 12.74M 84  1.90G  84  1.61G   0      0 12.07M      0   02:41   02:16   00:25 12.62M 85  1.90G  85  1.62G   0      0 12.08M      0   02:41   02:17   00:24 12.49M 85  1.90G  85  1.63G   0      0 12.08M      0   02:41   02:18   00:23 12.58M 86  1.90G  86  1.64G   0      0 12.06M      0   02:41   02:19   00:22 12.64M 87  1.90G  87  1.66G   0      0 12.08M      0   02:41   02:20   00:21 12.70M 87  1.90G  87  1.67G   0      0 12.08M      0   02:41   02:21   00:20 12.52M 88  1.90G  88  1.68G   0      0 12.10M      0   02:41   02:22   00:19 12.66M 89  1.90G  89  1.70G   0      0 12.11M      0   02:41   02:23   00:18 12.90M 89  1.90G  89  1.71G   0      0 12.10M      0   02:41   02:24   00:17 13.04M 90  1.90G  90  1.72G   0      0 12.08M      0   02:41   02:25   00:16 12.15M 90  1.90G  90  1.73G   0      0 12.09M      0   02:41   02:26   00:15 12.28M 91  1.90G  91  1.74G   0      0 12.09M      0   02:41   02:27   00:14 11.91M 92  1.90G  92  1.75G   0      0 12.09M      0   02:41   02:28   00:13 11.67M 92  1.90G  92  1.77G   0      0 12.10M      0   02:41   02:29   00:12 12.11M 93  1.90G  93  1.78G   0      0 12.10M      0   02:41   02:30   00:11 12.66M 94  1.90G  94  1.79G   0      0 12.11M      0   02:41   02:31   00:10 12.67M 94  1.90G  94  1.80G   0      0 12.13M      0   02:40   02:32   00:08 13.16M 95  1.90G  95  1.82G   0      0 12.13M      0   02:40   02:33   00:07 13.15M 96  1.90G  96  1.83G   0      0 12.12M      0   02:40   02:34   00:06 12.87M 96  1.90G  96  1.84G   0      0 12.11M      0   02:41   02:35   00:06 12.40M 97  1.90G  97  1.85G   0      0 12.12M      0   02:40   02:36   00:04 12.50M 98  1.90G  98  1.86G   0      0 12.12M      0   02:40   02:37   00:03 12.05M 98  1.90G  98  1.88G   0      0 12.12M      0   02:40   02:38   00:02 11.86M 99  1.90G  99  1.89G   0      0 12.12M      0   02:40   02:39   00:01 11.98M100  1.90G 100  1.90G   0      0 12.12M      0   02:40   02:40         11.98M100  1.90G 100  1.90G   0      0 12.12M      0   02:40   02:40         11.98M100  1.90G 100  1.90G   0      0 12.12M      0   02:40   02:40         11.98M
+OK ~/models/Ministral-3-3B-Instruct-2512-Q4_0.gguf sha256 bd1eef40a7fdb1ba9728ec977bd4aab40fb76993d6ec37377fd6522703dc88a5
+  % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
+                                 Dload  Upload  Total   Spent   Left   Speed
+  0      0   0      0   0      0      0      0                              0100   1092 100   1092   0      0   5854      0                              0100   1092 100   1092   0      0   5847      0                              0
+  0      0   0      0   0      0      0      0                              0  0  1.84G   0 10.17M   0      0  7.44M      0   04:14   00:01   04:13 10.18M  1  1.84G   1 23.76M   0      0 10.04M      0   03:08   00:02   03:06 11.88M  1  1.84G   1 36.81M   0      0 10.93M      0   02:53   00:03   02:50 12.28M  2  1.84G   2 50.53M   0      0 11.56M      0   02:43   00:04   02:39 12.63M  3  1.84G   3 65.06M   0      0 12.12M      0   02:36   00:05   02:31 13.01M  4  1.84G   4 75.84M   0      0 11.91M      0   02:38   00:06   02:32 13.13M  4  1.84G   4 88.55M   0      0 12.02M      0   02:37   00:07   02:30 12.95M  5  1.84G   5 100.0M   0      0 11.95M      0   02:38   00:08   02:30 12.63M  5  1.84G   5 112.8M   0      0 12.04M      0   02:37   00:09   02:28 12.46M  6  1.84G   6 124.4M   0      0 11.99M      0   02:37   00:10   02:27 11.86M  7  1.84G   7 132.6M   0      0 11.66M      0   02:42   00:11   02:31 11.36M  7  1.84G   7 144.1M   0      0 11.65M      0   02:42   00:12   02:30 11.11M  8  1.84G   8 155.2M   0      0 11.60M      0   02:43   00:13   02:30 11.03M  8  1.84G   8 169.3M   0      0 11.77M      0   02:40   00:14   02:26 11.26M  9  1.84G   9 182.8M   0      0 11.89M      0   02:39   00:15   02:24 11.67M 10  1.84G  10 195.9M   0      0 11.96M      0   02:38   00:16   02:22 12.64M 10  1.84G  10 208.1M   0      0 11.97M      0   02:38   00:17   02:21 12.77M 11  1.84G  11 219.8M   0      0 11.96M      0   02:38   00:18   02:20 12.91M 12  1.84G  12 233.4M   0      0 12.04M      0   02:37   00:19   02:18 12.82M 13  1.84G  13 246.7M   0      0 12.11M      0   02:36   00:20   02:16 12.77M 13  1.84G  13 260.3M   0      0 12.17M      0   02:35   00:21   02:14 12.86M 14  1.84G  14 272.6M   0      0 12.18M      0   02:35   00:22   02:13 12.89M 14  1.84G  14 283.5M   0      0 12.12M      0   02:36   00:23   02:13 12.71M 15  1.84G  15 296.4M   0      0 12.15M      0   02:35   00:24   02:11 12.57M 16  1.84G  16 310.4M   0      0 12.22M      0   02:34   00:25   02:09 12.70M 17  1.84G  17 323.3M   0      0 12.25M      0   02:34   00:26   02:08 12.58M 17  1.84G  17 334.4M   0      0 12.20M      0   02:35   00:27   02:08 12.33M 18  1.84G  18 346.5M   0      0 12.20M      0   02:35   00:28   02:07 12.59M 18  1.84G  18 355.4M   0      0 12.09M      0   02:36   00:29   02:07 11.79M 19  1.84G  19 367.8M   0      0 12.10M      0   02:36   00:30   02:06 11.48M 20  1.84G  20 382.3M   0      0 12.17M      0   02:35   00:31   02:04 11.78M 20  1.84G  20 392.0M   0      0 12.10M      0   02:36   00:32   02:04 11.53M 21  1.84G  21 405.5M   0      0 12.14M      0   02:35   00:33   02:02 11.78M 22  1.84G  22 418.6M   0      0 12.17M      0   02:35   00:34   02:01 12.63M 22  1.84G  22 431.7M   0      0 12.19M      0   02:35   00:35   02:00 12.76M 23  1.84G  23 445.6M   0      0 12.24M      0   02:34   00:36   01:58 12.65M 24  1.84G  24 457.4M   0      0 12.22M      0   02:34   00:37   01:57 13.03M 24  1.84G  24 469.8M   0      0 12.23M      0   02:34   00:38   01:56 12.81M 25  1.84G  25 483.3M   0      0 12.26M      0   02:34   00:39   01:55 12.88M 26  1.84G  26 496.6M   0      0 12.28M      0   02:34   00:40   01:54 12.93M 27  1.84G  27 511.4M   0      0 12.34M      0   02:33   00:41   01:52 13.08M 27  1.84G  27 522.1M   0      0 12.30M      0   02:33   00:42   01:51 12.89M 28  1.84G  28 534.1M   0      0 12.30M      0   02:33   00:43   01:50 12.82M 28  1.84G  28 546.4M   0      0 12.29M      0   02:33   00:44   01:49 12.58M 29  1.84G  29 557.9M   0      0 12.28M      0   02:34   00:45   01:49 12.23M 30  1.84G  30 571.1M   0      0 12.30M      0   02:33   00:46   01:47 11.94M 30  1.84G  30 579.2M   0      0 12.21M      0   02:34   00:47   01:47 11.43M 31  1.84G  31 587.6M   0      0 12.13M      0   02:35   00:48   01:47 10.69M 31  1.84G  31 597.4M   0      0 12.08M      0   02:36   00:49   01:47 10.20M 32  1.84G  32 607.9M   0      0 12.05M      0   02:36   00:50   01:46 10.00M 32  1.84G  32 618.6M   0      0 12.02M      0   02:37   00:51   01:46  9.47M 33  1.84G  33 627.3M   0      0 11.96M      0   02:38   00:52   01:46  9.61M 33  1.84G  33 635.9M   0      0 11.90M      0   02:39   00:53   01:46  9.65M 34  1.84G  34 649.6M   0      0 11.93M      0   02:38   00:54   01:44 10.41M 35  1.84G  35 663.1M   0      0 11.96M      0   02:38   00:55   01:43 11.02M 35  1.84G  35 676.6M   0      0 11.99M      0   02:37   00:56   01:41 11.59M 36  1.84G  36 689.8M   0      0 12.00M      0   02:37   00:57   01:40 12.45M 37  1.84G  37 703.2M   0      0 12.03M      0   02:37   00:58   01:39 13.43M 37  1.84G  37 716.2M   0      0 12.04M      0   02:37   00:59   01:38 13.30M 38  1.84G  38 730.1M   0      0 12.08M      0   02:36   01:00   01:36 13.37M 39  1.84G  39 743.6M   0      0 12.10M      0   02:36   01:01   01:35 13.38M 40  1.84G  40 757.0M   0      0 12.12M      0   02:36   01:02   01:34 13.44M 40  1.84G  40 770.8M   0      0 12.15M      0   02:35   01:03   01:32 13.51M 41  1.84G  41 779.7M   0      0 12.10M      0   02:36   01:04   01:32 12.70M 41  1.84G  41 793.5M   0      0 12.12M      0   02:36   01:05   01:31 12.67M 42  1.84G  42 805.9M   0      0 12.12M      0   02:36   01:06   01:30 12.44M 43  1.84G  43 818.9M   0      0 12.14M      0   02:35   01:07   01:28 12.38M 43  1.84G  43 831.1M   0      0 12.14M      0   02:35   01:08   01:27 12.05M 44  1.84G  44 841.9M   0      0 12.12M      0   02:36   01:09   01:27 12.44M 45  1.84G  45 855.5M   0      0 12.14M      0   02:35   01:10   01:25 12.41M 45  1.84G  45 869.6M   0      0 12.17M      0   02:35   01:11   01:24 12.72M 46  1.84G  46 883.0M   0      0 12.18M      0   02:35   01:12   01:23 12.79M 47  1.84G  47 895.8M   0      0 12.19M      0   02:35   01:13   01:22 12.92M 47  1.84G  47 904.6M   0      0 12.14M      0   02:35   01:14   01:21 12.47M 48  1.84G  48 916.1M   0      0 12.13M      0   02:35   01:15   01:20 12.05M 49  1.84G  49 928.5M   0      0 12.14M      0   02:35   01:16   01:19 11.72M 49  1.84G  49 941.3M   0      0 12.15M      0   02:35   01:17   01:18 11.60M 50  1.84G  50 953.2M   0      0 12.14M      0   02:35   01:18   01:17 11.43M 51  1.84G  51 966.1M   0      0 12.15M      0   02:35   01:19   01:16 12.28M 51  1.84G  51 979.3M   0      0 12.16M      0   02:35   01:20   01:15 12.62M 52  1.84G  52 989.9M   0      0 12.15M      0   02:35   01:21   01:14 12.27M 52  1.84G  52  0.97G   0      0 12.15M      0   02:35   01:22   01:13 12.28M 53  1.84G  53  0.99G   0      0 12.16M      0   02:35   01:23   01:12 12.37M 54  1.84G  54  1.00G   0      0 12.17M      0   02:35   01:24   01:11 12.38M 54  1.84G  54  1.01G   0      0 12.14M      0   02:35   01:25   01:10 11.68M 55  1.84G  55  1.02G   0      0 12.14M      0   02:35   01:26   01:09 11.96M 56  1.84G  56  1.03G   0      0 12.15M      0   02:35   01:27   01:08 12.12M 56  1.84G  56  1.05G   0      0 12.17M      0   02:35   01:28   01:07 12.41M 57  1.84G  57  1.06G   0      0 12.18M      0   02:35   01:29   01:06 12.34M 58  1.84G  58  1.07G   0      0 12.19M      0   02:35   01:30   01:05 13.15M 58  1.84G  58  1.08G   0      0 12.20M      0   02:35   01:31   01:04 13.35M 59  1.84G  59  1.10G   0      0 12.22M      0   02:34   01:32   01:02 13.43M 60  1.84G  60  1.11G   0      0 12.23M      0   02:34   01:33   01:01 13.21M 61  1.84G  61  1.12G   0      0 12.24M      0   02:34   01:34   01:00 13.43M 61  1.84G  61  1.13G   0      0 12.21M      0   02:34   01:35   00:59 12.59M 62  1.84G  62  1.15G   0      0 12.23M      0   02:34   01:36   00:58 12.76M 63  1.84G  63  1.16G   0      0 12.25M      0   02:34   01:37   00:57 12.71M 63  1.84G  63  1.17G   0      0 12.24M      0   02:34   01:38   00:56 12.54M 64  1.84G  64  1.18G   0      0 12.24M      0   02:34   01:39   00:55 12.13M 65  1.84G  65  1.20G   0      0 12.26M      0   02:34   01:40   00:54 13.09M 65  1.84G  65  1.21G   0      0 12.27M      0   02:34   01:41   00:53 12.94M 66  1.84G  66  1.22G   0      0 12.25M      0   02:34   01:42   00:52 12.38M 67  1.84G  67  1.23G   0      0 12.25M      0   02:34   01:43   00:51 12.38M 67  1.84G  67  1.24G   0      0 12.23M      0   02:34   01:44   00:50 12.05M 68  1.84G  68  1.25G   0      0 12.22M      0   02:34   01:45   00:49 11.50M 68  1.84G  68  1.27G   0      0 12.23M      0   02:34   01:46   00:48 11.41M 69  1.84G  69  1.28G   0      0 12.24M      0   02:34   01:47   00:47 11.93M 70  1.84G  70  1.29G   0      0 12.24M      0   02:34   01:48   00:46 12.08M 70  1.84G  70  1.31G   0      0 12.26M      0   02:34   01:49   00:45 12.93M 71  1.84G  71  1.32G   0      0 12.27M      0   02:34   01:50   00:44 13.24M 72  1.84G  72  1.33G   0      0 12.28M      0   02:34   01:51   00:43 13.47M 73  1.84G  73  1.35G   0      0 12.29M      0   02:33   01:52   00:41 13.39M 73  1.84G  73  1.36G   0      0 12.30M      0   02:33   01:53   00:40 13.59M 74  1.84G  74  1.37G   0      0 12.30M      0   02:33   01:54   00:39 13.16M 75  1.84G  75  1.38G   0      0 12.30M      0   02:33   01:55   00:38 12.98M 75  1.84G  75  1.39G   0      0 12.27M      0   02:34   01:56   00:38 11.96M 76  1.84G  76  1.40G   0      0 12.24M      0   02:34   01:57   00:37 11.23M 76  1.84G  76  1.41G   0      0 12.24M      0   02:34   01:58   00:36 10.76M 77  1.84G  77  1.42G   0      0 12.19M      0   02:35   01:59   00:36  9.72M 77  1.84G  77  1.43G   0      0 12.16M      0   02:35   02:00   00:35  9.00M 77  1.84G  77  1.44G   0      0 12.14M      0   02:35   02:01   00:34  9.16M 78  1.84G  78  1.45G   0      0 12.14M      0   02:35   02:02   00:33  9.80M 79  1.84G  79  1.46G   0      0 12.14M      0   02:35   02:03   00:32  9.81M 79  1.84G  79  1.47G   0      0 12.14M      0   02:35   02:04   00:31 11.04M 80  1.84G  80  1.48G   0      0 12.14M      0   02:35   02:05   00:30 11.74M 81  1.84G  81  1.49G   0      0 12.13M      0   02:35   02:06   00:29 12.00M 81  1.84G  81  1.51G   0      0 12.14M      0   02:35   02:07   00:28 12.16M 82  1.84G  82  1.52G   0      0 12.13M      0   02:35   02:08   00:27 12.00M 83  1.84G  83  1.53G   0      0 12.14M      0   02:35   02:09   00:26 12.07M 83  1.84G  83  1.54G   0      0 12.12M      0   02:36   02:10   00:26 11.60M 84  1.84G  84  1.55G   0      0 12.13M      0   02:35   02:11   00:24 11.99M 85  1.84G  85  1.57G   0      0 12.14M      0   02:35   02:12   00:23 12.01M 85  1.84G  85  1.58G   0      0 12.15M      0   02:35   02:13   00:22 12.59M 86  1.84G  86  1.59G   0      0 12.16M      0   02:35   02:14   00:21 12.68M 87  1.84G  87  1.61G   0      0 12.17M      0   02:35   02:15   00:20 13.40M 87  1.84G  87  1.62G   0      0 12.19M      0   02:35   02:16   00:19 13.78M 88  1.84G  88  1.63G   0      0 12.20M      0   02:35   02:17   00:18 13.83M 89  1.84G  89  1.65G   0      0 12.22M      0   02:34   02:18   00:16 13.97M 90  1.84G  90  1.66G   0      0 12.22M      0   02:34   02:19   00:15 13.86M 90  1.84G  90  1.67G   0      0 12.20M      0   02:35   02:20   00:15 12.94M 91  1.84G  91  1.68G   0      0 12.21M      0   02:34   02:21   00:13 12.73M 92  1.84G  92  1.70G   0      0 12.22M      0   02:34   02:22   00:12 12.67M 92  1.84G  92  1.71G   0      0 12.23M      0   02:34   02:23   00:11 12.75M 93  1.84G  93  1.72G   0      0 12.25M      0   02:34   02:24   00:10 12.96M 94  1.84G  94  1.74G   0      0 12.25M      0   02:34   02:25   00:09 13.79M 95  1.84G  95  1.75G   0      0 12.26M      0   02:34   02:26   00:08 13.86M 95  1.84G  95  1.76G   0      0 12.26M      0   02:34   02:27   00:07 13.61M 96  1.84G  96  1.78G   0      0 12.27M      0   02:34   02:28   00:06 13.43M 97  1.84G  97  1.79G   0      0 12.28M      0   02:34   02:29   00:05 13.28M 97  1.84G  97  1.80G   0      0 12.27M      0   02:34   02:30   00:04 12.80M 98  1.84G  98  1.81G   0      0 12.26M      0   02:34   02:31   00:03 12.02M 98  1.84G  98  1.82G   0      0 12.25M      0   02:34   02:32   00:02 11.90M 99  1.84G  99  1.83G   0      0 12.26M      0   02:34   02:33   00:01 11.78M100  1.84G 100  1.84G   0      0 12.27M      0   02:34   02:34         11.78M100  1.84G 100  1.84G   0      0 12.27M      0   02:34   02:34         11.78M100  1.84G 100  1.84G   0      0 12.27M      0   02:34   02:34         11.78M
+OK ~/models/granite-4.0-micro-Q4_0.gguf sha256 41ddec7abeba67178442a45829d8093354b334ba709e41a998e859a3a8ef655e
+22:19:19 battery 22% (PLUGGED_USB): waiting for 25 %
+22:24:20 battery 23% (PLUGGED_USB): waiting for 25 %
+22:29:21 battery 24% (PLUGGED_USB): waiting for 25 %
+22:34:23 cool: status=0 cpu=47C after 0s
+
+== 2026-11-12 22:34:24 hauhau-q4km: eval_fr, battery 25 PLUGGED_USB
+PASS fr capitale       'Canberra'
+PASS fr bastille       'La prise de la Bastille a eu lieu en **1789**.'
+PASS fr multiplication '391'
+PASS fr horaire        'Le train arrive à **17 h 15**.\n\n*Calcul : 14 h 40 + 2 h 35 = 17 h 15.*'
+PASS fr chimie         'Au.'
+PASS fr puces          '- Économique sur le long terme\n- Améliore la santé physique\n- Réduit l'
+PASS fr oui_non        'Non'
+PASS fr json           '{"ville": "Tokyo", "pays": "Japon"}'
+PASS fr traduction     'La réunion est reportée à mardi prochain.'
+PASS fr conjugaison    'Nous irons.'
+PASS fr accord         'La phrase corrigée est : « Ils se sont parlé hier. »'
+PASS fr seed_phrase    'La **phrase de récupération** (ou seed phrase) est une suite de 12 mot'
+fail fr fleuve         "Le plus long fleuve de France est la **Seine**.\n\nIl a une longueur d'e"
+PASS fr minutes        'Il y a 210 minutes dans trois heures et demie.'
+PASS fr auteur         '**Victor Hugo** a écrit *Les Misérables*.'
+PASS fr pommes         'Vous avez maintenant 7 pommes.\n\n(Calculation : 5 - 2 = 3 ; 3 + 4 = 7)'
+PASS fr court          "La diffusion de la lumière bleue par les molécules d'air."
+PASS fr linux          "La commande pour afficher la liste des fichiers d'un dossier est :\n\n**"
+fail fr lettres        'Onze cent quarante-cinq.'
+PASS fr pluriel        'Le pluriel de « cheval » est « chevaux ».'
+PASS fr resume         'Le Seed Vault protège les clés privées dans une zone sécurisée du télé'
+PASS fr racine         'La racine carrée de 144 est **12**.'
+fail fr jour           'Nous serons un **mardi**.'
+PASS fr chmod          "La commande `chmod 700 fichier` supprime tous les droits d'accès (lect"
+{"pass": 21, "french": 24, "n": 24, "pass_and_french": 21, "gen_tps_mean": 5.34} -> /sdcard/Download/seeker-zero/evalfr-hauhau-q4km.json
+22:37:10 battery 24% (PLUGGED_USB): waiting for 25 %
+22:42:12 cool: status=0 cpu=47C after 0s
+
+== 2026-11-12 22:42:13 hauhau-q4km: bench_agent --quick, battery 25 PLUGGED_USB
+  tool PASS  Retiens que je préfère les réponses courtes.            -> remember {"note": "L'utilisateur préfère les réponses courtes."}
+  tool PASS  Envoie une notification sur le téléphone qui dit : test -> android {"action": "notify", "text": "test"}
+  tool PASS  À quel réseau Wi-Fi le téléphone est-il connecté ?      -> android {"action": "wifi_info"}
+  tool PASS  Quelle est la version d'Android ? Utilise getprop avec  -> system {"command": "getprop ro.build.version.release"}
+  tool PASS  Quels périphériques USB sont branchés ?                 -> android {"action": "usb_devices"}
+  tool FAIL  Liste les applications installées par l'utilisateur.    -> android {"action": "app_info"}
+  tool PASS  Télécharge la page https://example.com et donne son tit -> fetch_url {"url": "https://example.com"}
+  tool PASS  Quelle est la capitale de l'Italie ?                    -> None {}
+  tool PASS  Écris une fonction Python qui additionne deux nombres.  -> None {}
+  python PASS  est_palindrome
+  python PASS  fizzbuzz
+  python PASS  compte_mots
+  python PASS  fusionne
+  python PASS  premiers
+  python PASS  moyenne_mobile
+  python PASS  est_palindrome
+  python PASS  fizzbuzz
+  python PASS  compte_mots
+  python PASS  fusionne
+  python PASS  premiers
+  python PASS  moyenne_mobile
+  french 476 chars, 6.0 tok/s: 'Une clé privée est un mot de passe secret de 12 à 24 caractères qui sert à signer toutes v'
+  french 189 chars, 6.2 tok/s: 'Objet : Modification de rendez-vous\n\nBonjour,\n\nJe vous prie de bien vouloir déplacer notre'
+  french 401 chars, 6.0 tok/s: 'Les avantages incluent une meilleure confidentialité des données, une réduction de la dépe'
+== summary hauhau-q4km-v4 {"speed": {"gen_tps": 5.94, "prompt_tps": 21.32, "ttft_s_median": 2.42, "n": 45}, "probe_tps_start_end": [6.198812445286872, 6.187384041793717], "tool_calls_pass": "26/30", "tool_calls_valid_json": "25/25", "python_pass": "12/12", "agent_tasks_pass": null, "convo_turns_ok": 0, "request_errors": 0, "peak_ram_mb": 3898, "peak_ram_mb_sweep_max": null, "cpu_pct_mean_busy": 394.2, "cpu_pct_max": 398, "mem_available_mb_min": 1685, "swap_used_mb_max": 1438, "server_rss_mb_max": 3898, "cpu_temp_c_max": 73.635, "skin_temp_c_max": 41.788, "thermal_status_max": 3, "big_core_mhz_busy_min_max": [2500, 2500], "battery_mw_idle": -1335.0, "battery_mw_busy_mean": 2447.2, "battery_pct_start_end": [25, 23], "termux_external_connections_max": 0, "termux_open_listen_max": 0, "all_external_connections_max": 3, "minutes": 9.3, "errors": null}
+2026-11-12 22:51:33 model-hauhau-q4km: OK
+22:51:34 battery 23% (PLUGGED_USB): waiting for 25 %
+22:56:35 battery 24% (PLUGGED_USB): waiting for 25 %
+23:01:36 battery 24% (PLUGGED_USB): waiting for 25 %
+23:06:38 cool: status=0 cpu=47C after 0s
+
+== 2026-11-12 23:06:39 qwen35-q40: eval_fr, battery 25 PLUGGED_USB
+PASS fr capitale       'Canberra'
+PASS fr bastille       'La prise de la Bastille a eu lieu le 14 juillet 1789.'
+PASS fr multiplication '391'
+PASS fr horaire        'Le train arrive à 17 h 15.'
+PASS fr chimie         'Au'
+PASS fr puces          '- Économique\n- Écologique\n- Santé'
+PASS fr oui_non        'Non'
+PASS fr json           '{"ville": "Tokyo", "pays": "Japon"}'
+PASS fr traduction     'La réunion est reportée au mardi prochain.'
+PASS fr conjugaison    'Nous irons.'
+PASS fr accord         'La phrase corrigée est : « Ils se sont parlé hier. »\n\n**Explication :*'
+PASS fr seed_phrase    'La phrase de récupération (seed phrase) est une série de 12 à 24 mots '
+fail fr fleuve         "Le plus long fleuve de France est la **Seine**, avec une longueur d'en"
+PASS fr minutes        'Il y a 210 minutes dans trois heures et demie.'
+PASS fr auteur         'Victor Hugo.'
+PASS fr pommes         'Tu as maintenant 7 pommes.'
+PASS fr court          'La diffusion de la lumière bleue par la diffusion Rayleigh.'
+PASS fr linux          'La commande est `ls` (ou `ls -l` pour une liste détaillée).'
+PASS fr lettres        'Mille deux cent quarante-cinq.'
+PASS fr pluriel        'Le pluriel de « cheval » est **chevaux**.'
+PASS fr resume         'Le Seed Vault sécurise les clés privées dans une zone isolée du téléph'
+PASS fr racine         'La racine carrée de 144 est 12.'
+fail fr jour           'Nous serons un mardi.'
+fail fr chmod          'La commande `chmod 700 fichier` rend le fichier totalement privé en lu'
+{"pass": 21, "french": 24, "n": 24, "pass_and_french": 21, "gen_tps_mean": 6.14} -> /sdcard/Download/seeker-zero/evalfr-qwen35-q40.json
+23:08:34 cool: status=0 cpu=47C after 0s
+
+== 2026-11-12 23:08:35 qwen35-q40: bench_agent --quick, battery 25 PLUGGED_USB
+  tool PASS  Retiens que je préfère les réponses courtes.            -> remember {"note": "L'utilisateur préfère les réponses courtes."}
+  tool PASS  Envoie une notification sur le téléphone qui dit : test -> android {"action": "notify", "text": "test"}
+  tool PASS  À quel réseau Wi-Fi le téléphone est-il connecté ?      -> android {"action": "wifi_info"}
+  tool PASS  Quelle est la version d'Android ? Utilise getprop avec  -> system {"command": "getprop ro.build.version.release"}
+  tool PASS  Quels périphériques USB sont branchés ?                 -> android {"action": "usb_devices"}
+  tool FAIL  Liste les applications installées par l'utilisateur.    -> android {"action": "app_info"}
+  tool PASS  Télécharge la page https://example.com et donne son tit -> fetch_url {"url": "https://example.com"}
+  tool PASS  Quelle est la capitale de l'Italie ?                    -> None {}
+  tool PASS  Écris une fonction Python qui additionne deux nombres.  -> write_file {"path": "~/seeker-work/add_numbers.py", "content": "def add_numbers(a
+  python PASS  est_palindrome
+  python PASS  fizzbuzz
+  python PASS  compte_mots
+  python PASS  fusionne
+  python PASS  premiers
+  python PASS  moyenne_mobile
+  python PASS  est_palindrome
+  python PASS  fizzbuzz
+  python PASS  compte_mots
+  python PASS  fusionne
+  python PASS  premiers
+  python PASS  moyenne_mobile
+  french 494 chars, 5.8 tok/s: 'Une clé privée est un mot de passe secret qui sert de signature numérique pour authentifie'
+  french 376 chars, 5.9 tok/s: 'Objet : Modification de notre rendez-vous\n\nBonjour [Nom du destinataire],\n\nJe me permets d'
+  french 326 chars, 5.7 tok/s: "Les inconvénients incluent la perte de l'assistance vocale intégrée, des fonctionnalités d"
+== summary qwen35-q40-v4 {"speed": {"gen_tps": 5.67, "prompt_tps": 22.44, "ttft_s_median": 2.44, "n": 45}, "probe_tps_start_end": [5.6906312698562385, 5.910056260921291], "tool_calls_pass": "27/30", "tool_calls_valid_json": "27/27", "python_pass": "12/12", "agent_tasks_pass": null, "convo_turns_ok": 0, "request_errors": 0, "peak_ram_mb": 3778, "peak_ram_mb_sweep_max": null, "cpu_pct_mean_busy": 394.1, "cpu_pct_max": 398, "mem_available_mb_min": 1839, "swap_used_mb_max": 1514, "server_rss_mb_max": 3778, "cpu_temp_c_max": 72.717, "skin_temp_c_max": 41.748, "thermal_status_max": 3, "big_core_mhz_busy_min_max": [2500, 2500], "battery_mw_idle": -1182.0, "battery_mw_busy_mean": 2300.4, "battery_pct_start_end": [25, 23], "termux_external_connections_max": 0, "termux_open_listen_max": 0, "all_external_connections_max": 2, "minutes": 9.9, "errors": null}
+2026-11-12 23:18:29 model-qwen35-q40: OK
+23:18:30 battery 23% (PLUGGED_USB): waiting for 25 %
+23:23:31 battery 24% (PLUGGED_USB): waiting for 25 %
+23:28:31 battery 24% (PLUGGED_USB): waiting for 25 %
+23:33:33 cool: status=0 cpu=47C after 0s
+
+== 2026-11-12 23:33:34 qwen3-2507-q40: eval_fr, battery 25 PLUGGED_USB
+PASS fr capitale       'Canberra'
+PASS fr bastille       '1789'
+fail fr multiplication '401'
+PASS fr horaire        'Le train part à 14h40 et roule pendant 2h35.\n\n2 heures 35 minutes aprè'
+PASS fr chimie         "Le symbole chimique de l'or est Au."
+PASS fr puces          '- C’est un mode de transport écologique qui réduit les émissions de ga'
+PASS fr oui_non        'Non.'
+PASS fr json           '{"ville": "Tokyo", "pays": "Japon"}'
+fail fr traduction     "La réunion est reportée jusqu'au lundi prochain."
+fail fr conjugaison    'Nous allons.'
+fail fr accord         'La phrase est correcte : « Ils se sont parlés hier. »  \nAucune faute n'
+PASS fr seed_phrase    "La phrase de récupération (seed phrase) d'un portefeuille Solana est u"
+PASS fr fleuve         'Le plus long fleuve de France est la Loire. Elle mesure environ 1012 k'
+fail fr minutes        'Il y a 180 minutes dans trois heures et demie.'
+PASS fr auteur         'Les Misérables a été écrit par Victor Hugo.'
+PASS fr pommes         'Tu avais 5 pommes, tu en manges 2, donc il te reste 3. Puis tu en achè'
+fail fr court          "Le ciel est bleu parce que les molécules de l'air diffusent la lumière"
+PASS fr linux          "La commande `ls` affiche la liste des fichiers d'un dossier."
+PASS fr lettres        'Mille deux cent quarante-cinq.'
+PASS fr pluriel        'Le pluriel de « cheval » est « chevaux ».'
+PASS fr resume         'Le Seed Vault stocke les clés privées dans une zone sécurisée du télép'
+PASS fr racine         'La racine carrée de 144 est 12.'
+PASS fr jour           "Si aujourd'hui est lundi, dans 10 jours, ce sera un **mardi**.  \n\nExpl"
+PASS fr chmod          "La commande `chmod 700 fichier` donne uniquement les droits d'écriture"
+{"pass": 18, "french": 24, "n": 24, "pass_and_french": 18, "gen_tps_mean": 7.02} -> /sdcard/Download/seeker-zero/evalfr-qwen3-2507-q40.json
+23:36:12 cool: status=0 cpu=47C after 0s
+
+== 2026-11-12 23:36:13 qwen3-2507-q40: bench_agent --quick, battery 25 PLUGGED_USB
+  tool FAIL  Retiens que je préfère les réponses courtes.            -> None {}
+  tool PASS  Envoie une notification sur le téléphone qui dit : test -> android {"action": "notify", "text": "test"}
+  tool PASS  À quel réseau Wi-Fi le téléphone est-il connecté ?      -> android {"action": "wifi_info"}
+  tool PASS  Quelle est la version d'Android ? Utilise getprop avec  -> system {"command": "getprop ro.build.version.release"}
+  tool PASS  Quels périphériques USB sont branchés ?                 -> android {"action": "usb_devices"}
+  tool PASS  Liste les applications installées par l'utilisateur.    -> android {"action": "apps"}
+  tool PASS  Télécharge la page https://example.com et donne son tit -> fetch_url {"url": "https://example.com"}
+  tool PASS  Quelle est la capitale de l'Italie ?                    -> None {}
+  tool PASS  Écris une fonction Python qui additionne deux nombres.  -> None {}
+  python PASS  est_palindrome
+  python PASS  fizzbuzz
+  python PASS  compte_mots
+  python PASS  fusionne
+  python PASS  premiers
+  python PASS  moyenne_mobile
+  python PASS  est_palindrome
+  python PASS  fizzbuzz
+  python PASS  compte_mots
+  python PASS  fusionne
+  python PASS  premiers
+  python FAIL  moyenne_mobile
+  french 330 chars, 6.6 tok/s: "Une clé privée est un code secret qui permet d'accéder à votre compte sur une blockchain e"
+  french 293 chars, 6.8 tok/s: 'Subject : Décalage de rendez-vous – Mardi à Jeudi  \n\nBonjour [Nom du destinataire],  \n\nJe '
+  french 325 chars, 6.8 tok/s: 'Un téléphone sans services Google offre plus de confidentialité et une meilleure autonomie'
+== summary qwen3-2507-q40-v4 {"speed": {"gen_tps": 5.67, "prompt_tps": 19.19, "ttft_s_median": 2.71, "n": 45}, "probe_tps_start_end": [6.829843554302623, 6.629789602048458], "tool_calls_pass": "26/30", "tool_calls_valid_json": "24/24", "python_pass": "11/12", "agent_tasks_pass": null, "convo_turns_ok": 0, "request_errors": 0, "peak_ram_mb": 3287, "peak_ram_mb_sweep_max": null, "cpu_pct_mean_busy": 395.4, "cpu_pct_max": 399, "mem_available_mb_min": 2301, "swap_used_mb_max": 1562, "server_rss_mb_max": 3287, "cpu_temp_c_max": 72.891, "skin_temp_c_max": 41.284, "thermal_status_max": 3, "big_core_mhz_busy_min_max": [2500, 2500], "battery_mw_idle": -920.5, "battery_mw_busy_mean": 2142.2, "battery_pct_start_end": [25, 23], "termux_external_connections_max": 0, "termux_open_listen_max": 0, "all_external_connections_max": 3, "minutes": 8.1, "errors": null}
+2026-11-12 23:44:17 model-qwen3-2507-q40: OK
+23:44:17 battery 23% (PLUGGED_USB): waiting for 25 %
+23:49:18 battery 24% (PLUGGED_USB): waiting for 25 %
+23:54:20 cool: status=0 cpu=47C after 0s
+
+== 2026-11-12 23:54:21 ministral3-q40: eval_fr, battery 25 PLUGGED_USB
+PASS fr capitale       'Canberra.'
+PASS fr bastille       'La **prise de la Bastille** a eu lieu le **14 juillet 1789**.'
+fail fr multiplication '411'
+PASS fr horaire        'Le train arrive à **17 h 15**.'
+PASS fr chimie         "Au **Zion Zéro**, le symbole de l'or est **Au**.\n\n*(Solana Seeker, bie"
+PASS fr puces          '- **Économies financières** : Réduction des coûts liés aux transports '
+PASS fr oui_non        'Non.'
+PASS fr json           '```json\n{"ville": "Tokyo", "pays": "Japon"}\n```'
+fail fr traduction     "La réunion est reportée jusqu'à demain (lundi suivant)."
+PASS fr conjugaison    'Nous irons.'
+PASS fr accord         'La phrase correcte est :\n*« Ils se sont **échangé** des mots hier. »*\n'
+PASS fr seed_phrase    'Sur **ZION ZERO**, la **phrase de récupération (seed phrase)** est un '
+PASS fr fleuve         'Le plus long fleuve de France est la **loire** (environ **1 000 km**).'
+fail fr minutes        'Trois heures et demie = **195 minutes**.'
+PASS fr auteur         'Victor Hugo.'
+PASS fr pommes         'Tu en as maintenant **7**.'
+PASS fr court          "La lumière du soleil est dispersée par l'atmosphère → **rayons bleus d"
+PASS fr linux          'Sur **ZION ZERO**, utilise :\n\n```bash\nls\n```\n\nPour voir les fichiers d'
+PASS fr lettres        'Un mille deux cent quarante-cinq.'
+PASS fr pluriel        'Sur **Zion Zero**, le pluriel de **"cheval"** est :\n**« chevaux »** *('
+PASS fr resume         'Le **Seed Vault** stocke vos clés privées dans un espace isolé du télé'
+PASS fr racine         'La racine carrée de **144** est **12**.'
+fail fr jour           "Si c'est **lundi**, dans **10 jours**, ce sera **mercredi**."
+PASS fr chmod          "La commande **`chmod 700 fichier`** donne **l'accès complet (lecture, "
+{"pass": 20, "french": 24, "n": 24, "pass_and_french": 20, "gen_tps_mean": 7.9} -> /sdcard/Download/seeker-zero/evalfr-ministral3-q40.json
+23:56:23 battery 24% (PLUGGED_USB): waiting for 25 %
+00:01:25 cool: status=0 cpu=47C after 0s
+
+== 2026-11-13 00:01:25 ministral3-q40: bench_agent --quick, battery 25 PLUGGED_USB
+  tool FAIL  Retiens que je préfère les réponses courtes.            -> None {}
+  tool FAIL  Envoie une notification sur le téléphone qui dit : test -> android {"action": "toast", "text": "test"}
+  tool PASS  À quel réseau Wi-Fi le téléphone est-il connecté ?      -> android {"action": "wifi_info"}
+  tool PASS  Quelle est la version d'Android ? Utilise getprop avec  -> system {"command": "getprop ro.build.version.release"}
+  tool PASS  Quels périphériques USB sont branchés ?                 -> system {"command": "ls /dev/bus/usb"}
+  tool PASS  Liste les applications installées par l'utilisateur.    -> android {"action": "apps"}
+  tool FAIL  Télécharge la page https://example.com et donne son tit -> None {}
+  tool PASS  Quelle est la capitale de l'Italie ?                    -> None {}
+  tool PASS  Écris une fonction Python qui additionne deux nombres.  -> None {}
+  python PASS  est_palindrome
+  python FAIL  fizzbuzz
+  python PASS  compte_mots
+  python PASS  fusionne
+  python PASS  premiers
+  python PASS  moyenne_mobile
+  python PASS  est_palindrome
+  python PASS  fizzbuzz
+  python PASS  compte_mots
+  python PASS  fusionne
+  python PASS  premiers
+  python PASS  moyenne_mobile
+  french 415 chars, 8.2 tok/s: 'En crypto, la **clé privée** est un mot de passe unique lié à un portefeuille numérique qu'
+  french 487 chars, 8.0 tok/s: 'Objet : Décalage du rendez-vous prévu le mardi\n\nBonjour [Nom du destinataire],\n\nJe souhait'
+  french 402 chars, 8.1 tok/s: 'Téléphones sans Google offrent une **sécurité renforcée** (pas de suivi ou données collect'
+== summary ministral3-q40-v4 {"speed": {"gen_tps": 7.06, "prompt_tps": 29.19, "ttft_s_median": 1.18, "n": 45}, "probe_tps_start_end": [7.644606839083696, 7.636135015109246], "tool_calls_pass": "25/30", "tool_calls_valid_json": "24/24", "python_pass": "11/12", "agent_tasks_pass": null, "convo_turns_ok": 0, "request_errors": 0, "peak_ram_mb": 2829, "peak_ram_mb_sweep_max": null, "cpu_pct_mean_busy": 394.9, "cpu_pct_max": 399, "mem_available_mb_min": 2770, "swap_used_mb_max": 1561, "server_rss_mb_max": 2829, "cpu_temp_c_max": 69.895, "skin_temp_c_max": 39.401, "thermal_status_max": 1, "big_core_mhz_busy_min_max": [2500, 2500], "battery_mw_idle": -1230.5, "battery_mw_busy_mean": 2053.4, "battery_pct_start_end": [25, 23], "termux_external_connections_max": 0, "termux_open_listen_max": 0, "all_external_connections_max": 2, "minutes": 6.2, "errors": null}
+2026-11-13 00:07:39 model-ministral3-q40: OK
+00:07:39 battery 23% (PLUGGED_USB): waiting for 25 %
+00:12:40 battery 24% (PLUGGED_USB): waiting for 25 %
+00:17:42 cool: status=0 cpu=47C after 0s
+
+== 2026-11-13 00:17:43 granite4micro-q40: eval_fr, battery 25 PLUGGED_USB
+PASS fr capitale       'Canberra.'
+PASS fr bastille       'La prise de la Bastille a eu lieu en 1789.'
+PASS fr multiplication '391'
+PASS fr horaire        'Le train arrive à 17h15.'
+PASS fr chimie         "Le symbole chimique de l'or est Au."
+PASS fr puces          '- Le vélo est une activité physique excellente pour maintenir un bon é'
+PASS fr oui_non        'Non.'
+fail fr json           '{"ville": "Tokio", "pays": "Japon"}'
+PASS fr traduction     "La réunion est reportée jusqu'au mardi prochain."
+fail fr conjugaison    'Nous allons.'
+PASS fr accord         "La faute est que le temps passé n'est pas correct. La phrase corrigée "
+PASS fr seed_phrase    "La phrase de récupération (seed phrase) d'un portefeuille Solana est u"
+fail fr fleuve         'Le plus long fleuve de France est le Rhône.'
+PASS fr minutes        'Il y a 210 minutes dans trois heures et demie.'
+PASS fr auteur         'Victor Hugo a écrit "Les Misérables".'
+PASS fr pommes         'You have 7 apples now.'
+fail fr court          'Le ciel est bleu en raison de la diffusion de la lumière du soleil par'
+PASS fr linux          "La commande Linux pour afficher la liste des fichiers d'un dossier est"
+PASS fr lettres        'Mille deux cent quarante-cinq.'
+PASS fr pluriel        'Le pluriel de « cheval » est « chevaux ».'
+PASS fr resume         'Le Seed Vault stocke les clés privées dans une zone sécurisée isolée d'
+PASS fr racine         'La racine carrée de 144 est 12.'
+fail NOT-FR jour           'If today is Monday, in 10 days it will be Thursday.'
+PASS fr chmod          "La commande « chmod 700 fichier » donne les droits d'accès strictement"
+{"pass": 19, "french": 23, "n": 24, "pass_and_french": 19, "gen_tps_mean": 8.48} -> /sdcard/Download/seeker-zero/evalfr-granite4micro-q40.json
+00:19:06 cool: status=0 cpu=47C after 0s
+
+== 2026-11-13 00:19:07 granite4micro-q40: bench_agent --quick, battery 25 PLUGGED_USB
+  tool PASS  Retiens que je préfère les réponses courtes.            -> remember {"note": "Répondre en format court."}
+  tool PASS  Envoie une notification sur le téléphone qui dit : test -> android {"action": "notify", "text": "test"}
+  tool PASS  À quel réseau Wi-Fi le téléphone est-il connecté ?      -> android {"action": "wifi_info"}
+  tool PASS  Quelle est la version d'Android ? Utilise getprop avec  -> system {"command": "getprop ro.build.version.release"}
+  tool PASS  Quels périphériques USB sont branchés ?                 -> android {"action": "usb_devices"}
+  tool PASS  Liste les applications installées par l'utilisateur.    -> android {"action": "apps"}
+  tool PASS  Télécharge la page https://example.com et donne son tit -> fetch_url {"url": "https://example.com"}
+  tool PASS  Quelle est la capitale de l'Italie ?                    -> None {}
+  tool PASS  Écris une fonction Python qui additionne deux nombres.  -> None {}
+  python PASS  est_palindrome
+  python PASS  fizzbuzz
+  python PASS  compte_mots
+  python PASS  fusionne
+  python PASS  premiers
+  python PASS  moyenne_mobile
+  python PASS  est_palindrome
+  python PASS  fizzbuzz
+  python PASS  compte_mots
+  python PASS  fusionne
+  python PASS  premiers
+  python PASS  moyenne_mobile
+  french 255 chars, 8.2 tok/s: 'Une clé privée est un code unique qui sécurise vos données et transactions sur ZION ZERO. '
+  french 592 chars, 8.1 tok/s: "Voici un courriel professionnel en anglais pour demander un report d'un rendez-vous de mar"
+  french 262 chars, 8.2 tok/s: 'Un téléphone sans services Google permet une plus grande confidentialité et liberté, mais '
+== summary granite4micro-q40-v4 {"speed": {"gen_tps": 7.19, "prompt_tps": 28.36, "ttft_s_median": 1.9, "n": 45}, "probe_tps_start_end": [8.284237174291409, 8.279140010245108], "tool_calls_pass": "26/30", "tool_calls_valid_json": "24/24", "python_pass": "12/12", "agent_tasks_pass": null, "convo_turns_ok": 0, "request_errors": 0, "peak_ram_mb": 2546, "peak_ram_mb_sweep_max": null, "cpu_pct_mean_busy": 394.7, "cpu_pct_max": 399, "mem_available_mb_min": 2972, "swap_used_mb_max": 1553, "server_rss_mb_max": 2534, "cpu_temp_c_max": 72.621, "skin_temp_c_max": 40.364, "thermal_status_max": 2, "big_core_mhz_busy_min_max": [2500, 2500], "battery_mw_idle": -1118.0, "battery_mw_busy_mean": 2140.3, "battery_pct_start_end": [25, 24], "termux_external_connections_max": 0, "termux_open_listen_max": 0, "all_external_connections_max": 1, "minutes": 7.2, "errors": null}
+2026-11-13 00:26:17 model-granite4micro-q40: OK
+
+== 2026-11-13 00:26:17 battery test: waiting for 70 % (at most 600 min)
+00:26:17 battery 24% (PLUGGED_USB): waiting for 70 %
+00:31:18 battery 24% (PLUGGED_USB): waiting for 70 %
+00:36:19 battery 25% (PLUGGED_USB): waiting for 70 %
+00:41:20 battery 26% (PLUGGED_USB): waiting for 70 %
+00:46:21 battery 26% (PLUGGED_USB): waiting for 70 %
+00:51:22 battery 27% (PLUGGED_USB): waiting for 70 %
+00:56:23 battery 28% (PLUGGED_USB): waiting for 70 %
+01:01:24 battery 29% (PLUGGED_USB): waiting for 70 %
+01:06:25 battery 29% (PLUGGED_USB): waiting for 70 %
+01:11:26 battery 30% (PLUGGED_USB): waiting for 70 %
+01:16:27 battery 31% (PLUGGED_USB): waiting for 70 %
+01:21:28 battery 32% (PLUGGED_USB): waiting for 70 %
+01:26:29 battery 33% (PLUGGED_USB): waiting for 70 %
+01:31:30 battery 33% (PLUGGED_USB): waiting for 70 %
+01:36:31 battery 34% (PLUGGED_USB): waiting for 70 %
+01:41:32 battery 35% (PLUGGED_USB): waiting for 70 %
+01:46:32 battery 36% (PLUGGED_USB): waiting for 70 %
+01:51:33 battery 37% (PLUGGED_USB): waiting for 70 %
+01:56:34 battery 37% (PLUGGED_USB): waiting for 70 %
+02:01:35 battery 38% (PLUGGED_USB): waiting for 70 %
+02:06:36 battery 39% (PLUGGED_USB): waiting for 70 %
+02:11:37 battery 40% (PLUGGED_USB): waiting for 70 %
+02:16:38 battery 41% (PLUGGED_USB): waiting for 70 %
+02:21:39 battery 41% (PLUGGED_USB): waiting for 70 %
+02:26:40 battery 42% (PLUGGED_USB): waiting for 70 %
+02:31:41 battery 43% (PLUGGED_USB): waiting for 70 %
+02:36:42 battery 44% (PLUGGED_USB): waiting for 70 %
+02:41:43 battery 45% (PLUGGED_USB): waiting for 70 %
+02:46:44 battery 45% (PLUGGED_USB): waiting for 70 %
+02:51:44 battery 46% (PLUGGED_USB): waiting for 70 %
+02:56:45 battery 47% (PLUGGED_USB): waiting for 70 %
+03:01:46 battery 48% (PLUGGED_USB): waiting for 70 %
+03:06:47 battery 48% (PLUGGED_USB): waiting for 70 %
+03:11:48 battery 49% (PLUGGED_USB): waiting for 70 %
+03:16:49 battery 50% (PLUGGED_USB): waiting for 70 %
+03:21:50 battery 51% (PLUGGED_USB): waiting for 70 %
+03:26:51 battery 51% (PLUGGED_USB): waiting for 70 %
+03:31:52 battery 52% (PLUGGED_USB): waiting for 70 %
