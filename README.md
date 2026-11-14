@@ -11,7 +11,7 @@
 > **ZION-CELLPHONE. THE LAST HARDLINE.**
 
 <p align="center">
-  <img src="assets/zion-cellphone-hero.svg" alt="ZION-CELLPHONE — The Last Hardline: on-device AI and terminal-first Android" width="100%" />
+  <img src="assets/readme-hero.svg" alt="ZION-CELLPHONE — The Last Hardline: on-device AI and terminal-first Android" width="100%" />
 </p>
 
 **ZION-CELLPHONE** is a Solana Seeker rebuilt around a simple idea: **the most powerful thing your phone can do is belong to you.**
