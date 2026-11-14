@@ -354,7 +354,7 @@ Use the security and network tools only on devices and systems you own or have p
 
 ---
 
-## Development credits
+## Contributors and AI assistance
 
 **Benjamin Da Cunha:** project direction, security/privacy requirements and final decisions.
 
