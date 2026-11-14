@@ -351,3 +351,13 @@ Use the security and network tools only on devices and systems you own or have p
 > # ZION-CELLPHONE
 >
 > *The last hardline. The new way out.*
+
+---
+
+## Development credits
+
+**Benjamin Da Cunha:** project direction, security/privacy requirements and final decisions.
+
+**ChatGPT (OpenAI):** assistance with README authoring, Termux and on-device AI setup documentation, and Android launcher workflow.
+
+These credits disclose AI assistance; they do not assign human authorship, independently verify research findings or imply that an AI tool is a GitHub account contributor.
