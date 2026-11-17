@@ -2,7 +2,7 @@
 """Self-test of seeker-ai against a fake llama-server and fake termux-*/rish commands (no model, no phone).
 Run: python3 ai/test_seeker_ai.py"""
 import contextlib, importlib.machinery, importlib.util, io, json, os, pty, subprocess, sys, tempfile, threading, time
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from http.server import BaseHTTPRequestHandler, HTTPServer, ThreadingHTTPServer
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
