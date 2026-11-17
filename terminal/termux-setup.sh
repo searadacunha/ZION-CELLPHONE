@@ -18,6 +18,7 @@ fi
 
 # seeker-ai
 install -m 755 "$SRC/ai/seeker-ai" "$PREFIX/bin/seeker-ai"
+install -m 644 "$SRC/ai/zion_ui.py" "$PREFIX/bin/zion_ui.py"  # OPERATOR UI input validation
 install -m 755 "$SRC/ai/install-model.sh" "$PREFIX/bin/install-model"
 install -m 755 "$SRC/terminal/seeker-dash" "$PREFIX/bin/seeker-dash"
 bash "$SRC/terminal/seeker-setup-shizuku" || true   # rish works once Shizuku is started
