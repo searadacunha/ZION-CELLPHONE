@@ -1,0 +1,765 @@
+#!/usr/bin/env python3
+"""zion: the supervisor of OPERATOR on ZION ZERO. A queue of tasks kept on disk, run one at a time by
+`seeker-ai --task --unattended`, resumed after a crash, a reboot or Android closing Termux; time limits; a resource
+guard (battery, heat, memory); a hash-chained journal; the owner's approvals; the emergency stop.
+  zion add "goal" [--apps PKG,PKG] [--priority N] [--no-screen]   queue a task
+  zion list | status | log [N] | verify                         what is queued, the supervisor, the journal (and its chain)
+  zion run [--once] [--background]                               the loop (Termux's job scheduler and boot start it)
+  zion approve ID | zion deny ID                                 decide a parked action, typed by the owner in a terminal
+  zion enroll                                                    pin the launcher's approval key (once, owner present)
+  zion allow PKG... | zion disallow PKG...                       apps OPERATOR may drive alone (typed by the owner)
+  zion cancel ID   zion stop   zion resume
+State: ~/.local/state/zion (ZION_STATE). Policy: what `seeker-ai --policy` prints (~/.config/zion/policy.json).
+Nothing here asks the model anything: the stop, the time limits and the approvals hold whatever the AI does."""
+import argparse, base64, fcntl, hashlib, hmac, json, os, re, secrets, shutil, signal, subprocess, sys, time, unicodedata
+from pathlib import Path
+
+HOME = Path.home()
+ZION = Path(os.environ.get("ZION_STATE", HOME / ".local/state/zion"))
+QUEUE, APPROVALS, LOGS = ZION / "queue", ZION / "approvals", ZION / "logs"
+JOURNAL, STOP, LOCK, STATE = ZION / "journal.jsonl", ZION / "STOP", ZION / "supervisor.lock", ZION / "supervisor.json"
+PIN = Path(os.environ.get("ZION_PIN", HOME / ".config/zion/approval.pub"))  # the launcher's approval key (zion enroll)
+DATA = Path(os.environ.get("SEEKER_AI_DATA", HOME / ".local/share/seeker-ai"))  # OPERATOR's task files
+BUSY = Path(os.environ.get("SEEKER_AI_BUSY", HOME / ".cache/seeker-ai/busy"))
+PROC = Path(os.environ.get("ZION_PROC", "/proc"))  # the self-test points it at a fake tree
+OPERATOR = os.environ.get("ZION_OPERATOR") or shutil.which("seeker-ai") or "seeker-ai"
+LAUNCHER_FILES = "/sdcard/Android/data/zero.seeker.launcher/files"  # read through rish: the shell may, Termux may not
+ID = re.compile(r"[0-9A-Za-z_-]{6,64}")
+PKG = re.compile(r"[A-Za-z]\w*(\.[A-Za-z]\w*)+")
+SECRET = re.compile(r"(?i)\b(mdp|mot de passe|password|passwd|passphrase|pwd)\b(\s*(?:est|is)?\s*[:=]?\s*)(\S+)")
+FINAL = ("done", "partial", "failed", "timeout", "cancelled")
+POLL, SYNC = 5, 30  # seconds: the loop, and the slower look at the launcher (each rish call starts a process)
+RESUMES = 3  # crashes or lost servers in a row before a task is given up
+APPROVAL_HOURS = 12
+KILL_MARGIN = 120  # seconds past the task's limit before zion kills it: OPERATOR stops itself first, between two calls
+
+
+def run(argv, timeout=30):
+    try:
+        r = subprocess.run(argv, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, timeout=timeout,
+                           stdin=subprocess.DEVNULL)
+        return r.returncode, r.stdout
+    except (OSError, subprocess.TimeoutExpired) as e:
+        return 127, str(e)
+
+
+def rish(cmd, timeout=30):
+    """An Android shell command through Shizuku; None when Shizuku is not there (after a reboot, until restarted)."""
+    path = os.environ.get("ZION_RISH") or shutil.which("rish") or next((str(p) for p in [HOME / "bin/rish"] if p.exists()), None)
+    if not path:
+        return None
+    rc, out = run([path, "-c", cmd], timeout)
+    return out if rc == 0 else None
+
+
+def secretless(text):
+    return SECRET.sub(lambda m: m.group(1) + m.group(2) + "***", text)
+
+
+def visible(text, keep=""):
+    """Without control, invisible or bidi characters (Unicode category C), which the launcher refuses in a request:
+    the owner must see what he approves exactly as it is."""
+    return "".join(c for c in str(text) if unicodedata.category(c)[0] != "C" or c in keep)
+
+
+# ---- the journal: one JSON line per event, each holding the hash of the one before (zion-guard chain verify reads it) ----
+def chain_hash(body):
+    return hashlib.sha256(json.dumps(body, sort_keys=True, ensure_ascii=False, separators=(",", ":")).encode("utf-8")).hexdigest()
+
+
+def journal(event, **kw):
+    ZION.mkdir(parents=True, exist_ok=True)
+    with open(JOURNAL, "ab+") as f:  # bytes: a seek can land inside an accented letter (review 17/11)
+        fcntl.flock(f, fcntl.LOCK_EX)  # zion approve, zion add and the loop may write at the same time
+        end = f.seek(0, 2)
+        f.seek(max(0, end - 65536))
+        tail = f.read()
+        prev, cut = "0" * 64, False
+        for raw in reversed([x for x in tail.split(b"\n") if x.strip()]):
+            try:  # the last whole line; a line cut by a power loss stays visible to verify, it never blocks the journal
+                prev = json.loads(raw.decode("utf-8"))["hash"]
+                break
+            except (ValueError, KeyError, TypeError):
+                cut = True
+        body = {"t": time.strftime("%Y-%m-%dT%H:%M:%S"), "event": event, **kw, "prev": prev, **({"after_cut_line": True} if cut else {})}
+        f.write((b"\n" if end and not tail.endswith(b"\n") else b"")
+                + (json.dumps({**body, "hash": chain_hash(body)}, ensure_ascii=False) + "\n").encode("utf-8"))
+
+
+def verify_chain(path=JOURNAL):
+    """(first broken line or 0, lines, head hash). Shows an edited, removed or reordered line; not a cut at the very
+    end, nor a whole journal rewritten by someone who holds Termux's rights (said in docs/AUTONOMY_SECURITY.md)."""
+    prev, n = "0" * 64, 0
+    for n, line in enumerate(path.read_text(encoding="utf-8").splitlines() if path.exists() else [], 1):
+        try:
+            obj = json.loads(line)
+        except ValueError:
+            return n, n, prev
+        if obj.get("prev") != prev or chain_hash({k: v for k, v in obj.items() if k != "hash"}) != obj.get("hash"):
+            return n, n, prev
+        prev = obj["hash"]
+    return 0, n, prev
+
+
+# ---- the queue: one file per task, written whole or not at all ----
+def save(t):
+    QUEUE.mkdir(parents=True, exist_ok=True)
+    p = QUEUE / f"{t['id']}.json"
+    tmp = p.with_name(p.name + ".tmp")
+    tmp.write_text(json.dumps(t, ensure_ascii=False, indent=1))
+    os.replace(tmp, p)
+
+
+def tasks():
+    out = []
+    for p in sorted(QUEUE.glob("*.json")) if QUEUE.exists() else []:
+        try:
+            t = json.loads(p.read_text())
+            out += [t] if isinstance(t, dict) and ID.fullmatch(str(t.get("id", ""))) else []
+        except (OSError, ValueError):
+            pass
+    return out
+
+
+def find(prefix, states=None):
+    hits = [t for t in tasks() if t["id"].startswith(prefix) and (states is None or t["state"] in states)]
+    if len(hits) != 1:
+        sys.exit(f"{len(hits)} task(s) match {prefix!r} (zion list)")
+    return hits[0]
+
+
+def add(goal, apps=(), priority=0, screen=True):
+    goal = goal.strip()
+    bad = [a for a in apps if not PKG.fullmatch(a)]
+    if not goal or bad:
+        sys.exit("zion add: a goal is needed" if not goal else f"zion add: not package names: {bad}")
+    t = {"id": time.strftime("%Y%m%d-%H%M%S-") + secrets.token_hex(2), "goal": goal, "apps": sorted(set(apps)),
+         "priority": int(priority), "screen": screen, "state": "queued", "created": time.time(), "runs": 0, "resumes": 0}
+    save(t)
+    journal("added", task=t["id"], goal=secretless(goal)[:200], apps=t["apps"], priority=t["priority"])
+    return t
+
+
+# ---- the owner's policy, from OPERATOR itself so that both read the same file the same way ----
+_policy = {"t": 0, "p": None}
+
+
+def policy():
+    if time.time() - _policy["t"] > 60 or _policy["p"] is None:
+        rc, out = run([OPERATOR, "--policy"], 60)
+        try:
+            _policy["p"] = json.loads(out.strip().splitlines()[-1]) if rc == 0 else None
+        except (ValueError, IndexError):
+            _policy["p"] = None
+        if _policy["p"] is None:  # OPERATOR unreadable: the safe values, nothing allowed beyond its own defaults
+            _policy["p"] = {"apps": [], "limits": {"task_minutes": 45, "battery_min": 25, "temp_max_c": 42, "mem_min_mb": 600}}
+        _policy["t"] = time.time()
+    return _policy["p"]
+
+
+# ---- resources ----
+def battery():
+    rc, out = run(["termux-battery-status"], 20)
+    try:
+        return json.loads(out) if rc == 0 else None
+    except ValueError:
+        return None
+
+
+def mem_available_mb():
+    try:
+        return int(re.search(r"MemAvailable:\s+(\d+)", Path("/proc/meminfo").read_text()).group(1)) // 1024
+    except (OSError, AttributeError):
+        return None
+
+
+def busy():
+    """A measurement holding the memory (OPERATOR's BUSY file, with a live PID)."""
+    try:
+        pid = int(BUSY.read_text().split("\n", 1)[0])
+        os.kill(pid, 0)
+        return True
+    except (OSError, ValueError):
+        return False
+
+
+def resources(limits):
+    """None when a task may start now, else why not."""
+    b = battery()
+    if b:
+        plugged = str(b.get("plugged", "UNPLUGGED")).upper() != "UNPLUGGED"
+        if not plugged and b.get("percentage", 100) < limits.get("battery_min", 25):
+            return f"battery {b.get('percentage')}% (floor {limits.get('battery_min')}%, not charging)"
+        if b.get("temperature") and b["temperature"] > limits.get("temp_max_c", 42):
+            return f"battery at {b['temperature']:.0f} °C (limit {limits.get('temp_max_c')} °C)"
+    m = mem_available_mb()
+    if m is not None and m < limits.get("mem_min_mb", 600):
+        return f"{m} MB of memory free (floor {limits.get('mem_min_mb')} MB)"
+    if busy():
+        return "a measurement holds the memory"
+    return None
+
+
+def locked():
+    """True when the phone shows its lock screen: a task that drives the screen waits for the owner to unlock it
+    (nothing here unlocks it). None when it cannot be told (no Shizuku)."""
+    out = rish("dumpsys window | grep -m1 -o 'isKeyguardShowing=[a-z]*'", 20)
+    return None if out is None else "isKeyguardShowing=true" in out
+
+
+def notify(title, text, tag="zion"):
+    rish(f"cmd notification post -S bigtext -t {sh_quote(title)} {tag} {sh_quote(text)}", 20)
+
+
+def sh_quote(s):
+    return "'" + str(s).replace("'", "'\\''") + "'"
+
+
+# ---- the emergency stop ----
+def stop(source, why=""):
+    ZION.mkdir(parents=True, exist_ok=True)
+    STOP.write_text(f"{source} {time.strftime('%Y-%m-%dT%H:%M:%S')} {why}".strip() + "\n")
+    journal("stop", source=source, why=why[:200])
+
+
+def sync_launcher_stop():
+    """The launcher's STOP button writes STOP in its own folder (and starts zion-stop when pinned): mirrored here. Its
+    "reprendre ZION" deletes it and leaves RESUME, signed after the owner's fingerprint or code like an approval. A stop
+    that came from the launcher is lifted here only on that signature, newer than the stop: a STOP file deleted by
+    anything else, or unreadable, resumes nothing (review 17/11). A stop typed in Termux waits for zion resume."""
+    out = rish(f"cat {LAUNCHER_FILES}/STOP 2>/dev/null; echo ZIONSEP; cat {LAUNCHER_FILES}/RESUME 2>/dev/null; echo ZIONEND", 20)
+    if out is None or "ZIONEND" not in out or "ZIONSEP" not in out:
+        return
+    there, resumed = (x.strip() for x in out.split("ZIONEND")[0].split("ZIONSEP", 1))
+    mine = STOP.read_text().split(" ", 1)[0] if STOP.exists() else None
+    if there and mine in (None, "launcher"):
+        stop("launcher-sync", there[:80])
+    elif not there and mine in ("launcher", "launcher-sync") and resume_signed(resumed, STOP.stat().st_mtime):
+        STOP.unlink(missing_ok=True)
+        journal("resume", source="launcher", signed=True)
+
+
+def resume_signed(raw, since):
+    """The launcher's RESUME: {"id": "resume-<its STOP's epoch>", "req_sha256": sha256("zion-resume-v1\\n" + id), ...},
+    signed like an approval by the pinned key, at a time after the stop here was written."""
+    try:
+        d = json.loads(raw)
+        h = hashlib.sha256(f"zion-resume-v1\n{d['id']}".encode("utf-8")).hexdigest()
+        at = int(d["signed_at"])
+        return bool(re.fullmatch(r"resume-\d+", d["id"]) and d.get("decision") == "approve" and d.get("req_sha256") == h
+                    and int(since) - 2 <= at <= time.time() + 300
+                    and rsa_verify(base64.b64decode(PIN.read_text().strip()), approval_payload(d["id"], h, "approve", at),
+                                   base64.b64decode(d["sig"])))
+    except (OSError, ValueError, KeyError, TypeError):
+        return False
+
+
+# ---- workers: seeker-ai --task --unattended, in a process group of their own ----
+procs = {}  # task id -> Popen, for the workers this loop started
+
+
+def alive(pid):
+    try:
+        os.kill(pid, 0)
+        return True
+    except (OSError, TypeError):
+        return False
+
+
+def owns(t):
+    """The task's worker still runs under its pid: OPERATOR on this very task. After a restart a pid can belong to
+    another process, which is then neither waited for nor signalled (review 17/11)."""
+    p = procs.get(t["id"])
+    if p is not None:
+        return p.poll() is None
+    if not alive(t.get("pid")):
+        return False
+    try:
+        return t["id"].encode() in (PROC / str(t["pid"]) / "cmdline").read_bytes() if PROC.exists() else True  # no /proc: the pid
+    except OSError:
+        return False
+
+
+def operator_task(tid):
+    try:
+        return json.loads((DATA / "tasks" / f"{tid}.json").read_text())
+    except (OSError, ValueError):
+        return None
+
+
+def start(t):
+    LOGS.mkdir(parents=True, exist_ok=True)
+    argv = [OPERATOR, "--unattended", "--tech"]
+    argv += ["--task-resume", t["id"]] if t.get("resume") else ["--task", "--task-id", t["id"]]
+    if t["apps"]:
+        argv += ["--apps", ",".join(t["apps"])]
+    if not t.get("resume"):
+        argv += ["--", t["goal"]]
+    env = {**os.environ, "ZION_UNATTENDED": "1", "ZION_APPROVED": ",".join(t.pop("approved", [])),
+           "ZION_DENIED": ",".join(t.pop("denied", []))}
+    log = open(LOGS / f"{t['id']}.log", "a")
+    p = subprocess.Popen(argv, stdin=subprocess.DEVNULL, stdout=log, stderr=subprocess.STDOUT, env=env, start_new_session=True)
+    log.close()
+    procs[t["id"]] = p
+    t.update(state="running", pid=p.pid, started=time.time(), runs=t.get("runs", 0) + 1)
+    save(t)
+    journal("started", task=t["id"], pid=p.pid, resume=bool(t.get("resume")), run=t["runs"])
+
+
+def kill(t, why):
+    """SIGTERM to the worker's whole process group, then SIGKILL to what is left of it (a tool's subprocess may outlive
+    OPERATOR), 10 s later at most."""
+    pid = t.get("pid")
+    if not owns(t):
+        return
+    try:
+        os.killpg(pid, signal.SIGTERM)
+    except OSError:
+        pass
+    end = time.time() + 10
+    while time.time() < end and owns(t):
+        time.sleep(0.2)
+    try:
+        os.killpg(pid, signal.SIGKILL)
+    except OSError:
+        pass  # nothing left in the group
+    journal("killed", task=t["id"], pid=pid, why=why)
+
+
+def supervise(t, limits):
+    """A running task: still at work, over its time, or ended (and how, from its exit code and OPERATOR's task file)."""
+    p = procs.get(t["id"])
+    code = p.poll() if p else (None if owns(t) else -1)
+    if code is None:  # still at work
+        if STOP.exists():
+            kill(t, "emergency stop")
+            t.update(state="queued", resume=operator_task(t["id"]) is not None)  # cut before its file: starts afresh
+            save(t)
+            return
+        if time.time() - t["started"] > 60 * limits.get("task_minutes", 45) + KILL_MARGIN:  # OPERATOR's own limit failed
+            kill(t, "time limit")
+            finish(t, "timeout", None)
+        return
+    procs.pop(t["id"], None)
+    op = operator_task(t["id"]) or {}
+    status = op.get("status")
+    if code == 4 or status == "waiting":
+        return park(t, op.get("pending"))
+    if status in ("done", "partial", "failed"):
+        return finish(t, status, code)
+    # interrupted: stopped (5), lost llama-server (6), killed by Android, crashed (1): go on from the step it was in
+    t["resumes"] = t.get("resumes", 0) + 1
+    if code == 6:
+        run([OPERATOR, "--stop"], 60)  # a hung server: the next run starts a fresh one
+    if t["resumes"] > RESUMES and code != 5:
+        return finish(t, "failed", code, f"interrupted {t['resumes']} times")
+    t.update(state="queued", resume=status in ("running", "planning", "waiting") or bool(op), not_before=time.time() + (0 if code == 5 else 30 * t["resumes"]))
+    save(t)
+    journal("interrupted", task=t["id"], exit=code, status=status, resumes=t["resumes"])
+
+
+def finish(t, state, code, why=""):
+    t.update(state=state, ended=time.time(), exit=code, why=why)
+    op = operator_task(t["id"]) or {}
+    t["report"] = op.get("report")
+    t["steps"] = f"{sum(x.get('status') == 'done' for x in op.get('steps', []))}/{len(op.get('steps', []))}"
+    save(t)
+    journal("finished", task=t["id"], state=state, exit=code, steps=t["steps"], why=why)
+    notify("ZION", f"Tâche {state} ({t['steps']} étapes) : {secretless(t['goal'])[:80]}", "zion_task")
+
+
+# ---- approvals: OPERATOR parked the task on one exact call; the owner decides it himself ----
+SHA256_INFO = bytes.fromhex("3031300d060960864801650304020105000420")  # DER DigestInfo prefix of SHA-256 (PKCS#1)
+
+
+def der(b):
+    """The TLVs of one DER level: [(tag, value bytes)]."""
+    i, out = 0, []
+    while i + 2 <= len(b):
+        tag, n = b[i], b[i + 1]
+        i += 2
+        if n & 0x80:
+            k = n & 0x7F
+            n, i = int.from_bytes(b[i:i + k], "big"), i + k
+        out.append((tag, b[i:i + n]))
+        i += n
+    return out
+
+
+def rsa_key(spki):
+    """(n, e) of an X.509 SubjectPublicKeyInfo holding an RSA key; ValueError otherwise."""
+    try:
+        (tag, body), = der(spki)
+        alg, bits = der(body)[:2]
+        if tag != 0x30 or bits[0] != 0x03 or b"\x2a\x86\x48\x86\xf7\x0d\x01\x01\x01" not in alg[1]:
+            raise ValueError
+        (_, key), = der(bits[1][1:])
+        n, e = (int.from_bytes(v, "big") for _, v in der(key)[:2])
+        return n, e
+    except (ValueError, IndexError, TypeError):
+        raise ValueError("not an RSA public key") from None
+
+
+def rsa_verify(spki, msg, sig):
+    """RSASSA-PKCS1-v1_5 with SHA-256, as the launcher's AndroidKeyStore key signs (SHA256withRSA)."""
+    n, e = rsa_key(spki)
+    k = (n.bit_length() + 7) // 8
+    if n.bit_length() < 2048 or len(sig) != k:
+        return False
+    em = pow(int.from_bytes(sig, "big"), e, n).to_bytes(k, "big")
+    t = SHA256_INFO + hashlib.sha256(msg).digest()
+    return hmac.compare_digest(em, b"\x00\x01" + b"\xff" * (k - len(t) - 3) + b"\x00" + t)
+
+
+def approval_payload(aid, req_sha256, decision, signed_at):
+    return f"zion-approval-v1\n{aid}\n{req_sha256}\n{decision}\n{signed_at}".encode("utf-8")
+
+
+def park(t, pending):
+    if not pending:
+        return finish(t, "failed", 4, "parked without a pending call")
+    now = int(time.time())
+    aid = f"{t['id']}-a{t.get('approvals', 0) + 1}"
+    full = visible(secretless(pending["what"])).strip() or "(action)"
+    what = full if len(full) <= 200 else full[:199] + "…"  # the summary may be cut: the exact call below never is
+    # the approval covers the whole call: the owner sees all of it, or decides in the terminal (review 17/11: a cut
+    # summary hid "; touch MARKER" at the end of an approved shell command)
+    exact = visible(json.dumps(pending["call"], ensure_ascii=False))
+    req, screen = None, len(exact) <= 1300
+    for goal_room in (400, 150, 0):
+        detail = visible(f"Action exacte : {exact}\nTâche : {secretless(t['goal'])[:goal_room]}\nÉtape {pending.get('step', '?')}. "
+                         "Rien ne se fait sans ton accord.", "\n")
+        # ASCII JSON (\u escapes): the signed bytes cannot change on the way; the launcher takes 4096 bytes at most
+        req = json.dumps({"v": 1, "id": aid, "created": now, "expires": now + 3600 * APPROVAL_HOURS,
+                          "class": re.sub(r"[^0-9A-Za-z_.-]", "", pending["class"])[:40] or "other", "summary": what,
+                          "detail": detail}, separators=(",", ":"))
+        if len(detail) <= 1500 and len(req) <= 4000:
+            break
+    else:
+        screen = False
+    APPROVALS.mkdir(parents=True, exist_ok=True)
+    (APPROVALS / f"{aid}.req").write_text(req, encoding="utf-8")  # the exact bytes the launcher shows and signs
+    t.update(state="waiting", approvals=t.get("approvals", 0) + 1, approval={
+        "id": aid, "digest": pending["digest"], "class": pending["class"], "what": what, "call": pending["call"],
+        "expires": now + 3600 * APPROVAL_HOURS, "req_sha256": hashlib.sha256(req.encode("utf-8")).hexdigest(), "screen": screen})
+    if screen:  # to the launcher: only Termux may send it (the receiver asks for Termux's own permission)
+        _, said = run(["am", "broadcast", "-n", "zero.seeker.launcher/.ApprovalAsk", "-a", "zero.seeker.launcher.APPROVAL_ASK",
+                       "-f", "0x20", "--es", "req", req], 30)
+        t["approval"]["screen"] = "refused" not in said and "result=1" not in said
+    save(t)
+    where = "Lanceur > approbations, ou : " if t["approval"]["screen"] else "Action trop longue pour l'écran du lanceur : "
+    notify("ZION attend ton accord", f"{what} ({pending['class']}). {where}zion approve {aid}", "zion_approval")
+    journal("approval_requested", task=t["id"], approval=aid, cls=pending["class"], what=what, launcher=t["approval"]["screen"])
+
+
+def launcher_decision(a):
+    """'approve' (signature checked against the pinned key), 'deny', or None (nothing yet, or a bad signature)."""
+    out = rish(f"cd {LAUNCHER_FILES}/approvals 2>/dev/null && cat {a['id']}.ok 2>/dev/null; echo ZIONSEP; "
+               f"cat {LAUNCHER_FILES}/approvals/{a['id']}.no 2>/dev/null", 20)
+    if not out or "ZIONSEP" not in out:
+        return None
+    ok, no = (x.strip() for x in out.split("ZIONSEP", 1))
+    if ok:
+        try:
+            d = json.loads(ok)
+            pin = base64.b64decode(PIN.read_text().strip())
+            good = (d.get("id") == a["id"] and d.get("decision") == "approve" and d.get("req_sha256") == a["req_sha256"]
+                    and a["expires"] - 3600 * APPROVAL_HOURS - 60 <= int(d.get("signed_at", 0)) <= a["expires"]
+                    and rsa_verify(pin, approval_payload(a["id"], a["req_sha256"], "approve", int(d["signed_at"])),
+                                   base64.b64decode(d.get("sig", ""))))
+        except (OSError, ValueError, TypeError, KeyError):
+            good = False
+        if good:
+            return "approve"
+        journal("approval_refused_signature", approval=a["id"], pinned=PIN.exists())
+    if no:
+        return "deny"
+    return None
+
+
+def decide(t, decision, source):
+    a = t.pop("approval")
+    t["approved" if decision == "approve" else "denied"] = [a["digest"]]
+    t.update(state="queued", resume=True)
+    save(t)
+    journal("approval_" + ("granted" if decision == "approve" else "denied"), task=t["id"], approval=a["id"], source=source)
+    rish(f"rm -f {LAUNCHER_FILES}/approvals/{a['id']}.ok {LAUNCHER_FILES}/approvals/{a['id']}.no", 20)
+    if source != "launcher":  # decided here or expired: the launcher stops offering it (review 17/11)
+        run(["am", "broadcast", "-n", "zero.seeker.launcher/.ApprovalAsk", "-a", "zero.seeker.launcher.APPROVAL_ASK", "-f", "0x20", "--es", "cancel", a["id"]], 30)
+
+
+def check_decision(t, look_launcher):
+    a = t["approval"]
+    local = APPROVALS / f"{a['id']}.local"
+    if local.exists():  # zion approve / zion deny, typed by the owner
+        return decide(t, local.read_text().strip(), "terminal")
+    if look_launcher and (d := launcher_decision(a)):
+        return decide(t, d, "launcher")
+    if time.time() > a["expires"]:
+        decide(t, "deny", "expired")
+
+
+# ---- the loop ----
+def ready():
+    now = time.time()
+    return sorted((t for t in tasks() if t["state"] == "queued" and t.get("not_before", 0) <= now),
+                  key=lambda t: (-t.get("priority", 0), t.get("created", 0)))
+
+
+def recover():
+    """At the supervisor's start: a task still marked running whose worker is gone was cut by a restart of the phone or
+    of Termux: it goes on from its step."""
+    for t in tasks():
+        if t["state"] == "running" and not owns(t):
+            # counted like any other interruption: a task that keeps getting Termux killed is given up, not looped
+            t["resumes"] = t.get("resumes", 0) + 1
+            if t["resumes"] > RESUMES:
+                finish(t, "failed", None, f"interrupted {t['resumes']} times")
+                continue
+            t.update(state="queued", resume=operator_task(t["id"]) is not None, not_before=time.time() + 30 * t["resumes"])
+            save(t)
+            journal("recovered", task=t["id"], pid=t.get("pid"), resumes=t["resumes"])
+
+
+def step(state):
+    """One turn of the loop."""
+    pol = policy()
+    limits = pol.get("limits", {})
+    now = time.time()
+    look = now - state.get("synced", 0) >= SYNC
+    if look:
+        sync_launcher_stop()
+        state["synced"] = now
+    for t in tasks():
+        try:  # one broken task file (hand edited, half old) never stops the supervisor for all the others
+            if (QUEUE / f"{t['id']}.cancel").exists():  # zion cancel: done here, the only writer of a task's state
+                kill(t, "cancelled by the owner")
+                (QUEUE / f"{t['id']}.cancel").unlink()
+                if t["state"] not in FINAL:
+                    t.update(state="cancelled", ended=time.time())
+                    save(t)
+                    journal("cancelled", task=t["id"])
+            elif t["state"] == "running":
+                supervise(t, limits)
+            elif t["state"] == "waiting":
+                check_decision(t, look)
+        except (KeyError, TypeError, ValueError, AttributeError) as e:
+            t.update(state="failed", ended=time.time(), why=f"unreadable task: {type(e).__name__}: {e}"[:200])
+            save(t)
+            journal("task_unreadable", task=t["id"], error=t["why"])
+    if STOP.exists() or any(t["state"] == "running" for t in tasks()):
+        return
+    todo = ready()
+    if not todo:
+        return
+    why, lock = resources(limits), None
+    if not why:
+        for t in todo:  # the first one that may run now: a task that drives the screen waits for an unlock, the others not
+            if t.get("screen", True):
+                lock = locked() if lock is None else lock
+                if lock:
+                    continue
+            state.pop("waiting_for", None)
+            try:
+                return start(t)
+            except (KeyError, TypeError, ValueError, OSError) as e:  # a broken task file, or OPERATOR missing
+                t.update(state="failed", ended=time.time(), why=f"could not start: {type(e).__name__}: {e}"[:200])
+                save(t)
+                return journal("task_unreadable", task=t["id"], error=t["why"])
+        why = "phone locked: waiting for the owner to unlock it"
+    if state.get("waiting_for") != why:  # said once, not every 5 s
+        journal("waiting", task=todo[0]["id"], why=why)
+        state["waiting_for"] = why
+
+
+def loop(once=False):
+    ZION.mkdir(parents=True, exist_ok=True)
+    lock = open(LOCK, "a+")
+    try:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        print("zion: the supervisor already runs")
+        return 0
+    journal("supervisor_start", pid=os.getpid())
+    recover()
+    state = {}
+    while True:
+        step(state)
+        STATE.write_text(json.dumps({"pid": os.getpid(), "t": time.time(), "stop": STOP.exists()}))
+        if once:
+            return 0
+        time.sleep(POLL)
+
+
+def background():
+    """Detached from the job that started it (Termux's job scheduler, the boot script)."""
+    if os.fork() > 0:
+        return 0
+    os.setsid()
+    if os.fork() > 0:
+        os._exit(0)
+    LOGS.mkdir(parents=True, exist_ok=True)
+    fd = os.open(LOGS / "supervisor.log", os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)
+    os.dup2(fd, 1)
+    os.dup2(fd, 2)
+    os.dup2(os.open(os.devnull, os.O_RDONLY), 0)
+    os._exit(loop() or 0)
+
+
+# ---- what the owner types ----
+def owner_says_yes(question):
+    if not sys.stdin.isatty():
+        sys.exit("only from a terminal, typed by the owner")
+    return input(f"{question} (oui/non) ").strip().lower() in ("oui", "o", "yes", "y")
+
+
+def cmd_approve(prefix, decision):
+    t = next((t for t in tasks() if t["state"] == "waiting" and (t["id"].startswith(prefix) or t["approval"]["id"].startswith(prefix))), None)
+    if not t:
+        sys.exit(f"no task waits for an approval matching {prefix!r} (zion list)")
+    a = t["approval"]
+    print(f"Tâche : {secretless(t['goal'])[:200]}\nClasse : {a['class']}\nAction exacte, en entier :\n"
+          f"{visible(json.dumps(a.get('call', a['what']), ensure_ascii=False, indent=1), chr(10))}")
+    if decision == "approve" and not owner_says_yes("Autoriser cette action, une seule fois ?"):
+        return print("rien d'autorisé")
+    (APPROVALS / f"{a['id']}.local").write_text(decision)
+    print("noté : la tâche reprend au prochain tour du superviseur" if decision == "approve" else "refusé : la tâche continue sans cette action")
+
+
+def cmd_enroll():
+    out = rish(f"cat {LAUNCHER_FILES}/approval.pub", 20)
+    if not out or not out.strip():
+        sys.exit("no key from the launcher: open its approbations screen once (it creates the key), and check Shizuku")
+    der_ = base64.b64decode(out.strip())
+    rsa_key(der_)  # an RSA key, or ValueError
+    fp = hashlib.sha256(der_).hexdigest()[:16]
+    print("Empreinte de la clé du lanceur : " + " ".join(fp[i:i + 4] for i in range(0, 16, 4)))
+    if owner_says_yes("C'est la même que sur l'écran des approbations du lanceur ?"):
+        PIN.parent.mkdir(parents=True, exist_ok=True)
+        PIN.write_text(out.strip() + "\n")
+        journal("enrolled", fingerprint=fp)
+        print(f"clé enregistrée : {PIN}")
+
+
+def cmd_allow(pkgs, allow):
+    """The owner adds or removes apps OPERATOR may drive without asking (policy apps). Typed in a terminal only: a
+    command run by the AI's own shell tool has no terminal, and is refused."""
+    path = Path(os.environ.get("ZION_POLICY", HOME / ".config/zion/policy.json"))
+    bad = [p for p in pkgs if not PKG.fullmatch(p)]
+    if bad:
+        sys.exit(f"not package names: {bad}")
+    try:
+        pol = json.loads(path.read_text()) if path.exists() else {}
+    except ValueError:
+        sys.exit(f"{path} is not valid JSON: fix it first")
+    apps = set(pol.get("apps", [])) | set(pkgs) if allow else set(pol.get("apps", [])) - set(pkgs)
+    verb = "Autoriser OPERATOR à piloter seul" if allow else "Retirer l'autorisation de piloter"
+    if not owner_says_yes(f"{verb} : {', '.join(pkgs)} ?"):
+        return print("rien de changé")
+    pol["apps"] = sorted(apps)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_name(path.name + ".tmp")
+    tmp.write_text(json.dumps(pol, indent=1, ensure_ascii=False) + "\n")
+    os.replace(tmp, path)
+    journal("policy_apps", allow=allow, apps=sorted(pkgs))
+    print("applis autorisées : " + (", ".join(pol["apps"]) or "aucune"))
+
+
+def cmd_list():
+    for t in tasks():
+        extra = f" waits: {t['approval']['what'][:60]}" if t["state"] == "waiting" else f" {t.get('steps', '')}"
+        print(f"{t['id']}  {t['state']:9}{extra}  {secretless(t['goal'])[:60]}")
+
+
+def supervisor_up():
+    try:
+        s = json.loads(STATE.read_text())
+        return alive(s["pid"]) and time.time() - s["t"] < 60 and s["pid"] != os.getpid()
+    except (OSError, ValueError, KeyError):
+        return False
+
+
+def cmd_status():
+    try:
+        s = json.loads(STATE.read_text())
+    except (OSError, ValueError):
+        s = {}
+    up = supervisor_up()
+    bad, n, head = verify_chain()
+    counts = {}
+    for t in tasks():
+        counts[t["state"]] = counts.get(t["state"], 0) + 1
+    print(f"supervisor   {'running, pid ' + str(s.get('pid')) if up else 'not running'}")
+    print(f"stop         {STOP.read_text().strip() if STOP.exists() else 'no'}")
+    print(f"tasks        {', '.join(f'{k} {v}' for k, v in sorted(counts.items())) or 'none'}")
+    print(f"journal      {n} lines, {'chain intact, head ' + head[:16] if not bad else 'BROKEN at line ' + str(bad)}")
+    print(f"approval key {'pinned' if PIN.exists() else 'not enrolled (zion enroll)'}")
+    lim = policy().get("limits", {})
+    print(f"resources    {resources(lim) or 'ok'}")
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    sub = ap.add_subparsers(dest="cmd", required=True)
+    a = sub.add_parser("add")
+    a.add_argument("goal", nargs="+")
+    a.add_argument("--apps", default="")
+    a.add_argument("--priority", type=int, default=0)
+    a.add_argument("--no-screen", action="store_true", help="the task never drives the screen: it may run while the phone is locked")
+    r = sub.add_parser("run")
+    r.add_argument("--once", action="store_true")
+    r.add_argument("--background", action="store_true")
+    for name in ("approve", "deny", "cancel"):
+        sub.add_parser(name).add_argument("id")
+    for name in ("allow", "disallow"):
+        sub.add_parser(name).add_argument("package", nargs="+")
+    lg = sub.add_parser("log")
+    lg.add_argument("n", nargs="?", type=int, default=20)
+    for name in ("list", "status", "verify", "enroll", "resume"):
+        sub.add_parser(name)
+    sub.add_parser("stop").add_argument("--source", choices=("zion-stop", "launcher"), default="zion-stop")
+    x = ap.parse_args()
+    if x.cmd == "add":
+        t = add(" ".join(x.goal), [p for p in x.apps.split(",") if p], x.priority, not x.no_screen)
+        print(f"queued {t['id']}")
+    elif x.cmd == "run":
+        return background() if x.background else loop(x.once)
+    elif x.cmd == "approve":
+        cmd_approve(x.id, "approve")
+    elif x.cmd == "deny":
+        cmd_approve(x.id, "deny")
+    elif x.cmd in ("allow", "disallow"):
+        cmd_allow(x.package, x.cmd == "allow")
+    elif x.cmd == "cancel":  # the supervisor alone writes a running task's state: it gets a note, done at its next turn
+        t = find(x.id, ("queued", "waiting", "running"))
+        (QUEUE / f"{t['id']}.cancel").touch()
+        if not supervisor_up():
+            step({"synced": time.time()})
+        print(f"cancelled {t['id']}" if not supervisor_up() else f"cancel noted for {t['id']}: the supervisor stops it within {POLL} s")
+    elif x.cmd == "log":
+        for line in (JOURNAL.read_text().splitlines()[-x.n:] if JOURNAL.exists() else []):
+            e = json.loads(line)
+            print(e["t"], e["event"], " ".join(f"{k}={v}" for k, v in e.items() if k not in ("t", "event", "prev", "hash")))
+    elif x.cmd == "verify":
+        bad, n, head = verify_chain()
+        print(f"chaîne intacte : {n} lignes, tête {head[:16]}" if not bad else f"chaîne CASSÉE à la ligne {bad}")
+        return 1 if bad else 0
+    elif x.cmd == "list":
+        cmd_list()
+    elif x.cmd == "status":
+        cmd_status()
+    elif x.cmd == "enroll":
+        cmd_enroll()
+    elif x.cmd == "stop":  # from the launcher's STOP, the launcher's "reprendre ZION" lifts it too (sync_launcher_stop)
+        stop(x.source, "zion stop")
+        print("ZION arrêté. Reprendre : zion resume")
+    elif x.cmd == "resume":
+        if STOP.exists() and owner_says_yes("Reprendre ZION ?"):
+            STOP.unlink()
+            journal("resume", source="terminal")
+            print("ZION reprend")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

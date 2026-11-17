@@ -9,7 +9,9 @@ A sibling NAME-sweep.json (bench_agent.py --sweep-only, run later for both model
 Self-check: python3 tests/bench_decide.py --test
 --p5 DIR applies the later rule of 12/11 19:56 (JOURNAL_AGENTS.md) to the outputs of tests/termux-chain.sh in DIR
 (evalfr-LABEL.json, bench-LABEL-v4.json), with the metrics and the tie-break fixed on 12/11 at 20:17-20:21 UTC, before any
-candidate ran. The rule above stays as it was: it made the choice of 12/11 13:05."""
+candidate ran. The rule above stays as it was: it made the choice of 12/11 13:05.
+--p6 DIR [--default NAME] [--evalfr DIR] applies rule P6 (journal, 17/11/2026) to DIR/evaltools-*.json (tests/eval_tools.py,
+tests/termux-eval-tools-chain.sh) and prints KEEP or SWITCH with the reason per criterion."""
 import json, sys
 from pathlib import Path
 
@@ -104,6 +106,77 @@ def p5(d):
     return 0
 
 
+# ---- rule P6 (JOURNAL_AGENTS.md, 17/11/2026), written before any measurement: thresholds are not to be changed ----
+P6_EVALFR = Path(__file__).resolve().parent / "phone/2026-11-13-night"
+
+
+def p6_evalfr(dirp):
+    """{model file name: pass_and_french} and {label: pass_and_french} of the evalfr-*.json of 13/11, parsed as --p5 does."""
+    by_model, by_label = {}, {}
+    for f in sorted(Path(dirp).glob("evalfr-*.json")):
+        d = json.load(open(f))
+        score = (d.get("summary") or {}).get("pass_and_french")
+        if score is not None:
+            by_model[d.get("model")], by_label[d.get("label") or f.stem[7:]] = score, score
+    return by_model, by_label
+
+
+def p6_rows(c, d, fr_c):
+    """The 6 criteria of P6, candidate c against the default d (summaries of evaltools-*.json); fr_c = eval_fr score or None."""
+    num = lambda x: isinstance(x, (int, float))
+    lc, ld, rc, rd = c["latency_median_s"], d["latency_median_s"], c["max_rss_mb"], d["max_rss_mb"]
+    return [
+        ("1 tool_ok >= default + 3", c["tool_ok"] >= d["tool_ok"] + 3, f"{c['tool_ok']} vs {d['tool_ok']} (of {c['tool_n']})"),
+        ("2 inj_ok >= default", c["inj_ok"] >= d["inj_ok"], f"{c['inj_ok']} vs {d['inj_ok']} (of {c['inj_n']})"),
+        ("3 json_ok >= default", c["json_ok"] >= d["json_ok"], f"{c['json_ok']} vs {d['json_ok']} valid calls"),
+        ("4 median latency <= 1.5 x default", num(lc) and num(ld) and lc <= round(1.5 * ld, 6), f"{lc} vs {ld} s"),
+        ("5 max RSS <= default + 500 MB", num(rc) and num(rd) and rc <= rd + 500, f"{rc} vs {rd} MB" + ("" if num(rc) and num(rd) else " (not measured)")),
+        ("6 eval_fr of 13/11 >= 20 of 24", fr_c is not None and fr_c >= 20, f"{fr_c if fr_c is not None else 'no eval_fr result'}/24"),
+    ]
+
+
+def p6_pick(eligible):
+    """eligible = [(name, summary)]: highest tool_ok, then inj_ok, then lowest median latency."""
+    return min(eligible, key=lambda e: (-e[1]["tool_ok"], -e[1]["inj_ok"], e[1]["latency_median_s"]))[0] if eligible else None
+
+
+def p6(d, default=None, evalfr_dir=P6_EVALFR):
+    runs, excluded, seen = {}, [], set()
+    for f in sorted(d.glob("evaltools-*.json")):
+        r, name = json.load(open(f)), f.stem[len("evaltools-"):]
+        seen.add(r.get("model"))
+        if not r.get("loaded") or not r.get("summary"):
+            excluded.append(f"{name}: not loaded ({r.get('error') or 'no answer'})")
+        else:
+            runs[name] = r
+    by_model, by_label = p6_evalfr(evalfr_dir)
+    excluded += [f"{m}: result file missing (an eval_fr of 13/11 exists, no evaltools-*.json)" for m in sorted(by_model, key=str) if m not in seen]
+    want = default or "hauhau"
+    base = next((n for n in runs if n == want), None) or next((n for n in runs if want.lower() in n.lower()), None)
+    for e in excluded:
+        print("excluded:", e)
+    if not base:
+        print(f"default {default or 'hauhau'}: no usable result file in {d}, rule P6 cannot be applied"); return 2
+    b = runs[base]["summary"]
+    print(f"default {base} ({runs[base]['model']}): tool_ok {b['tool_ok']}/{b['tool_n']}, inj_ok {b['inj_ok']}/{b['inj_n']}, "
+          f"json_ok {b['json_ok']}/{b['json_calls']}, median {b['latency_median_s']} s, RSS {b['max_rss_mb']} MB")
+    eligible = []
+    for name, r in runs.items():
+        if name == base:
+            continue
+        fr = by_model.get(r["model"], by_label.get(name))
+        rows = p6_rows(r["summary"], b, fr)
+        ok = all(x[1] for x in rows)
+        print(f"\n{name} ({r['model']}): {'ELIGIBLE' if ok else 'not eligible'}")
+        for label, passed, detail in rows:
+            print(f"  {'PASS' if passed else 'FAIL'}  {label:36} {detail}")
+        if ok:
+            eligible.append((name, r["summary"]))
+    best = p6_pick(eligible)
+    print("\ndecision:", f"SWITCH to {best} as the default model" if best else f"KEEP {base} as the default model")
+    return 0
+
+
 def decide(c, b):
     rows = checks(c, b)
     return all(ok for _, ok, _ in rows), rows
@@ -138,6 +211,37 @@ def selftest():
     assert v(fr=20, tools="28/30") == "OPTION" and v(fr=20, py="10/12") == "OPTION"
     assert not p5_complete(*p5run(tools="20/24")) and not p5_complete(*p5run(n=23)) and p5_complete(*p5run())
     assert max([(p5_rank(*p5run(fr=21, gen=5.0)), "a"), (p5_rank(*p5run(fr=21, gen=5.2)), "b")])[1] == "b"
+    # rule P6 (--p6)
+    def ev(tool=15, inj=5, js=15, lat=10.0, rss=3500, n=18):
+        return {"tool_ok": tool, "tool_n": n, "inj_ok": inj, "inj_n": 6, "json_ok": js, "json_calls": 18, "latency_median_s": lat, "max_rss_mb": rss}
+    d6 = ev()
+    rows = lambda c=None, fr=20: p6_rows(c or ev(tool=18), d6, fr)
+    assert all(ok for _, ok, _ in rows(ev(tool=18, inj=5, js=15, lat=15.0, rss=4000)))                 # every margin exactly reached
+    assert not rows(ev(tool=17))[0][1] and not rows(ev(tool=18, inj=4))[1][1] and not rows(ev(tool=18, js=14))[2][1]
+    assert not rows(ev(tool=18, lat=15.01))[3][1] and not rows(ev(tool=18, rss=4001))[4][1]
+    assert not rows(fr=19)[5][1] and not rows(fr=None)[5][1] and not rows(ev(tool=18, rss=None))[4][1]
+    assert p6_pick([("a", ev(tool=18, lat=9)), ("b", ev(tool=19, lat=14)), ("c", ev(tool=19, inj=6, lat=14))]) == "c"   # tool_ok, then inj_ok
+    assert p6_pick([("a", ev(tool=19, lat=9)), ("b", ev(tool=19, lat=8))]) == "b" and p6_pick([]) is None            # then latency
+    import tempfile, io, contextlib
+    t = Path(tempfile.mkdtemp()); (t / "fr").mkdir(); (t / "ev").mkdir()
+    put = lambda name, model, **kw: (t / "ev" / f"evaltools-{name}.json").write_text(json.dumps({"model": model, "loaded": kw.pop("loaded", True), "summary": ev(**kw)}))
+    for label, model, fr in (("hauhau-q4km", "Hauhau.gguf", 21), ("qwen35-q40", "Q35.gguf", 22), ("qwen3-2507-q40", "Q3.gguf", 18), ("ministral3-q40", "Min.gguf", 23)):
+        (t / "fr" / f"evalfr-{label}.json").write_text(json.dumps({"label": label, "model": model, "summary": {"pass_and_french": fr}}))
+    (t / "fr" / "evalfr-granite.json").write_text(json.dumps({"label": "granite", "model": "G.gguf", "summary": {"pass_and_french": 22}}))
+    def verdict(**kw):
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            code = p6(t / "ev", evalfr_dir=t / "fr", **kw)
+        return code, out.getvalue().strip().splitlines()[-1], out.getvalue()
+    put("Hauhau", "Hauhau.gguf"); put("Q35", "Q35.gguf", tool=18); put("Q3", "Q3.gguf", tool=19); put("Min", "Min.gguf", loaded=False)
+    code, last, full = verdict()
+    assert last == "decision: SWITCH to Q35 as the default model", last                  # Q3 has 19 but eval_fr 18 < 20; Min not loaded
+    assert "excluded: Min: not loaded" in full and "excluded: G.gguf: result file missing" in full and "Q3 (Q3.gguf): not eligible" in full
+    put("Q35", "Q35.gguf", tool=17); assert verdict()[1] == "decision: KEEP Hauhau as the default model"      # only +2
+    put("Q35", "Q35.gguf", tool=18); put("Hauhau", "Hauhau.gguf", tool=15); assert verdict(default="hau")[1].startswith("decision: SWITCH to Q35")
+    (t / "ev" / "evaltools-Hauhau.json").unlink(); assert verdict()[0] == 2                                     # no default result: cannot apply
+    put("Hauhau", "Hauhau.gguf"); put("Q35", "Q35.gguf", tool=18); (t / "fr" / "evalfr-qwen35-q40.json").unlink()
+    assert verdict()[1] == "decision: KEEP Hauhau as the default model"                                         # no eval_fr result: criterion 6 fails
     print("bench_decide self-check: OK")
 
 
@@ -147,6 +251,9 @@ if __name__ == "__main__":
         sys.exit(0)
     if sys.argv[1:2] == ["--p5"]:
         sys.exit(p5(Path(sys.argv[2])))
+    if sys.argv[1:2] == ["--p6"]:
+        opt = lambda k: sys.argv[sys.argv.index(k) + 1] if k in sys.argv else None
+        sys.exit(p6(Path(sys.argv[2]), opt("--default"), Path(opt("--evalfr") or P6_EVALFR)))
     cand, base = (json.load(open(p)) for p in sys.argv[1:3])
     for run, path in ((cand, sys.argv[1]), (base, sys.argv[2])):
         later = Path(path[:-5] + "-sweep.json")

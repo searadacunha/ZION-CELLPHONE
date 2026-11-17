@@ -1,0 +1,198 @@
+#!/usr/bin/env python3
+"""zion-hw: what hardware is really there now, and what can be done with it. Run in Termux (Shizuku for the details).
+  zion-hw            the report            zion-hw --json       the same, for a program
+  zion-hw --selftest the tables and the parsers, without a phone
+Rule: nothing is listed as available unless it is seen at this moment. An accessory that is not plugged in does not
+appear; a tool that is not installed is said to be missing; a path that needs hardware nobody has tried is marked
+"not tested". Read-only: this lists and identifies, it opens no device and sends nothing.
+USB accessories are read from Android's own list (`dumpsys usb`, through Shizuku); without Shizuku, Termux's
+`termux-usb -l` gives the device paths only. Passive use only: receiving and reading; no transmission, no jamming,
+no replay, no access-control bypass belongs here."""
+import json, os, re, shutil, socket, subprocess, sys
+from pathlib import Path
+
+HOME = Path.home()
+# (vendor, product) -> (what it is, how to talk to it without root, what is safe to ask it)
+SERIAL = "a USB serial bridge: the board behind it is unknown until it answers"
+KNOWN = {
+    (0x303A, 0x1001): ("Espressif USB-Serial/JTAG (ESP32-S3, C3, C6, H2)", "CDC serial through termux-usb", "esptool read-mac, flash-id (read-only)"),
+    (0x303A, 0x0002): ("Espressif ESP32-S2 (ROM / OTG)", "CDC serial through termux-usb", "esptool read-mac, flash-id (read-only)"),
+    (0x303A, 0x4001): ("Espressif TinyUSB CDC (ESP32-S2/S3 application)", "CDC serial through termux-usb", "the firmware's own console"),
+    (0x10C4, 0xEA60): ("Silicon Labs CP210x", SERIAL, "open at 115200 baud and read"),
+    (0x10C4, 0xEA70): ("Silicon Labs CP2105", SERIAL, "open at 115200 baud and read"),
+    (0x1A86, 0x7523): ("WCH CH340", SERIAL, "open at 115200 baud and read"),
+    (0x1A86, 0x5523): ("WCH CH341", SERIAL, "open at 115200 baud and read"),
+    (0x1A86, 0x55D4): ("WCH CH9102", SERIAL, "open at 115200 baud and read"),
+    (0x0403, 0x6001): ("FTDI FT232R", SERIAL, "open at 115200 baud and read"),
+    (0x0403, 0x6010): ("FTDI FT2232", SERIAL, "open at 115200 baud and read"),
+    (0x0403, 0x6014): ("FTDI FT232H", SERIAL, "open at 115200 baud and read"),
+    (0x0403, 0x6015): ("FTDI FT231X", SERIAL, "open at 115200 baud and read"),
+    (0x067B, 0x2303): ("Prolific PL2303", SERIAL, "open at 115200 baud and read"),
+    (0x9AC4, 0x4B8F): ("Proxmark3", "CDC serial; the proxmark3 client needs a TCP bridge app without root", "hw version, hw status, hf search, lf search (your own tags)"),
+    (0x2D2D, 0x504D): ("Proxmark3 (older id)", "CDC serial; the proxmark3 client needs a TCP bridge app without root", "hw version, hw status"),
+    (0x0483, 0x5740): ("STM32 virtual COM port (Flipper Zero uses this id, so do other boards)", "CDC serial through termux-usb", "read the banner; Flipper: device_info"),
+    (0x0BDA, 0x2838): ("RTL-SDR (RTL2832U)", "an rtl_tcp driver app, then rtl_433 -d rtl_tcp:127.0.0.1:1234", "receive only"),
+    (0x0BDA, 0x2832): ("RTL-SDR (RTL2832U)", "an rtl_tcp driver app, then rtl_433 -d rtl_tcp:127.0.0.1:1234", "receive only"),
+    (0x1D50, 0x6089): ("HackRF One", "an rtl_tcp-style driver app", "receive only (this layer never transmits)"),
+    (0x1D50, 0x60A1): ("Airspy", "no maintained no-root path found", "-"),
+    (0x2E8A, 0x000A): ("Raspberry Pi Pico (CDC)", "CDC serial through termux-usb", "the firmware's own console"),
+    (0x2341, 0x0043): ("Arduino Uno", "CDC serial through termux-usb", "the sketch's own output"),
+}
+CLASSES = {2: "communications (CDC)", 3: "keyboard, mouse or other HID", 7: "printer", 8: "storage", 9: "hub", 10: "CDC data",
+           14: "camera", 224: "wireless controller", 239: "composite", 255: "vendor specific"}
+SDR_DRIVER = "marto.rtl_tcp_andro"  # the rtl_tcp driver app: it owns the USB dongle and serves samples on 127.0.0.1
+
+
+def rish(cmd, timeout=30):
+    """An Android shell command through Shizuku, or None without it."""
+    path = shutil.which("rish") or next((str(p) for p in [HOME / "bin/rish"] if p.exists()), None)
+    if not path:
+        return None
+    try:
+        r = subprocess.run([path, "-c", cmd], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, timeout=timeout,
+                           stdin=subprocess.DEVNULL)
+        return r.stdout if r.returncode == 0 else None
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+
+
+def usb_devices(dump):
+    """The accessories of `dumpsys usb` (its host_manager part): [{"path", "vid", "pid", "maker", "product", "class"}].
+    Android prints one block per device with name=, vendor_id=, product_id= (decimal). Not seen with a real accessory on
+    the Seeker yet (13/11: nothing was plugged in): the fields are matched one by one, so a changed layout loses a
+    name, not the device."""
+    part = dump[dump.find("host_manager="):]
+    part = part[:part.find("port_manager=")] if "port_manager=" in part else part
+    out = []
+    for block in re.split(r"(?=\bname=/dev/bus/usb/)", part)[1:]:
+        get = lambda k, d="": (re.search(rf"\b{k}=([^\n,}}]*)", block) or [None, d])[1].strip()
+        if not get("vendor_id").isdigit() or not get("product_id").isdigit():
+            continue
+        iface = re.search(r"interfaces=\[.*?\bclass=(\d+)", block, re.S)
+        out.append({"path": get("name"), "vid": int(get("vendor_id")), "pid": int(get("product_id")),
+                    "maker": get("manufacturer_name").replace("null", ""), "product": get("product_name").replace("null", ""),
+                    "class": int(iface.group(1)) if iface else int(get("class", "0") or 0)})
+    return out
+
+
+def describe(d):
+    known = KNOWN.get((d["vid"], d["pid"]))
+    name = " ".join(x for x in (d["maker"], d["product"]) if x) or "(the device gives no name)"
+    line = f"{d['vid']:04x}:{d['pid']:04x} {name}"
+    if known:
+        return f"{line}\n    is: {known[0]}\n    talk: {known[1]}\n    safe to ask: {known[2]}"
+    return f"{line}\n    is: unknown to this table; USB class: {CLASSES.get(d['class'], d['class'])}"
+
+
+def port_open(port):
+    with socket.socket() as s:
+        s.settimeout(0.5)
+        return s.connect_ex(("127.0.0.1", port)) == 0
+
+
+def sdr_state(usb, packages, have_rtl433, tcp_up):
+    """The receive chain, one honest sentence: what is there and the next missing piece."""
+    dongle = any(KNOWN.get((d["vid"], d["pid"]), ("",))[0].startswith(("RTL-SDR", "HackRF")) for d in usb)
+    if not have_rtl433:
+        return "rtl_433 is not built here (radio/build-rtl433.sh builds it; it then decodes recorded samples with no dongle)"
+    if tcp_up:
+        return "an rtl_tcp server answers on 127.0.0.1:1234: rtl_433 -d rtl_tcp:127.0.0.1:1234 -F json can receive"
+    if not dongle:
+        return "rtl_433 is built: it decodes recorded samples (rtl_433 -r file.cu8 -F json). No SDR dongle is plugged in: no live reception"
+    if SDR_DRIVER not in packages:
+        return f"an SDR dongle is plugged in, but no rtl_tcp driver app ({SDR_DRIVER}) is installed: no live reception (not tested here)"
+    return "an SDR dongle and its driver app are there; start the driver, then rtl_433 -d rtl_tcp:127.0.0.1:1234 (not tested here)"
+
+
+def collect():
+    dump = rish("dumpsys usb")
+    if dump is not None:
+        usb, how = usb_devices(dump), "Android's list, through Shizuku"
+    else:  # paths only: Termux cannot read a descriptor before the owner allows the device
+        try:
+            paths = json.loads(subprocess.run(["termux-usb", "-l"], stdout=subprocess.PIPE, text=True, timeout=20).stdout or "[]")
+        except (OSError, ValueError, subprocess.TimeoutExpired):
+            paths = None
+        usb, how = [], "Shizuku is not running" + ("" if paths is None else f"; termux-usb sees {len(paths)} device(s): {', '.join(paths) or 'none'}")
+    val = lambda cmd, pat: (re.search(pat, rish(cmd) or "") or [None, "unknown (needs Shizuku)"])[1]
+    packages = rish("pm list packages") or ""
+    return {"usb": usb, "usb_source": how,
+            "bluetooth": val("dumpsys bluetooth_manager | grep -m1 -E '^ *state:'", r"state:\s*(\w+)"),
+            "nfc": val("dumpsys nfc | grep -m1 mState=", r"mState=(\w+)"),
+            "wifi": val("cmd wifi status | head -1", r"Wifi is (\w+)"),
+            "sdr": sdr_state(usb, packages, bool(shutil.which("rtl_433")), port_open(1234)),
+            "tools": {t: bool(shutil.which(t)) for t in ("rtl_433", "esptool", "esptool.py", "proxmark3", "nmap", "termux-usb")}}
+
+
+def report(c):
+    lines = ["USB (" + c["usb_source"] + "):"]
+    lines += ["  " + describe(d).replace("\n", "\n  ") for d in c["usb"]] or ["  nothing plugged in"]
+    lines += [f"Bluetooth: {c['bluetooth']}", f"NFC: {c['nfc']}", f"Wi-Fi: {c['wifi']}", "Radio reception: " + c["sdr"],
+              "Tools here: " + (", ".join(t for t, ok in c["tools"].items() if ok) or "none")]
+    return "\n".join(lines)
+
+
+def selftest():
+    dump = """USB MANAGER STATE (dumpsys usb):
+{
+  host_manager={
+    devices=[
+      {
+        name=/dev/bus/usb/001/002
+        vendor_id=4292
+        product_id=60000
+        class=0
+        manufacturer_name=Silicon Labs
+        product_name=CP2102 USB to UART Bridge Controller
+        configurations=[ { id=1 interfaces=[ { id=0 class=255 subclass=0 } ] } ]
+      }
+      {
+        name=/dev/bus/usb/001/003
+        vendor_id=3034
+        product_id=10296
+        class=0
+        manufacturer_name=null
+        product_name=RTL2838UHIDIR
+        configurations=[ { interfaces=[ { class=255 } ] } ]
+      }
+      {
+        name=/dev/bus/usb/001/004
+        vendor_id=1118
+        product_id=1957
+        class=0
+        product_name=Wireless Keyboard
+        configurations=[ { interfaces=[ { class=3 } ] } ]
+      }
+    ]
+    num_connects=3
+  }
+  port_manager={
+    name=/dev/bus/usb/009/009
+    vendor_id=1
+  }
+}"""
+    usb = usb_devices(dump)
+    assert [(d["vid"], d["pid"], d["class"]) for d in usb] == [(0x10C4, 0xEA60, 255), (0x0BDA, 0x2838, 255), (1118, 1957, 3)], usb
+    assert usb[1]["maker"] == "" and "is: Silicon Labs CP210x" in describe(usb[0]) and "board behind it is unknown" in describe(usb[0])
+    assert "unknown to this table; USB class: keyboard" in describe(usb[2]) and "045e:07a5" in describe(usb[2])
+    assert usb_devices("host_manager={\n    num_connects=0\n  }\n  port_manager={") == []  # the Seeker on 13/11: nothing plugged in
+    none, dongle = [], [usb[1]]
+    assert "not built" in sdr_state(dongle, "", False, True)                       # never "can receive" without the decoder
+    assert "No SDR dongle" in sdr_state(none, SDR_DRIVER, True, False)             # the driver alone is not a receiver
+    assert "no rtl_tcp driver app" in sdr_state(dongle, "", True, False) and "not tested" in sdr_state(dongle, "", True, False)
+    assert "start the driver" in sdr_state(dongle, "package:" + SDR_DRIVER, True, False)
+    assert "can receive" in sdr_state(none, "", True, True)
+    text = report({"usb": [], "usb_source": "test", "bluetooth": "ON", "nfc": "on", "wifi": "enabled", "sdr": "x",
+                   "tools": {"nmap": True, "rtl_433": False}})
+    assert "nothing plugged in" in text and "Tools here: nmap" in text and "rtl_433" not in text.split("Tools here:")[1]
+    assert all(len(v) == 3 for v in KNOWN.values())
+    print("zion-hw self-check: OK")
+
+
+if __name__ == "__main__":
+    if sys.argv[1:] == ["--selftest"]:
+        selftest()
+    elif sys.argv[1:] == ["--json"]:
+        print(json.dumps(collect(), indent=1))
+    else:
+        print(report(collect()))

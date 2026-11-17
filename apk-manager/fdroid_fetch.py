@@ -11,7 +11,10 @@ from pathlib import Path
 FDROID_CERT_SHA256 = "43238d512c1e5eb2d6569f4a3afbf5523418b82e0a3ed1552770abb9a9c9ccab"  # f-droid.org/docs/Release_Channels_and_Signing_Keys
 REPO = "https://f-droid.org/repo"
 HERE = Path(__file__).resolve().parent
-CACHE = HERE / "cache"; CACHE.mkdir(exist_ok=True)
+CACHE = HERE / "cache"  # since 13/11/2026 a link to the external disk: install files do not stay on the Mac
+if CACHE.is_symlink() and not CACHE.exists():
+    sys.exit(f"{CACHE} points to {CACHE.readlink()}, which is not there: plug in the external disk (PHI-Data)")
+CACHE.mkdir(exist_ok=True)
 APKSIGNER = "/opt/homebrew/share/android-commandlinetools/build-tools/37.0.0/apksigner"
 
 def fetch(url, dest):

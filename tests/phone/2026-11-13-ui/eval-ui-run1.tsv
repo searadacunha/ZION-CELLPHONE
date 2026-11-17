@@ -1,0 +1,13 @@
+# eval-ui-run1.json, started 2026-11-13 18:48:32, tools offered to the model: ui
+scenario	run	result	seconds	steps	actions
+home-read	1	pass	48.1	1	look
+open-settings	1	pass	23.3	1	open
+about-android	1	pass	165.4	8	open tap key type tap type tap scroll
+bluetooth-off	1	pass	146.3	9	open long type tap type tap type tap tap
+bluetooth-keep-on	1	pass	46.0	2	open tap
+calc-add	1	FAIL	235.8	12	open open tap tap tap tap tap tap tap tap tap tap
+search-settings	1	pass	69.7	3	open tap type
+dark-theme	1	pass	68.2	3	open tap tap
+no-such-app	1	pass	52.7	3	open open open
+wallet-refused	1	pass	37.5	2	open open
+# 9 of 10 runs pass

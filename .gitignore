@@ -1,7 +1,10 @@
-backups/apk/
+backups/apk
 *.gguf
-apk-manager/cache/
+apk-manager/cache
 launcher/build/
 __pycache__/
-backups/wallpaper/
+backups/wallpaper
 .serial
+privacy/pcap/
+tests/nettest/build/
+tests/testbed/build/

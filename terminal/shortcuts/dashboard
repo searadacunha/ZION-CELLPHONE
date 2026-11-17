@@ -1,5 +1,4 @@
 #!/data/data/com.termux/files/usr/bin/sh
-# ZION ZERO launcher > ai (long press) > dashboard: seeker-dash, then a shell without OPERATOR.
-export ZION_TERMINAL_MODE=1
+# ZION ZERO launcher > ai (long press) > dashboard: seeker-dash, then a shell.
 /data/data/com.termux/files/usr/bin/seeker-dash
 exec /data/data/com.termux/files/usr/bin/login

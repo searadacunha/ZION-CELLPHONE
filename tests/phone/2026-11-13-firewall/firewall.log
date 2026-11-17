@@ -1,0 +1,18 @@
+Install command complete in 158 ms
+Fri Nov 13 19:12:50 WET 2026
+before: chain:disabled, zero.seeker.nettest:allow
+open1	HTTP 200, 577 bytes
+local1	HTTP 200, 15 bytes
+Disabled networking for zero.seeker.nettest, appId 10175
+zero.seeker.nettest:deny
+cut	FAILED: UnknownHostException: Unable to resolve host "example.com": No address associated with hostname
+cutlocal	FAILED: SocketTimeoutException: failed to connect to /127.0.0.1 (port 8080) from /127.0.0.1 (port 42744) after 8000ms
+chain:enabled
+zero.seeker.nettest:deny
+Enabled networking for zero.seeker.nettest, appId 10175
+zero.seeker.nettest:allow
+open2	HTTP 200, 577 bytes
+done; check: tests/seedvault_check.sh
+after: chain:disabled, zero.seeker.nettest:allow
+Success
+VERDICT: the block is real (the request works, fails while cut, works again)
