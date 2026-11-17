@@ -294,6 +294,7 @@ Review the script documentation before executing it. Test the Seed Vault manuall
 
 ```bash
 python3 ai/test_seeker_ai.py
+python3 ai/test_zion_ui.py
 python3 terminal/test_zion_shell.py
 python3 terminal/test_seeker_dash.py
 python3 tests/eval_fr.py --selftest
@@ -332,6 +333,7 @@ The tests are provided for inspection and reproduction. They do not establish co
 | [`privacy/`](privacy/) | Network/privacy inspection utilities |
 | [`tests/`](tests/) | Benchmarks, validation, raw results, wallet health checks |
 | [`docs/`](docs/) | Measured results, privacy audit, root and no-root |
+| [`docs/AUTONOMY_SECURITY.md`](docs/AUTONOMY_SECURITY.md) | Experimental UI control, autonomous-agent limitations, security threat model and upstream comparisons |
 | [`adb.sh`](adb.sh) | ADB helper |
 
 ## THE IDEA
