@@ -630,13 +630,15 @@ setconf(serve_port=sport)
 senv = dict(os.environ, SEEKER_AI_CONFIG=str(conf), SEEKER_AI_DATA=str(data), SEEKER_AI_SLOTS=str(tmp / "slots"),
             SEEKER_AI_BUSY=str(tmp / "busy"), PATH=f"{fakebin}:{os.environ['PATH']}")
 senv.pop("SEEKER_AI_CONFIRM", None)
+svc_log = open(tmp / "serve-start.log", "w")  # read back if the service never starts (a slower CI runner, 17/11)
 svc = subprocess.Popen([sys.executable, str(HERE / "seeker-ai"), "--serve"], env=senv, stdin=subprocess.DEVNULL,
-                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                       stdout=svc_log, stderr=subprocess.STDOUT)
 am_calls = lambda: (tmp / "am_calls").read_text().splitlines() if (tmp / "am_calls").exists() else []
-for _ in range(100):
-    if "token" in am_calls(): break
+for _ in range(600):  # 60 s at most: a cold CI runner starts Python and the service much slower than this Mac
+    if "token" in am_calls() or svc.poll() is not None: break
     time.sleep(0.1)
 sent = am_calls()
+assert "token" in sent, ("the service did not start", svc.poll(), (tmp / "serve-start.log").read_text()[-1500:], sent)
 key = sent[sent.index("token") + 1]
 assert sent[:6] == ["broadcast", "-n", "zero.seeker.launcher/.AiToken", "-a", "zero.seeker.launcher.AI_TOKEN", "-f"], sent
 assert sent[sent.index("port") + 1] == str(sport) and len(key) >= 30, sent
