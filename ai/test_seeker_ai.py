@@ -2,7 +2,7 @@
 """Self-test of seeker-ai against a fake llama-server and fake termux-*/rish commands (no model, no phone).
 Run: python3 ai/test_seeker_ai.py"""
 import contextlib, importlib.machinery, importlib.util, io, json, os, pty, subprocess, sys, tempfile, threading, time
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -78,7 +78,7 @@ class Fake(BaseHTTPRequestHandler):
         self.wfile.write(f"data: {json.dumps({'choices': [], 'timings': timings})}\n\n".encode())
         self.wfile.write(b"data: [DONE]\n\n")
 
-srv = HTTPServer(("127.0.0.1", 0), Fake)
+srv = ThreadingHTTPServer(("127.0.0.1", 0), Fake)
 threading.Thread(target=srv.serve_forever, daemon=True).start()
 tmp = Path(tempfile.mkdtemp()).resolve()
 work, data, fakebin, mdir = tmp / "work", tmp / "data", tmp / "bin", tmp / "models"
@@ -754,11 +754,14 @@ svc.kill(); svc.wait()
 with socket.socket() as s:
     s.bind(("127.0.0.1", 0)); sport = s.getsockname()[1]
 setconf(serve_port=sport)
+previous_token_count = am_calls().count("token")
 svc = subprocess.Popen([sys.executable, str(HERE / "seeker-ai"), "--serve"], env={**senv, "SEEKER_AI_PROC": str(tmp / "proc-empty")},
                        stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-for _ in range(100):
-    if am_calls().count("token") == 4: break
+for _ in range(300):
+    if am_calls().count("token") > previous_token_count or svc.poll() is not None: break
     time.sleep(0.1)
+assert am_calls().count("token") > previous_token_count, ("second service failed to start", svc.poll(),
+    (data / "serve.log").read_text()[-2000:] if (data / "serve.log").exists() else "no service log")
 sent = am_calls()
 key = sent[len(sent) - 1 - sent[::-1].index("token") + 1]
 before = len(requests)
