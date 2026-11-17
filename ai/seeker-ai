@@ -17,6 +17,8 @@ Cache: ~/.cache/seeker-ai/slots/ (the instructions + tools part of the prompt, c
 import argparse, hashlib, html, http.client, ipaddress, json, os, re, shlex, shutil, signal, subprocess, sys, threading, time
 import urllib.error, urllib.parse, urllib.request
 from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import zion_ui
 
 HOME = Path.home()
 CONF_PATH = Path(os.environ.get("SEEKER_AI_CONFIG", HOME / ".config/seeker-ai/config.json"))
@@ -54,12 +56,14 @@ DEFAULT = {
     "levels": {"read": "auto", "write": "auto", "exec": "ask", "sensitive": "ask"},
     "tools": {},           # per-tool override of its level, e.g. {"python": "auto"}
     "android_policy": {},  # per-action override, e.g. {"screenshot": "auto"}
+    "ui_allowed_packages": [],  # explicit scope for all UI-tree, tap, swipe, text actions; empty = deny
     # actions offered to the model, all verified on the Seeker (Termux from Google Play + Shizuku). torch, clipboard_get,
     # location, photo, sms_*, contacts need the Termux:API app signed like Termux: add them once it is installed.
     "android_actions": ["battery", "volume", "toast", "notify", "vibrate", "wifi_info", "apps", "usb_devices",
                         "open_url", "screenshot", "install_apk",
                         "diagnose", "thermal", "processes", "network", "crashes", "logs",
-                        "app_info", "app_stop", "app_disable", "app_enable"],
+                        "app_info", "app_stop", "app_disable", "app_enable",
+                        "app_open", "ui_focus", "ui_home", "ui_back", "ui_tree", "ui_tap", "ui_swipe", "ui_text"],
     # file tools see only these folders, minus the denied ones and minus every hidden file or folder inside them
     # (symlinks resolved; relative paths start in workdir). To open a hidden folder, list it here explicitly.
     # shell and python are not confined: they are "exec" (ask by default) and start in workdir.
@@ -81,7 +85,9 @@ SYSTEM_AGENT = ("You are OPERATOR, the local agent of ZION ZERO, a Solana Seeker
                 "folder is {workdir}: relative paths and commands start there. Never state a result that no tool has shown. "
                 "The user approves sensitive actions: if they refuse one, never try it again, nor another way, and tell them "
                 "it was not done. Use remember to keep what you are asked to remember. You have no access to the Seed Vault. "
-                "To check the phone, start with android diagnose; to find text in files use search; for git use the git tool.")
+                "To check the phone, start with android diagnose; to find text in files use search; for git use the git tool. "
+                "To operate an app use android ui_focus, app_open, ui_tree, ui_tap, ui_swipe, ui_text, ui_back and ui_home; "
+                "UI actions are limited to the allowed foreground package. Do not automate payments, unlocks, Seed Vault or credentials.")
 SYSTEM_CHAT = ("You are OPERATOR, a local offline assistant on ZION ZERO, a Solana Seeker phone. "
                "Answer in the language of the user's request (not of the notes), clearly and briefly.")
 META = set(";&|`$<>(){}\\\n")
@@ -266,6 +272,14 @@ ANDROID = {
     "app_stop":       (lambda a: f"am force-stop {q(a['package'])}", "sensitive", "rish"),
     "app_disable":    (lambda a: f"pm disable-user --user 0 {q(a['package'])}", "sensitive", "rish"),
     "app_enable":     (lambda a: f"pm enable --user 0 {q(a['package'])}", "sensitive", "rish"),
+    "app_open":       (lambda a: zion_ui.build_command("app_open", a), "write", "rish"),
+    "ui_focus":       (lambda a: zion_ui.build_command("ui_focus", a), "read", "rish"),
+    "ui_home":        (lambda a: zion_ui.build_command("ui_home", a), "write", "rish"),
+    "ui_back":        (lambda a: zion_ui.build_command("ui_back", a), "write", "rish"),
+    "ui_tree":        (lambda a: zion_ui.build_command("ui_tree", a), "sensitive", "rish"),
+    "ui_tap":         (lambda a: zion_ui.build_command("ui_tap", a), "sensitive", "rish"),
+    "ui_swipe":       (lambda a: zion_ui.build_command("ui_swipe", a), "sensitive", "rish"),
+    "ui_text":        (lambda a: zion_ui.build_command("ui_text", a), "sensitive", "rish"),
 }
 UNDO = {"app_disable": "app_enable", "app_enable": "app_disable", "app_stop": "-"}
 
@@ -390,7 +404,7 @@ def make_tools(conf):
             return "error: install_apk needs the path of an .apk file"
         if action in ("screenshot", "photo") and not path:  # screencap runs as shell: it can write to shared storage only
             path = f"/sdcard/Pictures/seeker-ai-{int(time.time())}.{'png' if action == 'screenshot' else 'jpg'}"
-        if action.startswith("app_"):
+        if action.startswith("app_") or action in zion_ui.UI_ACTIONS:
             if not PKG.fullmatch(package):
                 return "error: package must be an Android package name, e.g. org.fossify.gallery"
             if action != "app_info" and (PROTECTED.search(package) or CORE.match(package)):
@@ -403,6 +417,10 @@ def make_tools(conf):
         rish = rish_path()
         if not rish:
             return f"error: {action} needs Shizuku (start Shizuku, then run seeker-setup-shizuku)"
+        if action in zion_ui.UI_ACTIONS:
+            focus = run([rish, "-c", "dumpsys activity activities | grep -m1 -E 'topResumedActivity|mResumedActivity'"], timeout=20)
+            foreground = zion_ui.parse_foreground(focus)
+            zion_ui.validate_target(package, conf.get("ui_allowed_packages", []), foreground)
         out = run([rish, "-c", build(a)], timeout=120)
         if action in UNDO:  # every change is journaled with its undo, for you and for OPERATOR
             DATA.mkdir(parents=True, exist_ok=True)
@@ -434,8 +452,8 @@ def make_tools(conf):
         "text": {"type": "string", "description": "message, or URL for open_url"},
         "title": {"type": "string"}, "number": {"type": "string", "description": "phone number for sms_send"},
         "path": {"type": "string", "description": "file: .apk for install_apk, .png for screenshot"},
-        "value": {"type": "string", "description": "milliseconds for vibrate, on/off for torch, count for sms_list"},
-        "package": {"type": "string", "description": "app package for app_info, app_stop, app_disable, app_enable"}}}
+        "value": {"type": "string", "description": "milliseconds for vibrate, on/off for torch, count for sms_list; ui_tap=x,y; ui_swipe=x1,y1,x2,y2,ms"},
+        "package": {"type": "string", "description": "app package for app_* and UI actions (must match ui_allowed_packages + foreground)"}}}
     return {
         "read_file": (t_read_file, "Read a text file", s(path="file path")),
         "list_dir": (t_list_dir, "List a directory", s(path="directory path")),
