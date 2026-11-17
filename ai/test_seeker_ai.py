@@ -543,4 +543,29 @@ try:
 finally:
     sa.held = saved; del sa.input
 assert out.getvalue().count("paused-51") == 3 and not (work / "dollars").exists(), out.getvalue()
-print("seeker-ai self-test: OK (51 scenarios)")
+# 52. Android UI control: safe app open, foreground-checked gestures, no access to unapproved apps
+old_rish = (fakebin / "rish").read_text()
+(fakebin / "rish").write_text(
+    f'#!/bin/sh\nprintf "%s\\n" "$2" >> {tmp}/rish_log\n'
+    'case "$2" in *"dumpsys activity activities"*) '
+    'echo "topResumedActivity=ActivityRecord{abc u0 org.example.chat/.Main t12}" ;; '
+    '*) echo ok ;; esac\n')
+(fakebin / "rish").chmod(0o755)
+setconf(android_actions=["app_open", "ui_focus", "ui_home", "ui_back", "ui_tree", "ui_tap", "ui_swipe", "ui_text"],
+        ui_allowed_packages=["org.example.chat"], android_policy={"ui_tap": "auto"})
+run('CALL android {"action": "app_open", "package": "org.example.chat"}', "no")
+assert rlog().startswith("monkey -p org.example.chat "), rlog()
+run('CALL android {"action": "ui_tap", "package": "org.example.chat", "value": "123,456"}', "no")
+assert rlog() == "input tap 123 456", rlog()
+run('CALL android {"action": "ui_tree", "package": "org.example.chat"}', "no")
+assert last_tool().startswith("denied by the user"), last_tool()
+run('CALL android {"action": "ui_swipe", "package": "org.example.chat", "value": "10,20,100,200,300"}', "yes")
+assert rlog() == "input swipe 10 20 100 200 300", rlog()
+run('CALL android {"action": "ui_tap", "package": "com.solanamobile.seedvaultimpl", "value": "123,456"}', "yes")
+assert last_tool().startswith("refused"), last_tool()
+setconf(android_actions=["ui_tap"], ui_allowed_packages=[], android_policy={"ui_tap": "auto"})
+run('CALL android {"action": "ui_tap", "package": "org.example.chat", "value": "123,456"}', "no")
+assert "ui_allowed_packages" in last_tool(), last_tool()
+(fakebin / "rish").write_text(old_rish)
+setconf()
+print("seeker-ai self-test: OK (52 scenarios)")
