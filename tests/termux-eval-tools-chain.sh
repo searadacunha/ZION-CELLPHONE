@@ -21,8 +21,14 @@ step() { echo; echo "== $(date '+%F %T') $*"; }
 note() { echo "$(date '+%F %T') $*" | tee -a "$D/eval-tools-summary.txt"; }
 done_() { [ -f "$D/chain-done/$1" ]; }
 bat() { timeout 30 termux-battery-status | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d["percentage"], d["plugged"], d["temperature"])' 2>/dev/null; }
+q() {  # one argument for the phone's shell, whatever it holds. No ${1//\'/...}: bash 3.2 (the Mac's /bin/bash, and CI's
+  # bash) mangles a quote in the replacement and sent 'it\'\\'\'s' to the phone (found by the first CI run, 18/11)
+  local s=$1 out=
+  while [[ $s == *\'* ]]; do out+="${s%%\'*}'\\''"; s=${s#*\'}; done
+  printf "'%s'" "$out$s"
+}
 notify() {  # the text goes inside single quotes for rish's shell: escape the apostrophes
-  local m=${1//\'/\'\\\'\'}
+  local m; m=$(q "$1"); m=${m:1:${#m}-2}
   timeout 30 "$RISH" -c "cmd notification post -S bigtext -t 'ZION ZERO' zion_eval_tools '$m'" >/dev/null 2>&1
   echo "$(date +%T) notify rc=$?: $1"; }
 guard() {  # until the battery is >= $1 %, at most 240 min (heavy work draws more than the Mac's USB gives)

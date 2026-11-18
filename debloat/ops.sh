@@ -14,7 +14,12 @@ log() {
   local f row="$(date '+%F %T')"$'\t'"$GROUP"
   for f in "$1" "$2" "${3:--}" "${4:--}"; do row+=$'\t'"${f//[$'\t\r\n']/ }"; done
   printf '%s\n' "$row" >> "$J"; }
-q() { printf "'%s'" "${1//\'/\'\\\'\'}"; }  # one argument for the phone's shell, whatever it holds
+q() {  # one argument for the phone's shell, whatever it holds. No ${1//\'/...}: bash 3.2 (the Mac's /bin/bash, and CI's
+  # bash) mangles a quote in the replacement and sent 'it\'\\'\'s' to the phone (found by the first CI run, 18/11)
+  local s=$1 out=
+  while [[ $s == *\'* ]]; do out+="${s%%\'*}'\\''"; s=${s#*\'}; done
+  printf "'%s'" "$out$s"
+}
 
 op_disable() {  # reversible: pm disable-user keeps app data
   local p=$1 st
