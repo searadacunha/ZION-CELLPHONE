@@ -8,7 +8,8 @@ Three kinds of evidence, never mixed:
 - **Not run**: written and ready, not yet run on the phone. Said so here, never presented as validated.
 
 State on **17/11/2026**. The parts added that day (zion, the owner's policy, approvals, STOP, the injection guard,
-launcher 1.8.0, the test app, the tool-call benchmark, zion-guard) pass every suite below on the computer; **none of
+launcher 1.8.0, the test app, the tool-call benchmark, zion-guard) pass every suite below on the computer and in CI
+(green since 18/11: its first runs found a bash 3.2 quoting defect and a missing `timeout`, both fixed); **none of
 them has run on the phone yet**: the computer lost its USB-debugging authorization that afternoon, and only the
 owner can grant it again.
 

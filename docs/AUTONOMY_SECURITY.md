@@ -1,8 +1,7 @@
 # OPERATOR on its own: autonomy and security
 
 Written **17/11/2026**. What ran where is in [TESTS.md](TESTS.md): the new parts below pass their tests on the
-computer (the CI workflow that runs them on every push is written, and runs on the pull request); **they have not run
-on the phone yet** (the computer lost its USB-debugging authorization that
+computer and in CI (GitHub Actions, macOS runner, green since 18/11); **they have not run on the phone yet** (the computer lost its USB-debugging authorization that
 afternoon). This page says what the design guarantees in code, and what it does not.
 
 ## The loop
