@@ -1,4 +1,0 @@
-#!/data/data/com.termux/files/usr/bin/sh
-# ZION ZERO launcher > terminal: a normal Termux login shell, without OPERATOR (terminal/zion-autostart.sh).
-export ZION_TERMINAL_MODE=1
-exec /data/data/com.termux/files/usr/bin/login

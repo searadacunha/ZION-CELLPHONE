@@ -1,0 +1,8 @@
+#!/data/data/com.termux/files/usr/bin/sh
+# Run by Termux's job scheduler (terminal/zion-shell-setup.sh: job 7301 at boot and every 15 minutes, job 7302 at setup
+# and from the launcher's "démarrer l'IA"): OPERATOR's service for the ZION ZERO launcher's "ai" screen, in the
+# background, with no Termux window. Exits at once when the service already runs.
+# zion, the supervisor of queued tasks, rides along: started detached, it exits at once when it already runs.
+P=/data/data/com.termux/files/usr/bin
+[ -x $P/zion ] && $P/zion run --background >/dev/null 2>&1
+exec $P/seeker-ai --serve

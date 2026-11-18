@@ -1,16 +1,20 @@
 #!/usr/bin/env python3
-"""Mac/Linux self-check of terminal/zion-shell-setup.sh and terminal/zion-autostart.sh, with real interactive bash and
-zsh in a pseudo-terminal and a fake seeker-ai that only logs that it ran. Run: python3 terminal/test_zion_shell.py"""
+"""Mac/Linux self-check of terminal/zion-shell-setup.sh since 13/11 (Termux is a plain terminal; the launcher's "ai" is
+answered in the background by seeker-ai --serve). From the state the setup of 12-13/11 left, it must take its line out
+of ~/.bashrc and ~/.zshrc (byte for byte back when untouched since), drop the autostart, install the launcher's scripts
+and the service, and schedule the jobs; then a real interactive bash and zsh open no OPERATOR. --remove undoes it.
+A fake seeker-ai and a fake termux-job-scheduler only log. Run: python3 terminal/test_zion_shell.py"""
 import os, pty, select, shutil, subprocess, sys, tempfile, time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 TAG = "# ZION ZERO: OPERATOR on new sessions"
-OLD_GITHUB_BLOCK = '# >>> ZION AI AUTOSTART >>>\nif true; then seeker-ai; fi\n# <<< ZION AI AUTOSTART <<<\n'
+OLD_LINE = 'if [ -r "$PREFIX/share/zion/autostart.sh" ]; then . "$PREFIX/share/zion/autostart.sh"; fi  ' + TAG + "\n"
+ALIASES = "alias ai=seeker-ai\nalias dash=seeker-dash\n"  # termux-setup.sh's, kept: ai opens OPERATOR in the terminal
 
 
-def interactive(argv, env, typed, wait=6.0):
-    """Run argv on a pty, type each line of `typed` once the shell is up, return all it printed."""
+def interactive(argv, env, typed, wait=5.0):
+    """Run argv on a pty, type `typed` once the shell is up, return all it printed."""
     pid, fd = pty.fork()
     if pid == 0:
         os.execvpe(argv[0], argv, env)
@@ -26,7 +30,10 @@ def interactive(argv, env, typed, wait=6.0):
                 break
             out += chunk
         elif not sent and time.time() - t0 > 1.0:
-            os.write(fd, typed.encode())
+            try:
+                os.write(fd, typed.encode())
+            except OSError:
+                break
             sent = True
     try:
         os.kill(pid, 9)
@@ -41,89 +48,94 @@ def main():
     home, prefix = tmp / "home", tmp / "usr"
     (prefix / "bin").mkdir(parents=True)
     home.mkdir()
-    fake = prefix / "bin/seeker-ai"
-    fake.write_text('#!/bin/sh\necho "ran terminal=${ZION_TERMINAL_MODE:-} active=${ZION_AUTO_AI_ACTIVE:-}" >> "$HOME/ran.log"\n'
-                    'echo FAKE-OPERATOR-SAYS-HI\n')
-    fake.chmod(0o755)
-    (home / ".bashrc").write_text("export MY_SETTING=1\n" + OLD_GITHUB_BLOCK + "alias ll='ls -l'\n")
+    for name, body in (("seeker-ai", 'echo "ran $*" >> "$HOME/ran.log"; echo FAKE-OPERATOR-SAYS-HI'),
+                       ("termux-job-scheduler", 'echo "$*" >> "$HOME/jobs.log"')):
+        (prefix / "bin" / name).write_text(f"#!/bin/sh\n{body}\n")
+        (prefix / "bin" / name).chmod(0o755)
     base = {"HOME": str(home), "PREFIX": str(prefix), "PATH": f"{prefix}/bin:/usr/bin:/bin", "TERM": "dumb", "LANG": "C"}
     setup = lambda *a: subprocess.run(["bash", str(HERE / "zion-shell-setup.sh"), *a], env=base, capture_output=True, text=True)
-    ran = lambda: (home / "ran.log").read_text().splitlines() if (home / "ran.log").exists() else []
+    lines = lambda f: (home / f).read_text().splitlines() if (home / f).exists() else []
+    serve = f"--script {prefix}/bin/zion-ai-serve --network none --battery-not-low false"
 
-    def reset():
-        (home / "ran.log").unlink(missing_ok=True)
+    def old_state(bashrc_own):
+        """What the setup of 12-13/11 left: its line last in both files (after termux-setup.sh's aliases), the user's
+        own ~/.bashrc in its backup, a ~/.zshrc it created, the autostart file, its shortcuts and the "off" switch."""
+        (home / ".bashrc").write_text(bashrc_own + ("\n" if bashrc_own and not bashrc_own.endswith("\n") else "") + ALIASES + OLD_LINE)
+        (home / ".bashrc.zion-backup").write_text(bashrc_own)
+        (home / ".zshrc").write_text(ALIASES + OLD_LINE)
+        (home / ".zshrc.zion-backup").unlink(missing_ok=True)
+        (prefix / "share/zion").mkdir(parents=True, exist_ok=True)
+        (prefix / "share/zion/autostart.sh").write_text('case $- in *i*) seeker-ai ;; esac\n')
+        (home / ".config/zion").mkdir(parents=True, exist_ok=True)
+        (home / ".config/zion/autostart-off").touch()
+        (home / ".shortcuts").mkdir(exist_ok=True)
+        for s in ("terminal", "operator", "dashboard"):
+            (home / ".shortcuts" / s).write_text("old\n")
 
+    own = "export MY_SETTING=1\nalias ll='ls -l'\n"
+    old_state(own)
     r = setup()
-    assert r.returncode == 0, r.stderr
-    bashrc = (home / ".bashrc").read_text()
-    assert bashrc.rstrip("\n").endswith(TAG) and bashrc.count(TAG) == 1, bashrc
-    assert "ZION AI AUTOSTART" not in bashrc and "export MY_SETTING=1" in bashrc and "alias ll=" in bashrc, bashrc
-    assert (home / ".bashrc.zion-backup").read_text().startswith("export MY_SETTING=1\n# >>> ZION AI AUTOSTART"), "backup"
-    assert (home / ".zshrc").read_text().count(TAG) == 1 and not (home / ".zshrc.zion-backup").exists()
-    for s in ("terminal", "operator", "dashboard"):
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert (home / ".bashrc").read_text() == own + ALIASES, (home / ".bashrc").read_text()  # only the line went
+    assert (home / ".zshrc").read_text() == ALIASES, (home / ".zshrc").read_text()
+    assert (home / ".bashrc.zion-backup").read_text() == own  # kept
+    assert not (prefix / "share/zion").exists() and not (home / ".config/zion/autostart-off").exists()
+    # 17/11: the owner's policy for unattended work, empty (no app allowed) until he lists apps; never overwritten
+    assert (home / ".config/zion/policy.json").read_text() == '{"apps": []}\n'
+    assert sorted(p.name for p in (home / ".shortcuts").iterdir()) == ["ai-start", "dashboard", "zion-stop"]
+    for s in ("ai-start", "dashboard", "zion-stop"):
         assert oct((home / ".shortcuts" / s).stat().st_mode & 0o777) == "0o700", s
-    assert (prefix / "share/zion/autostart.sh").exists() and os.readlink(prefix / "bin/operator") == "seeker-ai"
-    (home / ".bashrc").write_text((home / ".bashrc").read_text() + "export AFTER=1\n")  # something appended later
-    assert setup().returncode == 0
-    bashrc = (home / ".bashrc").read_text()
-    assert bashrc.count(TAG) == 1 and bashrc.rstrip("\n").endswith(TAG) and "export AFTER=1" in bashrc, "re-run"
-    assert "MY_SETTING" in (home / ".bashrc.zion-backup").read_text() and "AFTER" not in (home / ".bashrc.zion-backup").read_text()
-    print("setup: line added last and once, old GitHub block removed, backup kept, idempotent: OK")
+    for b in ("zion-ai-serve", "zion", "zion-stop", "zion-guard"):  # the supervisor, the emergency stop, the threat check
+        assert oct((prefix / "bin" / b).stat().st_mode & 0o777) == "0o755", b
+    boot = home / ".termux/boot/zion-ai-serve"  # Termux runs it at BOOT_COMPLETED
+    assert oct(boot.stat().st_mode & 0o777) == "0o700" and boot.read_text() == (HERE / "zion-ai-serve").read_text()
+    assert os.readlink(prefix / "bin/operator") == "seeker-ai"
+    assert lines("jobs.log") == [f"--job-id 7301 {serve} --period-ms 900000 --persisted true", f"--job-id 7302 {serve}"], lines("jobs.log")
+    # the launcher's "démarrer l'IA" schedules the same job 7302 (Termux's absolute paths: read, not run, here)
+    # the launcher's "démarrer l'IA" schedules both jobs the same way (Termux's absolute paths: run with a fake $J here)
+    start = (HERE / "shortcuts/ai-start").read_text().replace("J=/data/data/com.termux/files/usr/bin/termux-job-scheduler",
+                                                             f"J={prefix}/bin/termux-job-scheduler")
+    (home / "jobs.log").unlink()
+    subprocess.run(["sh", "-c", start], env=base, check=True)
+    t = "/data/data/com.termux/files/usr"
+    assert lines("jobs.log") == [l.replace(str(prefix), t) for l in (f"--job-id 7301 {serve} --period-ms 900000 --persisted true",
+                                                                     f"--job-id 7302 {serve}")], lines("jobs.log")
+    (home / "jobs.log").write_text(f"--job-id 7301 {serve} --period-ms 900000 --persisted true\n--job-id 7302 {serve}\n")
+    served = (HERE / "zion-ai-serve").read_text()
+    assert served.rstrip().endswith("exec $P/seeker-ai --serve") and "$P/zion run --background" in served
+    print("setup: old line out of both rc files (aliases kept), autostart gone, scripts and service in, jobs scheduled: OK")
+
+    (home / ".config/zion/policy.json").write_text('{"apps": ["org.fossify.math"]}\n')  # the owner's own list stays
+    assert setup().returncode == 0 and (home / ".bashrc").read_text() == own + ALIASES and len(lines("jobs.log")) == 4
+    assert (home / ".config/zion/policy.json").read_text() == '{"apps": ["org.fossify.math"]}\n'
+    print("re-run: nothing more changes in the rc files, the jobs are scheduled again (same ids): OK")
 
     shells = [("bash", ["bash", "-i"])] + ([("zsh", ["zsh", "-i"])] if shutil.which("zsh") else [])
     for name, argv in shells:
-        reset()
-        out = interactive(argv, base, "echo ALIVE-$((40+2))\nbash -i -c 'echo NESTED-$((1+1))'\nexit\n")
-        assert ran() == ["ran terminal= active=1"], (name, ran(), out)
-        assert "FAKE-OPERATOR-SAYS-HI" in out and "ALIVE-42" in out and "NESTED-2" in out, (name, out)
-        print(f"{name}: new interactive session opens OPERATOR once, shell usable after, nested shell does not loop: OK")
+        out = interactive(argv, base, "echo ALIVE-$((40+2))\nexit\n")
+        assert lines("ran.log") == [] and "ALIVE-42" in out and "FAKE-OPERATOR" not in out, (name, lines("ran.log"), out)
+        print(f"{name}: a new interactive session is a plain shell, no OPERATOR: OK")
 
-        reset()
-        interactive(argv, {**base, "ZION_TERMINAL_MODE": "1"}, "exit\n")
-        assert ran() == [], (name, "terminal mode", ran())
-        reset()
-        interactive(argv, {**base, "SSH_CONNECTION": "10.0.0.2 5555 10.0.0.1 8022"}, "exit\n")
-        assert ran() == [], (name, "ssh", ran())
-        (home / ".config/zion/autostart-off").touch()
-        reset()
-        interactive(argv, base, "exit\n")
-        assert ran() == [], (name, "autostart off", ran())
-        reset()
-        interactive(argv, {**base, "ZION_OPEN_OPERATOR": "1"}, "exit\n")
-        assert len(ran()) == 1, (name, "launcher ai with autostart off", ran())
-        (home / ".config/zion/autostart-off").unlink()
-        print(f"{name}: skipped for launcher terminal, SSH, autostart off; launcher ai still opens it: OK")
-
-    reset()
-    rc = ".bashrc"
-    subprocess.run(["bash", "-c", f'. "$HOME/{rc}"; true'], env=base, check=True)                       # script that sources it
-    subprocess.run(["bash", "-c", 'echo "case \\$- in *i*) ;; esac" > /dev/null'], env=base, check=True)
-    subprocess.run(["bash", "-i"], env=base, input="exit\n", text=True, capture_output=True)            # stdin not a terminal
-    if shutil.which("zsh"):
-        subprocess.run(["zsh", "-c", 'true'], env=base, check=True)
-    assert ran() == [], ran()
-    print("non-interactive shells, scripts and piped input never open OPERATOR: OK")
+    # an rc left untouched since that setup comes back byte for byte; one that setup created goes; edits are kept
+    for original in ("export A=1\n\n\n", "export B=2", ""):
+        old_state(original)
+        (home / ".bashrc").write_text(original + ("\n" if original and not original.endswith("\n") else "") + OLD_LINE)
+        assert setup().returncode == 0
+        assert (home / ".bashrc").read_text() == original, (original, (home / ".bashrc").read_text())
+    old_state(own)
+    (home / ".zshrc").write_text(OLD_LINE)
+    assert setup().returncode == 0 and not (home / ".zshrc").exists()
+    print("rc files: untouched ones back exactly, one created by that setup removed: OK")
 
     r = setup("--remove")
     assert r.returncode == 0, r.stderr
-    assert TAG not in (home / ".bashrc").read_text() and not (home / ".zshrc").exists()  # setup had created it
-    assert "export MY_SETTING=1" in (home / ".bashrc").read_text() and (home / ".bashrc.zion-backup").exists()
-    assert not (home / ".shortcuts/terminal").exists() and not (prefix / "bin/operator").exists()
-    reset()
-    interactive(["bash", "-i"], base, "exit\n")
-    assert ran() == [], ran()
-    print("--remove: line, scripts and command removed, backups kept, nothing opens: OK")
-    # setup then --remove gives an untouched rc back byte for byte; a start marker without its end keeps the rest
-    for original, after in (("export A=1\n\n\n", None), ("export B=2", None), ("", None),
-                            ("export C=3\n" + OLD_GITHUB_BLOCK, "export C=3\n")):  # the old block never comes back
-        (home / ".bashrc").write_text(original); (home / ".bashrc.zion-backup").unlink(missing_ok=True)
-        assert setup().returncode == 0 and setup().returncode == 0 and setup("--remove").returncode == 0
-        assert (home / ".bashrc").read_text() == (after or original), (original, (home / ".bashrc").read_text())
-    (home / ".bashrc").write_text("export A=1\n# >>> ZION AI AUTOSTART >>>\nexport KEEP=1\n"); (home / ".bashrc.zion-backup").unlink()
-    assert setup().returncode == 0
-    bashrc = (home / ".bashrc").read_text()
-    assert "export KEEP=1" in bashrc and bashrc.count(TAG) == 1, bashrc
-    print("--remove gives an untouched rc back exactly; an unterminated old block is kept: OK")
+    assert not (home / ".shortcuts/ai-start").exists() and not (home / ".shortcuts/dashboard").exists()
+    assert not (prefix / "bin/zion-ai-serve").exists() and not (prefix / "bin/operator").exists() and not boot.exists()
+    assert not any((prefix / "bin" / b).exists() for b in ("zion", "zion-stop", "zion-guard")) and not (home / ".shortcuts/zion-stop").exists()
+    assert (home / ".config/zion/policy.json").exists()  # the owner's policy and approval key are his: kept
+    assert lines("jobs.log")[-2:] == ["--cancel --job-id 7301", "--cancel --job-id 7302"], lines("jobs.log")
+    assert (home / ".bashrc").read_text() == own + ALIASES
+    print("--remove: scripts, service and command removed, both jobs cancelled, rc files left as they are: OK")
     shutil.rmtree(tmp)
     print("test_zion_shell: all OK")
 

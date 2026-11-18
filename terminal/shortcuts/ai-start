@@ -1,0 +1,8 @@
+#!/data/data/com.termux/files/usr/bin/sh
+# ZION ZERO launcher > ai > "démarrer l'IA": OPERATOR's service for the "ai" screen starts in the background, then this
+# window closes by itself. Both jobs of terminal/zion-shell-setup.sh, the same way: a force-stop of Termux cancels its
+# jobs, the 15-minute one included, so this repairs it too.
+J=/data/data/com.termux/files/usr/bin/termux-job-scheduler
+S="--script /data/data/com.termux/files/usr/bin/zion-ai-serve --network none --battery-not-low false"
+$J --job-id 7301 $S --period-ms 900000 --persisted true >/dev/null 2>&1
+$J --job-id 7302 $S >/dev/null 2>&1

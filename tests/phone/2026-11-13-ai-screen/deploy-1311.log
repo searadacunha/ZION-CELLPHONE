@@ -1,0 +1,44 @@
+Fri Nov 13 09:29:45 WET 2026
+--- before
+/data/data/com.termux/files/home/.bashrc: old line 0, alias ai 1
+/data/data/com.termux/files/home/.zshrc: old line 0, alias ai 1
+ai-start
+dashboard
+ls: cannot access '/data/data/com.termux/files/usr/share/zion': No such file or directory
+029e09fa7f44494e
+installed seeker-ai 80acd60d298a506c
+--- self-test with Termux's python
+seeker-ai self-test: OK (54 scenarios)
+--- setup
+Scheduling Job 7301: /data/data/com.termux/files/usr/bin/zion-ai-serve	(periodic: 900000ms) (persisted) - response 1
+Scheduling Job 7302: /data/data/com.termux/files/usr/bin/zion-ai-serve	 - response 1
+ZION ZERO: the launcher's ai is answered in the background (at boot, job 7301 every 15 min, job 7302 now).
+For restarts after Android stops Termux: Settings > Apps > Termux > Battery > Unrestricted.
+ZION ZERO: Termux opens a plain terminal; type ai there for OPERATOR.
+Launcher: the first tap on dashboard or démarrer l'IA shows Termux's script list: tap the same name once.
+setup exit 0
+--- after
+/data/data/com.termux/files/home/.bashrc: old line 0, alias ai 1
+/data/data/com.termux/files/home/.zshrc: old line 0, alias ai 1
+-rwxr-xr-x. 1 u0_a131 u0_a131  415 Nov 13 09:30 /data/data/com.termux/files/usr/bin/zion-ai-serve
+
+/data/data/com.termux/files/home/.shortcuts:
+total 15
+drwxr-xr-x.  2 u0_a131 u0_a131 3452 Nov 13 09:30 .
+drwx------. 12 u0_a131 u0_a131 3452 Nov 13 09:30 ..
+-rwx------.  1 u0_a131 u0_a131  610 Nov 13 09:30 ai-start
+-rwx------.  1 u0_a131 u0_a131  215 Nov 13 09:30 dashboard
+ls: cannot access '/data/data/com.termux/files/usr/share/zion': No such file or directory
+--- jobs
+Pending Job 7301: /data/data/com.termux/files/usr/bin/zion-ai-serve	(periodic: 900000ms) (persisted)
+
+--- service after 1s
+u0_a131  13122     1 17  1970 ?        00:04:56 /data/data/com.termux/files/home/llama.cpp/build-static/bin/llama-server /data/data/com.termux/files/home/llama.
+u0_a131  14222 11074  5  1970 ?        00:00:00 python3 /data/data/com.termux/files/usr/bin/python3 /data/data/com.termux/files/usr/bin/seeker-ai --serve
+unknown key
+2026-11-13 09:00:20 key sent to the launcher: ok
+starting llama-server with Qwen3.5-4B-Uncensored-HauhauCS-Aggressive-Q4_K_M.gguf
+[2m(android:battery)[0m
+2026-11-13 09:30:36 serving the launcher on 127.0.0.1:8095, pid 14222
+2026-11-13 09:30:37 key sent to the launcher: ok
+Fri Nov 13 09:30:38 WET 2026

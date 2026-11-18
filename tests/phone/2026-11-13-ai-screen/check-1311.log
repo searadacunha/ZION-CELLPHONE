@@ -1,0 +1,14 @@
+Fri Nov 13 09:34:11 WET 2026
+Pending Job 7301: /data/data/com.termux/files/usr/bin/zion-ai-serve	(periodic: 900000ms) (persisted)
+
+total 11
+drwxr-xr-x. 2 u0_a131 u0_a131 3452 Nov 13 09:30 .
+drwxr-xr-x. 3 u0_a131 u0_a131 3452 Nov 13 09:30 ..
+-rwx------. 1 u0_a131 u0_a131  415 Nov 13 09:30 zion-ai-serve
+u0_a131  14686 14652  0  1970 ?        00:00:00 python3 /data/data/com.termux/files/usr/bin/python3 /data/data/com.termu
+u0_a131  15012 14686 60  1970 ?        00:00:25 /data/data/com.termux/files/home/llama.cpp/build-static/bin/llama-server
+2026-11-13 09:30:38 key sent to the launcher: ok
+2026-11-13 09:32:07 serving the launcher on 127.0.0.1:8095, pid 14686
+2026-11-13 09:32:08 key sent to the launcher: ok
+starting llama-server with Qwen3.5-4B-Uncensored-HauhauCS-Aggressive-Q4_K_M.gguf
+SHELL=/data/data/com.termux/files/usr/bin/bash

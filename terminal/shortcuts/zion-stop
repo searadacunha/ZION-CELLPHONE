@@ -1,0 +1,3 @@
+#!/data/data/com.termux/files/usr/bin/sh
+# ZION ZERO launcher > "■ STOP ZION": the emergency stop (terminal/zion-stop), then this window closes by itself.
+exec /data/data/com.termux/files/usr/bin/zion-stop launcher

@@ -1,0 +1,20 @@
+#!/data/data/com.termux/files/usr/bin/sh
+# ZION's emergency stop, independent of the AI: no model, no OPERATOR code, plain shell. From Termux, from the
+# launcher's "■ STOP ZION" (pinned shortcut: zion-stop launcher), or typed. Every OPERATOR run stops (tasks, the "ai"
+# screen's answer), llama-server too; zion (the supervisor) starts nothing while the STOP file exists, and OPERATOR
+# checks it before every model call and every tool call. Resume: zion-stop --resume, typed by the owner in a terminal;
+# a stop that came from the launcher is also lifted by its "reprendre ZION" (fingerprint).
+S=${ZION_STATE:-$HOME/.local/state/zion}
+if [ "${1:-}" = --resume ]; then
+  exec zion resume
+fi
+SRC=zion-stop; [ "${1:-}" = launcher ] && SRC=launcher
+mkdir -p "$S"
+echo "$SRC $(date +%Y-%m-%dT%H:%M:%S)" > "$S/STOP"   # first: whatever fails below, nothing new starts
+pkill -TERM -f 'seeker-ai' 2>/dev/null
+pkill -TERM -f 'llama-server' 2>/dev/null
+sleep 2
+pkill -KILL -f 'seeker-ai .*--task' 2>/dev/null
+command -v zion >/dev/null 2>&1 && zion stop --source "$SRC" >/dev/null 2>&1   # into the journal
+command -v termux-toast >/dev/null 2>&1 && termux-toast "ZION arrêté" 2>/dev/null
+echo "ZION arrêté. Reprendre : zion-stop --resume (ou « reprendre ZION » dans le lanceur, si l'arrêt venait de lui)"

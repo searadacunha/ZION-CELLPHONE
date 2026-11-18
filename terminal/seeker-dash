@@ -9,6 +9,8 @@ from pathlib import Path
 
 HOME = Path.home()
 DATA = Path(os.environ.get("SEEKER_AI_DATA", HOME / ".local/share/seeker-ai"))
+# as in seeker-ai: a password dictated in a request is not shown again
+SECRET = re.compile(r"(?i)\b(mdp|mot de passe|password|passwd|passphrase|pwd)\b(\s*(?:est|is)?\s*[:=]?\s*)(\S+)")
 AI = os.environ.get("SEEKER_AI_SERVER", "http://127.0.0.1:8080")
 SENSITIVE = ["CAMERA", "RECORD_AUDIO", "ACCESS_FINE_LOCATION", "ACCESS_BACKGROUND_LOCATION", "READ_CONTACTS",
              "READ_SMS", "READ_CALL_LOG", "BODY_SENSORS", "READ_MEDIA_IMAGES"]
@@ -175,7 +177,7 @@ def section_ai():
                  + (f"  overrides {conf['tools']}" if conf.get("tools") else "") + f"  shizuku {'ready' if RISH else 'off'}")
     lines += [f"  {l[:13].strip():14} {l[13:]}" for l in status if not l.startswith("memory")]
     for h in jsonl(DATA / "history.jsonl", 5):
-        lines.append(f"  task           {h.get('t', '')[5:16]} {h.get('mode', '')}: {h.get('prompt', '')[:48]}"
+        lines.append(f"  task           {h.get('t', '')[5:16]} {h.get('mode', '')}: {SECRET.sub(r"\1\2***", h.get('prompt', ''))[:48]}"
                      + (f" [{', '.join(h['tools'])}]" if h.get("tools") else "") + (f" ({h['error']})" if h.get("error") else ""))
     return lines
 

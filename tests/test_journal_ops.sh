@@ -16,12 +16,16 @@ a() {  # fake adb: logs each call as adb would send it (arguments joined by spac
     "shell pm list packages -U com.android.location.fused") echo "package:com.android.location.fused uid:1000" ;;
     "shell pm list packages -U org.example.app") echo "package:org.example.app uid:10123" ;;
     "shell pm list packages "*) echo "package:${@: -1}" ;;
-    "shell cmd connectivity get-chain3-enabled") echo false ;;
-    "shell cmd connectivity get-package-networking-enabled"*) echo true ;;
+    # the answers of the Seeker's Android 16, read on 13/11 (the first version of firewall.sh expected true/false and
+    # would have stopped at "chain3 unavailable")
+    "shell cmd connectivity get-chain3-enabled") [ -f "$T/chain" ] && echo chain:enabled || echo chain:disabled ;;
+    "shell cmd connectivity set-chain3-enabled true") : > "$T/chain" ;;
+    "shell cmd connectivity set-package-networking-enabled false "*) echo "${@: -1}" >> "$T/denied" ;;
+    "shell cmd connectivity get-package-networking-enabled"*) grep -qx "${@: -1}" "$T/denied" 2>/dev/null && echo "${@: -1}:deny" || echo "${@: -1}:allow" ;;
     "shell settings put"*) [ -z "${FAIL_PUT:-}" ] ;;
   esac; }
 A
-export CALLS=$T/calls
+export CALLS=$T/calls T
 sh_args() { sh -c "printf '[%s]' $1"; }  # how the phone's shell splits what adb sends
 cd "$T"
 ( GROUP=T1; . ./adb.sh; . debloat/ops.sh
@@ -42,7 +46,8 @@ got=$(grep -m1 "would: settings put global device_name" out); got=${got#would: s
 GROUP=P12 bash privacy/firewall.sh block com.android.location.fused org.example.app > out
 grep -q "REFUSED (shares a system uid" out && ! grep -q "set-package-networking-enabled false com.android.location.fused" calls \
   || { cat out; echo "a system uid was cut off"; exit 1; }
-[ "$(bash privacy/firewall.sh status | grep -c org.example.app)" = 1 ] || { echo "block not seen by status"; exit 1; }
+grep -qx "org.example.app:deny" out && grep -q "set-chain3-enabled true" calls || { cat out; echo "the block is not real (chain off, or state not deny)"; exit 1; }
+[ "$(bash privacy/firewall.sh status | grep -c org.example.app:deny)" = 1 ] || { echo "block not seen by status"; exit 1; }
 printf '%s\tALL\trestored\trestore.sh\t\t\n' "$(date '+%F %T')" >> restore/journal.tsv
 [ "$(bash privacy/firewall.sh status | grep -c org.example.app)" = 0 ] || { echo "reapply would undo the restore"; exit 1; }
 echo "journal ops dry run: OK"

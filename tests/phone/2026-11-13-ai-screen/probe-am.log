@@ -1,0 +1,53 @@
+Fri Nov 13 08:39:28 WET 2026
+uid=10131(u0_a131) gid=10131(u0_a131) groups=10131(u0_a131),1077(external_storage),3003(inet),9997(everybody),20131(u0_a131_cache),50131(all_a131) context=u:r:untrusted_app:s0:c131,c256,c512,c768
+--- which
+am: /data/data/com.termux/files/usr/bin/am
+termux-am: MISSING
+termux-job-scheduler: /data/data/com.termux/files/usr/bin/termux-job-scheduler
+termux-battery-status: /data/data/com.termux/files/usr/bin/termux-battery-status
+termux-toast: /data/data/com.termux/files/usr/bin/termux-toast
+termux-notification: /data/data/com.termux/files/usr/bin/termux-notification
+rish: /data/data/com.termux/files/home/bin/rish
+python3: /data/data/com.termux/files/usr/bin/python3
+seeker-ai: /data/data/com.termux/files/usr/bin/seeker-ai
+--- am file
+-rwx------. 1 u0_a131 u0_a131 1423 Nov 11 16:44 /data/data/com.termux/files/usr/bin/am
+#!/data/data/com.termux/files/usr/bin/sh
+TERMUX_AM_VERSION=0.8.0
+AM_APK_PATH="/data/data/com.termux/files/usr/libexec/termux-am/am.apk"
+
+if [ "$1" = "--version" ]; then
+    echo "$TERMUX_AM_VERSION"
+    exit 0
+fi
+
+# If apk file is writable and current effective user is not root (0),
+# system (1000) and shell (2000), then remove write bit from apk
+# permissions for current used for Android >= 14 since it will trigger
+# the `SecurityException: Writable dex file '/path/to/am.apk' is not allowed.`
+# exception in logcat by SystemClassLoader and cause a SIGABRT for the
+# app_process.
+--- am broadcast to a component that does not exist (harmless)
+Broadcasting: Intent { act=zero.seeker.PROBE cmp=zero.seeker.launcher/.Nope }
+Broadcast sent without waiting for result
+rc=0
+--- termux-job-scheduler --help
+Usage: termux-job-scheduler [options]
+Schedule a script to run at specified intervals.
+  -p/--pending               list pending jobs and exit
+  --cancel-all               cancel all pending jobs and exit
+  --cancel                   cancel given job-id and exit
+Options for scheduling:
+  -s/--script path           path to the script to be called
+  --job-id int               job id (will overwrite any previous job with the same id)
+  --period-ms int            schedule job approximately every period-ms milliseconds (default 0 means once).
+                             Note that since Android N, the minimum period is 900,000ms (15 minutes).
+  --network text             run only when this type of network available (default any): any|unmetered|cellular|not_roaming|none
+  --battery-not-low boolean  run only when battery is not low, default true (at least Android O)
+  --storage-not-low boolean  run only when storage is not low, default false (at least Android O)
+  --charging boolean         run only when charging, default false
+  --persisted boolean        should the job survive reboots, default false
+  --trigger-content-uri text (at least Android N)
+  --trigger-content-flag int default 1, (at least Android N)
+--- pending jobs
+No pending jobs

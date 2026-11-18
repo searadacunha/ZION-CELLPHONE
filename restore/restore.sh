@@ -9,6 +9,12 @@ cd "$(dirname "$0")/.." && . ./adb.sh
 DRY=0; [ "${1:-}" = --dry-run ] && { DRY=1; shift; }
 WANT=${1:-}
 run() { if [ $DRY = 1 ]; then echo "would: $*"; else a shell "$@"; fi; }
+q() {  # one argument for the phone's shell, whatever it holds. No ${1//\'/...}: bash 3.2 (the Mac's /bin/bash, and CI's
+  # bash) mangles a quote in the replacement and sent 'it\'\\'\'s' to the phone (found by the first CI run, 18/11)
+  local s=$1 out=
+  while [[ $s == *\'* ]]; do out+="${s%%\'*}'\\''"; s=${s#*\'}; done
+  printf "'%s'" "$out$s"
+}
 
 a get-state | grep -qx device || { echo "Seeker not connected"; exit 2; }
 tail -n +2 restore/journal.tsv | tail -r | while IFS=$'\t' read -r t g op target old new; do
@@ -16,7 +22,7 @@ tail -n +2 restore/journal.tsv | tail -r | while IFS=$'\t' read -r t g op target
   case $op in
     disable) run pm enable --user 0 "$target" ;;
     setting) ns=${target%%/*}; key=${target#*/}
-             if [ "$old" = null ]; then run settings delete "$ns" "$key"; else run settings put "$ns" "$key" "'${old//\'/\'\\\'\'}'"; fi ;;
+             if [ "$old" = null ]; then run settings delete "$ns" "$key"; else run settings put "$ns" "$key" "$(q "$old")"; fi ;;
     install) echo "installed by SEEKER-ZERO, kept: $target (uninstall: adb shell pm uninstall $target)" ;;
     revoke)  pkg=${target% *}; perm=${target#* }
              run pm clear-permission-flags "$pkg" "$perm" user-set; run pm grant "$pkg" "$perm" ;;

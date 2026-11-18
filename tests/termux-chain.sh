@@ -24,8 +24,14 @@ note() { echo "$(date '+%F %T') $*" | tee -a "$D/chain-summary.txt"; }
 mark() { touch "$D/chain-done/$1"; note "$1: OK"; }
 done_() { [ -f "$D/chain-done/$1" ]; }
 pct() { timeout 30 termux-battery-status | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d["percentage"], d["plugged"])' 2>/dev/null; }
+q() {  # one argument for the phone's shell, whatever it holds. No ${1//\'/...}: bash 3.2 (the Mac's /bin/bash, and CI's
+  # bash) mangles a quote in the replacement and sent 'it\'\\'\'s' to the phone (found by the first CI run, 18/11)
+  local s=$1 out=
+  while [[ $s == *\'* ]]; do out+="${s%%\'*}'\\''"; s=${s#*\'}; done
+  printf "'%s'" "$out$s"
+}
 notify() {  # the text goes inside single quotes for rish's shell: escape the apostrophes ("l'écran")
-  local m=${1//\'/\'\\\'\'} buzz="" h=$((10#$(date +%H)))
+  local m buzz="" h=$((10#$(date +%H))); m=$(q "$1"); m=${m:1:${#m}-2}
   [ "$h" -ge 8 ] && [ "$h" -lt 23 ] && buzz="; cmd vibrator_manager synced oneshot 800"  # no buzz at night
   timeout 30 "$RISH" -c "cmd notification post -S bigtext -t 'ZION ZERO' zion_chain '$m'$buzz" >/dev/null 2>&1
   echo "$(date +%T) notify rc=$?: $1"; }
