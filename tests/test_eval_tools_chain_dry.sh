@@ -7,6 +7,10 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 T=$(mktemp -d); trap 'rm -rf "$T"' EXIT
 mkdir -p "$T/bin" "$T/home/bin" "$T/d/tests"
+command -v timeout >/dev/null || {  # macOS has no GNU timeout (CI runners): perl's alarm stops a command the same way
+  printf '%s\n' '#!/bin/sh' 'exec perl -e '"'"'alarm shift; exec @ARGV or die "$ARGV[0]: $!\n"'"'"' "$@"' > "$T/bin/timeout"
+  chmod 755 "$T/bin/timeout"; }
+TO=$(PATH="$T/bin:$PATH" command -v timeout)
 cp tests/termux-eval-tools-chain.sh "$T/d/tests/"
 w() { printf '#!/bin/bash\n%s\n' "$2" > "$1"; chmod +x "$1"; }
 # battery: 10 % for the first 3 calls (the floor must wait), then 80 %; 45 C for the first 6 (the cooling must wait), then 30 C
@@ -28,7 +32,7 @@ out = sys.argv[sys.argv.index("--out") + 1]
 os.makedirs(os.path.dirname(out), exist_ok=True); open(out, "w").write("{}")
 open(os.environ["CALLS"], "a").write("eval %s busy=%s parent=%d timeout=%s\n" % (os.path.basename(out), open(b).read().split()[0], os.getppid(), sys.argv[sys.argv.index("--timeout") + 1]))'
 sed -i '' '1s|^#!/bin/bash$|#!/usr/bin/env python3|' "$T/d/tests/eval_tools.py"
-run() { HOME=$T/home PATH="$T/bin:$PATH" CALLS=$T/calls CHAIN_DIR=$T/d CHAIN_NAP=0 timeout 120 bash "$T/d/tests/termux-eval-tools-chain.sh" "$@"; }
+run() { HOME=$T/home PATH="$T/bin:$PATH" CALLS=$T/calls CHAIN_DIR=$T/d CHAIN_NAP=0 "$TO" 120 bash "$T/d/tests/termux-eval-tools-chain.sh" "$@"; }
 run
 python3 - "$T/calls" "$T/d" <<'P'
 import sys
