@@ -89,3 +89,49 @@ window each, at different times of day: an indication, not a controlled comparis
 New destinations in the "after" window: AdGuard DNS (`dns.adguard-dns.com`, the new Private DNS), one Google front
 end for Play Services, and two new addresses of the social app already seen in the baseline. The capture folders stay
 off the public repository: they describe one person's phone and network.
+
+## 9. Cutting one app off the network (13/11/2026)
+
+`privacy/firewall.sh block|allow|status|reapply` (from the computer) and OPERATOR's `net_block`, `net_allow`,
+`net_status` actions (on the phone, asked first, journaled with their undo) use Android's own firewall chain
+`FIREWALL_CHAIN_OEM_DENY_3` through the shell identity: `cmd connectivity set-chain3-enabled` and
+`set-package-networking-enabled`. No root, and the VPN slot stays free for whatever you run there.
+
+Tested for real with `tests/firewall_real.sh` ([`tests/phone/2026-11-13-firewall/firewall.log`](../tests/phone/2026-11-13-firewall/firewall.log)):
+a throwaway app that fetches one URL when asked.
+
+| Step | A web page (`https://example.com/`) | The phone's own service on `127.0.0.1` |
+|---|---|---|
+| network open | HTTP 200 | HTTP 200 |
+| app cut | fails: the name is not even resolved | fails: connection times out |
+| network given back | HTTP 200 | (not asked again) |
+
+- The block is real, and it is total for that app: it also loses the phone's local services. Cutting Termux or the
+  launcher would therefore cut the local AI: the scripts refuse those, as they refuse the Seed Vault, the Solana apps,
+  Android's core packages and any app that shares a system uid.
+- The phone ends as it started: `restore/restore.sh` undoes the group, the chain is off again, the test app is removed.
+- Android forgets the chain at a restart (its help text calls it a debugging switch). `privacy/firewall.sh reapply`,
+  or OPERATOR's `net_status` with `reapply`, blocks again what the journal says. Persistence across a restart was
+  **not tested**.
+- The first version of the script had never run on the phone and expected `true`/`false`: Android answers
+  `chain:enabled` and `package:deny`. Corrected on 13/11, and the dry-run test now imitates the real answers.
+
+## 10. Which names an app asks for
+
+`privacy/pcap_domains.py` reads a capture file and lists the names that travel in clear: the server name of each TLS
+connection, HTTP Host headers, DNS questions. Its parser is tested offline against packets built for the test.
+`privacy/pcap.sh start [PKG]` / `stop` drives PCAPdroid, already installed, as an on-demand recorder for one app.
+
+- **Not tested on the phone**: PCAPdroid had never been given the VPN slot, and its first start shows two questions
+  (its own control permission, Android's VPN request). They are the owner's to answer; no script taps them and
+  OPERATOR's screen tool refuses to.
+- PCAPdroid records through Android's single VPN slot: no other VPN app runs while it records.
+- With Private DNS on, the DNS questions are not in the capture (they travel inside TLS to the resolver): names then
+  come from TLS and HTTP only. QUIC and Encrypted Client Hello hide the name by design; the address is still listed.
+
+## 11. What this does not do
+
+Without root, nothing here blocks single components of an app, filters by domain inside an app, cuts off system
+uids, or decrypts traffic. Google Play Services stay on for security updates and can still see the device. The
+carrier, the Wi-Fi network and every server contacted still see their side of each connection. This phone is more
+private than it was; it is not invisible and not untraceable.

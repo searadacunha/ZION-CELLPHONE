@@ -1,0 +1,20 @@
+{
+  "about": "launcher/test/ApprovalVectorTest.java: a software RSA-2048 key stands for the phone's AndroidKeyStore key. sig = RSASSA-PKCS1-v1_5 SHA-256 over the UTF-8 bytes of payload; req_sha256 = sha256 of the UTF-8 bytes of req; spki_b64 = what approval.pub holds; ok_json = the exact .ok file",
+  "spki_b64": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtN02L2n5LxRnromFAZvFMIhUfJAI1fzW+Ta2L+DMri177QzVe7UReLiFvHkFMQqWB4dNYIx0B9ZWsxMhBva1/UUA59lKUsnQoD6P8LQUyY17lu84xrPzYUEXW9Frhea/UnY98jNPvBbOU1XLy9hhtJIYubMPAiZwD6d4WCu08B6OErD5N3xsDPtwjpdJ4zrn1iUOUl2QWrEZ7oFlWPtQ7aUUpTnz1QXQb7dXv0QdgUa1tdySEPfEZDXfcldSPbIXtHFoqcKKQNur+TtaN5WmpjT5NBUzlFP3mhrk01XdAE2FK+wFhVo+S4WlvKJaWWZdyO/OBZmzeM2evltcrz6awwIDAQAB",
+  "fingerprint": "7767 301b 8bde c01d",
+  "req": "{\"v\":1,\"id\":\"zion-test_0001\",\"created\":1795000000,\"expires\":1795003600,\"class\":\"system\",\"summary\":\"Désactiver l'appli com.example.app\",\"detail\":\"OPERATOR veut désactiver com.example.app (pm disable-user).\\nAnnulable : réactiver l'appli.\"}",
+  "req_sha256": "6061d36a5f4bacc5289759d74ad50a83eaa69a772f6ea757f093de400eec99b2",
+  "signed_at": 1795000030,
+  "payload": "zion-approval-v1\nzion-test_0001\n6061d36a5f4bacc5289759d74ad50a83eaa69a772f6ea757f093de400eec99b2\napprove\n1795000030",
+  "sig_b64": "qxCBkTBh9zbVK9J1+ul1nxMscrhoEx7kfNfL7m9Gr1q3yz3vpM3zF7P1ekWm9zJsqn3RUIjJ7uMYfEXwtX5nvZTj+BfFopYhsCN13UOHutYash1kS7bh7mezJ53Lmj5T04EFyHVySw1R0kD23h8K4KiCZwPcMHnRuE3txfBt2m0i+rRFqOiby2LgIHSXiuyglZEZqNeqsAS5YvaO8maiR0+dT4huty0fnAtgFbDbe2sEPI43czahNP6gCycbvds2sb7REFtY2UlRaYZZiFQdXrKPRVJpe1GTHRNZzsHCpmB821xilecchv0BOb44hYRBrBtLK5puyZIpS8vaU16wWw==",
+  "ok_json": "{\"v\":1,\"id\":\"zion-test_0001\",\"req_sha256\":\"6061d36a5f4bacc5289759d74ad50a83eaa69a772f6ea757f093de400eec99b2\",\"decision\":\"approve\",\"signed_at\":1795000030,\"sig\":\"qxCBkTBh9zbVK9J1+ul1nxMscrhoEx7kfNfL7m9Gr1q3yz3vpM3zF7P1ekWm9zJsqn3RUIjJ7uMYfEXwtX5nvZTj+BfFopYhsCN13UOHutYash1kS7bh7mezJ53Lmj5T04EFyHVySw1R0kD23h8K4KiCZwPcMHnRuE3txfBt2m0i+rRFqOiby2LgIHSXiuyglZEZqNeqsAS5YvaO8maiR0+dT4huty0fnAtgFbDbe2sEPI43czahNP6gCycbvds2sb7REFtY2UlRaYZZiFQdXrKPRVJpe1GTHRNZzsHCpmB821xilecchv0BOb44hYRBrBtLK5puyZIpS8vaU16wWw==\"}\n",
+  "negative": {
+    "why": "the signature of req above, presented for another request (other summary): must be rejected",
+    "req": "{\"v\":1,\"id\":\"zion-test_0001\",\"created\":1795000000,\"expires\":1795003600,\"class\":\"system\",\"summary\":\"Désactiver l'appli com.example.evil\",\"detail\":\"OPERATOR veut désactiver com.example.evil (pm disable-user).\\nAnnulable : réactiver l'appli.\"}",
+    "req_sha256": "1839e85f87a59ee0213bfdf581ff248075f674d42550a26532e398289fb5f68a",
+    "payload": "zion-approval-v1\nzion-test_0001\n1839e85f87a59ee0213bfdf581ff248075f674d42550a26532e398289fb5f68a\napprove\n1795000030",
+    "sig_b64": "qxCBkTBh9zbVK9J1+ul1nxMscrhoEx7kfNfL7m9Gr1q3yz3vpM3zF7P1ekWm9zJsqn3RUIjJ7uMYfEXwtX5nvZTj+BfFopYhsCN13UOHutYash1kS7bh7mezJ53Lmj5T04EFyHVySw1R0kD23h8K4KiCZwPcMHnRuE3txfBt2m0i+rRFqOiby2LgIHSXiuyglZEZqNeqsAS5YvaO8maiR0+dT4huty0fnAtgFbDbe2sEPI43czahNP6gCycbvds2sb7REFtY2UlRaYZZiFQdXrKPRVJpe1GTHRNZzsHCpmB821xilecchv0BOb44hYRBrBtLK5puyZIpS8vaU16wWw==",
+    "ok_json": "{\"v\":1,\"id\":\"zion-test_0001\",\"req_sha256\":\"1839e85f87a59ee0213bfdf581ff248075f674d42550a26532e398289fb5f68a\",\"decision\":\"approve\",\"signed_at\":1795000030,\"sig\":\"qxCBkTBh9zbVK9J1+ul1nxMscrhoEx7kfNfL7m9Gr1q3yz3vpM3zF7P1ekWm9zJsqn3RUIjJ7uMYfEXwtX5nvZTj+BfFopYhsCN13UOHutYash1kS7bh7mezJ53Lmj5T04EFyHVySw1R0kD23h8K4KiCZwPcMHnRuE3txfBt2m0i+rRFqOiby2LgIHSXiuyglZEZqNeqsAS5YvaO8maiR0+dT4huty0fnAtgFbDbe2sEPI43czahNP6gCycbvds2sb7REFtY2UlRaYZZiFQdXrKPRVJpe1GTHRNZzsHCpmB821xilecchv0BOb44hYRBrBtLK5puyZIpS8vaU16wWw==\"}\n",
+    "expect": "reject"
+  }
+}

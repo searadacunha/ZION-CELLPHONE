@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="zero.seeker.nettest" android:versionCode="1" android:versionName="1.0">
+  <uses-sdk android:minSdkVersion="31" android:targetSdkVersion="35"/>
+  <!-- a throwaway app for tests/firewall_real.sh: it fetches one URL when asked and writes what happened. Installed for
+       the test and removed after it; no icon in the app list -->
+  <uses-permission android:name="android.permission.INTERNET"/>
+  <application android:label="ZION net test" android:usesCleartextTraffic="true">
+    <activity android:name=".Fetch" android:exported="true" android:theme="@android:style/Theme.NoDisplay"/>
+  </application>
+</manifest>

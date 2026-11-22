@@ -17,8 +17,26 @@ Nothing here is extrapolated to other phones.
 | `bash -c ...`, `zsh -i -c ...`, scripts, pipes | nothing starts |
 | After a reboot | home is ZION ZERO; `ai`: OPERATOR running after 5 s, model ready after about 26 s, first word 1.33 s; `terminal`: a shell without OPERATOR |
 
-Raw: `tests/phone/p1-*.txt`, `p1-setup.log`. On the computer, `terminal/test_zion_shell.py` replays these cases in
-real bash and zsh on a pseudo-terminal.
+Raw: `tests/phone/p1-*.txt`, `p1-setup.log`.
+
+**Changed on 13/11/2026** (launcher 1.6.0): Termux no longer opens OPERATOR; the launcher's `ai` is a screen of its
+own, answered by `seeker-ai --serve` (section 1b). `terminal/test_zion_shell.py` now checks the new setup in real bash
+and zsh on a pseudo-terminal: no OPERATOR in a new session, the old line taken out of the rc files.
+
+## 1b. The `ai` screen, outside Termux (13/11/2026)
+
+| On the phone | Result |
+|---|---|
+| A new Termux session, launcher `terminal` | the shell prompt, no OPERATOR |
+| Launcher `ai`, "Bonjour, ca va ?", model loaded cold, start of the instructions computed for the first time (then kept on disk) | plain French answer, 68 s |
+| "Comment va la batterie ?" (Android tool) | battery level, charging, temperature in one sentence, 29 s |
+| A question while the model sleeps (unloaded after 10 idle minutes) | 14 s |
+| Termux force-stopped | the screen says the AI is stopped; `démarrer l'IA` (Termux asks once to pick `ai-start`), then a cold question: 14 s |
+| `seeker-ai` self-test with Termux's Python | 54 scenarios OK |
+
+Times run from the tap on `envoyer` to the whole answer on screen, read every 3 to 5 s. Not measured: the start after a
+reboot of the phone, and the 15-minute job restarting the service after Android killed Termux.
+Raw: `tests/phone/2026-11-13-ai-screen/`.
 
 ## 2. A Linux station inside Termux (12/11/2026)
 
@@ -128,7 +146,59 @@ for each thread layout, with energy per token from the battery's charge counter,
 status and screen state every 15 s. Android's thermal protections are never changed. On this phone the battery
 current reads **positive while charging**, checked against the charge counter on 12/11.
 
-## 5. Known issues
+## 5. The agent on real screens (13/11/2026)
+
+OPERATOR's `ui` tool reads the app in front as a short numbered list and acts on it with the shell identity
+(Shizuku). The tree is read by `UiShell`, a class of the launcher's APK started by the shell.
+
+| Reading the screen | Android's `uiautomator dump` | `UiShell dump` |
+|---|---|---|
+| a still screen (launcher, Settings home) | 2.2 s | 0.3 to 0.5 s |
+| Settings > About phone (its uptime ticks) | **no tree**: "could not get idle state" after 11 s | 0.36 s |
+| 20 reads in a row | - | 20 of 20, 0.26 to 0.46 s |
+
+Without a retry inside `UiShell`, 3 reads of 8 failed ("no active window" right after connecting): it now asks again
+for up to 2 s. Typing: Android's `input text` crashes on "é" (it passes "ç"); such text is set through `UiShell`
+("réseau été" checked in the Settings search box).
+
+**Can the local model drive real screens?** `tests/eval_ui.py` runs on the phone: each scenario sets the phone up
+through Shizuku, gives the model one request in French, then checks the **phone's state** (a setting, the app in
+front, a text on the screen), never the model's own claim. The model is offered the `ui` tool only, so nothing can be
+answered through a shell command. Default model, 4,096-token context, one run per scenario per pass.
+
+EVALTABLE
+
+What the runs showed:
+- The model walks to a settings page through the search box when it does not know a shortcut: 8 to 9 actions for a
+  page that is one step away. The tool's description now names the pages (`settings bluetooth`, `settings about`...).
+- A keypad defeated the first version: "3" was both the key 3 and element number 3, and 12 + 30 became "123+0". The
+  name now wins, `#3` is the number, and several keys go in one tap.
+- Asked for the wallet's balance, the tool refused to open the wallet, and the model then told the user the app was
+  "not installed". The refusal now says in full what it is. A refusal is enforced by the code; what the model says
+  about it is not.
+- In one run the model tapped the "Seed Vault" entry of Settings on its way elsewhere. The screen that opened was
+  refused unread and left with back. Entries that lead to the wallet are now refused before the tap.
+- One action costs 16 to 20 s: the new screen is read by the model at about 20 tokens/s, then the next call is written
+  at about 5 tokens/s.
+
+**Per-app firewall, for real** (`tests/firewall_real.sh`, [`tests/phone/2026-11-13-firewall/firewall.log`](../tests/phone/2026-11-13-firewall/firewall.log)):
+a throwaway test app gets HTTP 200 with its network open, fails to resolve the name once cut, gets HTTP 200 again once
+allowed. While cut it also cannot reach `127.0.0.1`. Details in [`PRIVACY.md`](PRIVACY.md), section 9.
+
+**Passive radio, with no antenna** (`radio/build-rtl433.sh`): rtl_433 25.12 builds in Termux without SDR libraries and
+without threads (Android's C library has no `pthread_cancel`). The source archive is checked by SHA-256, the reference
+capture by its git blob id. It decodes the published capture `tests/nexus/01/gfile001.cu8` to the published answer:
+Nexus-TH, id 181, channel 2, 19.0 °C, 71 %. Live reception needs an RTL-SDR dongle and a driver app: **not tested**.
+
+**Hardware detection** (`zion-hw`, the launcher's radio section): with nothing plugged in, both say so
+("nothing plugged in"; Bluetooth, NFC and Wi-Fi states read live). With a real accessory: **not tested**, none was
+available, and the layout of Android's device list was not seen with one.
+
+**Not measured or not tested on 13/11**: the agent driving apps from the launcher's `ai` screen, task mode with the
+model, PCAPdroid capture (two questions on the phone are the owner's to answer), firewall persistence across a
+restart.
+
+## 6. Known issues
 
 - After a reboot, or after Wi-Fi is switched off by command, Wi-Fi stays on but does not reconnect until
   Settings > Wi-Fi is opened (then it connects in 4 to 6 s). Cause not found.
@@ -141,3 +211,7 @@ current reads **positive while charging**, checked against the charge counter on
   servers), and a second session waits for the first one's server instead of starting another.
 - `rish` mixes its standard output and error at random; the tools read both.
 - On this phone `llama-server` shows up as `linker64` in the process list.
+- Android's `uiautomator dump` gives no tree on a screen that never stops changing, and `input text` crashes on
+  accented letters: the screen tool uses `UiShell` for both.
+- The firewall chain used for the per-app block is forgotten by Android at a restart, and an app cut off also loses
+  `127.0.0.1`.

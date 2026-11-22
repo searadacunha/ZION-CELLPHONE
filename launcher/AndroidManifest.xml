@@ -1,14 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="zero.seeker.launcher" android:versionCode="11" android:versionName="1.5.3">
+    package="zero.seeker.launcher" android:versionCode="15" android:versionName="1.8.0">
   <uses-sdk android:minSdkVersion="31" android:targetSdkVersion="35"/>
-  <!-- only for the "ai agent" status: plain HTTP to llama-server on 127.0.0.1:8080, nothing else -->
+  <!-- only plain HTTP on 127.0.0.1: the "ai" screen to OPERATOR's service (8095), the "ai agent" status to llama-server (8080) -->
   <uses-permission android:name="android.permission.INTERNET"/>
+  <!-- the radio section says whether Wi-Fi is on (a normal permission: no question asked) -->
+  <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
   <!-- black wallpaper on the home and lock screens -->
   <uses-permission android:name="android.permission.SET_WALLPAPER"/>
   <!-- reading the current wallpaper to back it up first: Android 14+ allows it only with all-files access, which
        SEEKER-ZERO grants for that moment and takes back (appops, restore/journal.tsv) -->
   <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>
+  <!-- the owner's own approvals (Approve): his fingerprint or code in Android's window, and a notification when ZION
+       asks (granted with pm grant: no question on the phone) -->
+  <uses-permission android:name="android.permission.USE_BIOMETRIC"/>
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
   <queries>
     <intent>
       <action android:name="android.intent.action.MAIN"/>
@@ -25,10 +31,18 @@
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.LAUNCHER"/>
       </intent-filter>
-      <!-- Termux pins its script shortcuts through the home app: "terminal", "ai" and "dashboard" start them (Main.termuxScript) -->
+      <!-- Termux pins its script shortcuts through the home app: "dashboard", "ai-start" and "zion-stop" (Main.termuxScript) -->
       <intent-filter>
         <action android:name="android.content.pm.action.CONFIRM_PIN_SHORTCUT"/>
       </intent-filter>
     </activity>
+    <!-- the key of OPERATOR's service for the "ai" screen: only an app holding Termux's signature permission (Termux) can
+         send it (seeker-ai send_key) -->
+    <receiver android:name=".AiToken" android:exported="true" android:permission="com.termux.permission.TERMUX_INTERNAL"/>
+    <!-- what ZION asks the owner to approve: from Termux only, as above -->
+    <receiver android:name=".ApprovalAsk" android:exported="true" android:permission="com.termux.permission.TERMUX_INTERNAL"/>
+    <!-- the approvals: no other app may open it, nothing captures it (FLAG_SECURE), not recreated while a prompt is up -->
+    <activity android:name=".Approve" android:exported="false" android:excludeFromRecents="true" android:launchMode="singleTop"
+        android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|uiMode"/>
   </application>
 </manifest>

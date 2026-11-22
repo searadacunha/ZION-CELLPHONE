@@ -1,0 +1,444 @@
+#!/usr/bin/env python3
+"""zion-guard: no-root threat check and tamper-evident log verifier. Read-only on the phone, no network.
+Runs in Termux (queries go through rish, the uid-2000 shell: `rish -c CMD`) and on the Mac in tests.
+  zion-guard baseline [--force]            measure and save ZION_STATE/guard/baseline.json
+  zion-guard check [--json]                measure, compare with the baseline; exit 0 nothing new, 1 drift/risk, 2 not measured
+  zion-guard egress snapshot NAME          per-uid bytes (dumpsys netstats) -> ZION_STATE/guard/egress/NAME.json
+  zion-guard egress diff A B [--uid N|--package P]
+  zion-guard chain verify FILE             check a hash-chained JSONL journal (shared with zion-supervisor)
+Env: ZION_RISH (default: rish on PATH), ZION_STATE (default ~/.local/state/zion)."""
+import argparse, collections, datetime, hashlib, json, os, re, shlex, subprocess, sys
+from pathlib import Path
+
+ZERO = "0" * 64
+DANGEROUS = ["RECORD_AUDIO", "CAMERA", "READ_SMS", "SEND_SMS", "RECEIVE_SMS", "READ_CONTACTS", "READ_CALL_LOG",
+             "ACCESS_FINE_LOCATION", "ACCESS_BACKGROUND_LOCATION", "READ_MEDIA_IMAGES", "BODY_SENSORS"]
+HIGH_PERMS = {"RECORD_AUDIO", "READ_SMS", "SEND_SMS", "RECEIVE_SMS", "ACCESS_BACKGROUND_LOCATION", "READ_CALL_LOG"}
+ROLES = ["SMS", "DIALER", "HOME", "BROWSER", "ASSISTANT"]
+HIGH_ROLES = {"SMS", "DIALER", "ASSISTANT"}
+SETTINGS = [("global", k) for k in ("adb_enabled", "adb_wifi_enabled", "adb_allowed_connection_time",
+                                    "development_settings_enabled", "private_dns_mode", "private_dns_specifier")] + \
+           [("secure", k) for k in ("accessibility_enabled", "enabled_accessibility_services", "enabled_notification_listeners",
+                                    "default_input_method", "lock_screen_allow_private_notifications",
+                                    "lock_screen_show_notifications")]
+LIST_SETTINGS = {"enabled_accessibility_services", "enabled_notification_listeners"}
+HIGH_SETTINGS = {"default_input_method", "accessibility_enabled"}
+SCALAR_KEYS = ["set." + k for _, k in SETTINGS] + ["role." + r for r in ROLES]
+LIST_KEYS = ["packages", "install_apps", "overlay_apps", "admins", "vpn", "seedvault"]
+ALL_KEYS = LIST_KEYS + SCALAR_KEYS
+
+
+# ---- hash-chained journal (same algorithm as the supervisor) ----
+def chain_hash(body):
+    return hashlib.sha256(json.dumps(body, sort_keys=True, ensure_ascii=False, separators=(",", ":")).encode("utf-8")).hexdigest()
+
+
+def chain_append(path, obj):
+    """Append obj with prev/hash filled in; returns the written record. Reads the whole file to find the head
+    (shortcut: fine for journals of a few MB, switch to a tail read beyond that)."""
+    path = Path(path)
+    prev = ZERO
+    if path.exists():
+        lines = [l for l in path.read_text(encoding="utf-8").splitlines() if l.strip()]
+        if lines:
+            prev = json.loads(lines[-1])["hash"]
+    body = {k: v for k, v in obj.items() if k not in ("prev", "hash")}
+    body["prev"] = prev
+    rec = dict(body, hash=chain_hash(body))
+    with open(path, "a", encoding="utf-8") as f:
+        f.write(json.dumps(rec, sort_keys=True, ensure_ascii=False, separators=(",", ":")) + "\n")
+        f.flush(); os.fsync(f.fileno())
+    return rec
+
+
+def chain_verify(path):
+    """-> (ok, message). Truncating the tail is not detectable from the file alone: pin the head hash elsewhere."""
+    prev, n = ZERO, 0
+    lines = Path(path).read_text(encoding="utf-8").split("\n")
+    if lines[-1] == "":
+        lines.pop()
+    for n, line in enumerate(lines, 1):
+        try:
+            rec = json.loads(line)
+            assert isinstance(rec, dict)
+        except (ValueError, AssertionError):
+            return False, f"ligne {n}: JSON illisible"
+        if rec.get("prev") != prev:
+            return False, f"ligne {n}: chaîne rompue (prev ne correspond pas à la ligne précédente)"
+        body = {k: v for k, v in rec.items() if k != "hash"}
+        if rec.get("hash") != chain_hash(body):
+            return False, f"ligne {n}: contenu modifié (hash incorrect)"
+        prev = rec["hash"]
+    return True, f"chaîne intacte: {n} lignes, tête {prev[:16]}"
+
+
+# ---- rish ----
+class RishError(Exception):
+    pass
+
+
+def rish(cmd, timeout=90):
+    base = shlex.split(os.environ.get("ZION_RISH") or "rish")
+    try:
+        p = subprocess.run(base + ["-c", cmd], capture_output=True, text=True, timeout=timeout)
+    except FileNotFoundError:
+        raise RishError("rish introuvable")
+    except subprocess.TimeoutExpired:
+        raise RishError("rish: délai dépassé")
+    if p.returncode != 0:
+        raise RishError(f"rish: échec (code {p.returncode}), Shizuku arrêté ?")
+    return p.stdout
+
+
+def state_dir():
+    return Path(os.environ.get("ZION_STATE") or Path.home() / ".local/state/zion") / "guard"
+
+
+def write_json(path, obj):
+    path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+    tmp = path.with_suffix(".tmp")
+    tmp.write_text(json.dumps(obj, indent=1, sort_keys=True, ensure_ascii=False))
+    os.replace(tmp, path)
+
+
+# ---- measurement ----
+def parse_pkgdump(text):
+    perms = set(re.findall(r"android\.permission\.(\w+): granted=true", text))
+    ver, sig = re.search(r"versionCode=(\d+)", text), re.search(r"signatures:\[([^\]]*)\]", text)
+    return {"version": ver and ver.group(1), "sig": sig and sig.group(1), "internet": "INTERNET" in perms,
+            "grants": sorted(perms & set(DANGEROUS))}
+
+
+def parse_appops(text, known):
+    return sorted(set(re.findall(r"[A-Za-z][\w]*(?:\.[\w]+)+", text)) & known)  # inferred format: any package name listed
+
+
+def parse_admins(text):
+    out, on = set(), False
+    for line in text.splitlines():
+        if "Enabled Device Admins" in line:
+            on = True
+        elif on and re.match(r"\s{4}m\w+=", line):
+            break
+        elif on:
+            m = re.match(r"\s+([\w.]+/[\w.$]+):?\s*$", line)
+            if m:
+                out.add(m.group(1))
+    return sorted(out)
+
+
+def measure():
+    """-> state dict. Anything that could not be read is left out and named in state['unmeasured'] (never guessed)."""
+    rish("id -u")  # raises when rish is missing or Shizuku is stopped: caller exits 2
+    s, bad = {}, {}
+
+    def q(key, fn):
+        try:
+            s[key] = fn()
+        except RishError as e:
+            bad[key] = str(e)
+
+    def packages():
+        pk = {}
+        for line in rish("cmd package list packages -3 -i -U").splitlines():
+            m = re.match(r"package:(\S+)\s+installer=(\S+)\s+uid:(\d+)", line.strip())
+            if m:
+                pk[m.group(1)] = {"installer": m.group(2), "uid": int(m.group(3))}
+        for p, d in pk.items():
+            try:
+                d.update(parse_pkgdump(rish(f"dumpsys package {p}")))
+            except RishError as e:
+                bad["perms:" + p] = str(e)
+        return pk
+
+    q("packages", packages)
+    known = set(s.get("packages", {}))
+    q("install_apps", lambda: parse_appops(rish("cmd appops query-op REQUEST_INSTALL_PACKAGES allow"), known))
+    q("overlay_apps", lambda: parse_appops(rish("cmd appops query-op SYSTEM_ALERT_WINDOW allow"), known))
+    q("admins", lambda: parse_admins(rish("dumpsys device_policy")))
+    q("vpn", lambda: len(re.findall(r"NetworkAgentInfo\{.*?ni\{VPN CONNECTED", rish("dumpsys connectivity"))))
+    for scope, k in SETTINGS:
+        q("set." + k, lambda scope=scope, k=k: rish(f"settings get {scope} {k}").strip())
+    for r in ROLES:
+        q("role." + r, lambda r=r: rish(f"cmd role get-role-holders android.app.role.{r}").strip())
+
+    def seedvault():
+        names = [l[8:].strip() for l in rish("cmd package list packages com.solanamobile").splitlines() if l.startswith("package:")]
+        off = {l[8:].strip() for l in rish("cmd package list packages -d").splitlines()}
+        out = {}
+        for p in sorted(names):
+            d = parse_pkgdump(rish(f"dumpsys package {p}"))
+            out[p] = {"enabled": p not in off, "version": d["version"], "sig": d["sig"]}
+        return out
+
+    q("seedvault", seedvault)
+    s["unmeasured"] = bad
+    s["time"] = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
+    return s
+
+
+# ---- comparison ----
+def items(v):
+    return {x for x in (v or "").split(":") if x and x != "null"}
+
+
+def risks(s):
+    out, pk = {}, s.get("packages") or {}
+    a11y = {x.split("/")[0] for x in items(s.get("set.enabled_accessibility_services"))}
+    if "overlay_apps" in s:
+        for p in sorted(a11y & set(s["overlay_apps"])):
+            out[f"risk.a11y-overlay.{p}"] = ("haute", f"{p} a un service d'accessibilité actif ET le droit de superposition (peut lire l'écran et tromper les clics)")
+    for p in sorted({x.split("/")[0] for x in items(s.get("set.enabled_notification_listeners"))}):
+        if pk.get(p, {}).get("internet"):
+            out[f"risk.listener-net.{p}"] = ("moyenne", f"{p} lit les notifications et a accès au réseau")
+    return out
+
+
+def hardening(s):
+    out = []
+    if s.get("set.adb_allowed_connection_time") == "0":
+        out.append(("hardening.adb-never-expires", "autorisation adb sans expiration (adb_allowed_connection_time=0)"))
+    if s.get("set.adb_wifi_enabled") == "1":
+        out.append(("hardening.adb-wifi", "débogage sans fil activé"))
+    if "1" in (s.get("set.lock_screen_allow_private_notifications"), s.get("set.lock_screen_show_notifications")):
+        out.append(("hardening.lock-notif-content", "le contenu des notifications s'affiche sur l'écran verrouillé"))
+    return out
+
+
+def compare(base, now):
+    F = []
+
+    def add(sev, id_, msg):
+        F.append({"severity": sev, "id": id_, "msg": msg})
+
+    miss = {}
+    for k in ALL_KEYS:
+        if k not in base or k not in now:
+            miss[k] = now["unmeasured"].get(k) or base["unmeasured"].get(k) or "absent de la baseline"
+    for k, why in now["unmeasured"].items():
+        if k.startswith("perms:"):
+            miss[k] = why
+    for k, why in sorted(miss.items()):
+        add("info", "unmeasured." + k, f"non mesuré: {k} ({why})")
+
+    if "packages" not in miss:
+        b, n = base["packages"], now["packages"]
+        for p in sorted(n.keys() - b.keys()):
+            add("moyenne", f"pkg.added.{p}", f"nouvelle application {p} (installée par {n[p]['installer']})")
+        for p in sorted(b.keys() - n.keys()):
+            add("info", f"pkg.removed.{p}", f"application retirée {p}")
+        for p in sorted(n.keys() & b.keys()):
+            if n[p]["installer"] != b[p]["installer"]:
+                add("moyenne", f"pkg.installer.{p}", f"{p}: installateur changé ({b[p]['installer']} -> {n[p]['installer']})")
+            if n[p].get("sig") != b[p].get("sig") and "sig" in n[p] and "sig" in b[p]:
+                add("haute", f"pkg.signature.{p}", f"{p}: certificat de signature changé")
+        for p in sorted(n):
+            if "grants" not in n[p]:
+                continue
+            old = set(b.get(p, {}).get("grants") or []) if "grants" in b.get(p, {"grants": []}) else None
+            if old is None:
+                continue
+            for g in sorted(set(n[p]["grants"]) - old):
+                add("haute" if g in HIGH_PERMS else "moyenne", f"perm.new.{p}.{g}", f"{p}: permission {g} accordée")
+    for k, label in (("install_apps", "peut installer des applications"), ("overlay_apps", "peut se superposer aux autres applications")):
+        if k not in miss:
+            for p in sorted(set(now[k]) - set(base[k])):
+                add("moyenne", f"appop.{k}.{p}", f"{p} {label}")
+    if "admins" not in miss:
+        for a in sorted(set(now["admins"]) - set(base["admins"])):
+            add("haute", f"admin.added.{a}", f"administrateur de l'appareil ajouté: {a}")
+    if "vpn" not in miss and now["vpn"] != base["vpn"]:
+        add("haute", "vpn.changed", f"VPN actif: {base['vpn']} -> {now['vpn']}")
+    for scope_key, id_, label in (("enabled_accessibility_services", "a11y", "service d'accessibilité"),
+                                  ("enabled_notification_listeners", "notiflistener", "lecteur de notifications")):
+        k = "set." + scope_key
+        if k not in miss:
+            for x in sorted(items(now[k]) - items(base[k])):
+                add("haute", f"{id_}.added.{x}", f"{label} activé: {x}")
+            for x in sorted(items(base[k]) - items(now[k])):
+                add("info", f"{id_}.removed.{x}", f"{label} désactivé: {x}")
+    for _, key in SETTINGS:
+        k = "set." + key
+        if key in LIST_SETTINGS or k in miss or base[k] == now[k]:
+            continue
+        hot = key in HIGH_SETTINGS or (key in ("adb_enabled", "adb_wifi_enabled") and now[k] == "1")
+        add("haute" if hot else "moyenne", f"setting.{key}", f"{key}: {base[k]} -> {now[k]}")
+    for r in ROLES:
+        k = "role." + r
+        if k not in miss and base[k] != now[k]:
+            add("haute" if r in HIGH_ROLES else "moyenne", f"role.{r}", f"rôle {r}: {base[k] or '-'} -> {now[k] or '-'}")
+    if "seedvault" not in miss:
+        b, n = base["seedvault"], now["seedvault"]
+        for p in sorted(b.keys() | n.keys()):
+            if p not in n:
+                add("haute", f"seedvault.{p}.missing", f"Seed Vault: {p} a disparu")
+            elif p not in b:
+                add("haute", f"seedvault.{p}.added", f"Seed Vault: nouveau paquet {p}")
+            else:
+                for f in ("enabled", "version", "sig"):
+                    if b[p][f] != n[p][f]:
+                        add("haute", f"seedvault.{p}.{f}", f"Seed Vault: {p} {f} changé ({b[p][f]} -> {n[p][f]})")
+    known = risks(base)
+    for id_, (sev, msg) in risks(now).items():
+        if id_ in known:
+            add("info", id_, "risque déjà présent à la baseline: " + msg)
+        else:
+            add(sev, id_, msg)
+    for id_, msg in hardening(now):
+        add("info", id_, "conseil: " + msg)
+    return F
+
+
+def verdict(F, unmeasured):
+    drift = [f for f in F if f["severity"] in ("haute", "moyenne")]
+    if drift:
+        h = sum(f["severity"] == "haute" for f in drift)
+        return 1, f"Verdict: dérive ou risque trouvé ({h} haute, {len(drift) - h} moyenne)"
+    if unmeasured:
+        return 2, f"Verdict: non mesuré ({unmeasured} point(s) non mesuré(s)), rien de nouveau sur le reste"
+    return 0, "Verdict: rien de nouveau"
+
+
+def cmd_baseline(a):
+    path = state_dir() / "baseline.json"
+    if path.exists() and not a.force:
+        print(f"Baseline déjà présente ({path}). Relancer avec --force pour l'écraser.")
+        return 1
+    try:
+        s = measure()
+    except RishError as e:
+        print(f"non mesuré: {e}")
+        return 2
+    write_json(path, s)
+    print(f"Baseline enregistrée: {len(s.get('packages', {}))} apps tierces, {len(s['unmeasured'])} point(s) non mesuré(s).")
+    for id_, (sev, msg) in risks(s).items():
+        print(f"[{sev}] {id_}: {msg}")
+    return 0
+
+
+def cmd_check(a):
+    bpath = state_dir() / "baseline.json"
+    if not bpath.exists():
+        print("non mesuré: pas de baseline, lancer `zion-guard baseline`.")
+        return 2
+    try:
+        now = measure()
+    except RishError as e:
+        print(f"non mesuré: {e}")
+        return 2
+    F = compare(json.loads(bpath.read_text()), now)
+    code, line = verdict(F, sum(f["id"].startswith("unmeasured.") for f in F))
+    out = {"time": now["time"], "exit": code, "verdict": line, "findings": F}
+    write_json(state_dir() / "last.json", out)
+    if a.json:
+        print(json.dumps(out, ensure_ascii=False, indent=1))
+    else:
+        for f in F:
+            print(f"[{f['severity']}] {f['id']}: {f['msg']}")
+        print(line)
+    return code
+
+
+# ---- egress ----
+def netstats_bytes(text):
+    """uid -> rx+tx bytes: exact eBPF table when present (cumulative since boot), else the history buckets (approximate)."""
+    bpf, on = collections.Counter(), False
+    for line in text.splitlines():
+        if line.strip() == "uid rxBytes rxPackets txBytes txPackets":
+            on = True
+        elif on:
+            f = line.split()
+            if len(f) != 5 or not all(x.lstrip("-").isdigit() for x in f):
+                break
+            bpf[int(f[0])] += int(f[1]) + int(f[3])
+    if bpf:
+        return "ebpf", bpf
+    hist, uid = collections.Counter(), None
+    for line in text.splitlines():
+        m = re.search(r"\buid=(-?\d+) set=\w+ tag=0x0\b", line)
+        if m:
+            uid = int(m.group(1)) if int(m.group(1)) >= 0 else None
+        elif "ident=" in line:
+            uid = None
+        elif uid is not None:
+            b = re.match(r"\s+st=\d+ rb=(\d+) rp=\d+ tb=(\d+)", line)
+            if b:
+                hist[uid] += int(b.group(1)) + int(b.group(2))
+    return "history", hist
+
+
+def egress_path(name):
+    if not re.fullmatch(r"[\w.-]+", name):
+        raise SystemExit("nom de snapshot invalide (lettres, chiffres, . _ -)")
+    return state_dir() / "egress" / f"{name}.json"
+
+
+def cmd_egress_snapshot(a):
+    path = egress_path(a.name)
+    try:
+        source, by_uid = netstats_bytes(rish("dumpsys netstats detail"))
+        names = collections.defaultdict(list)
+        for line in rish("cmd package list packages -U").splitlines():
+            m = re.match(r"package:(\S+)\s+uid:(\d+)", line.strip())
+            if m:
+                names[m.group(2)].append(m.group(1))
+    except RishError as e:
+        print(f"non mesuré: {e}")
+        return 2
+    if not by_uid:
+        print("non mesuré: aucun compteur par uid dans dumpsys netstats.")
+        return 2
+    write_json(path, {"time": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"), "source": source,
+                      "uids": {str(u): b for u, b in by_uid.items()}, "packages": names})
+    print(f"Snapshot {a.name}: {len(by_uid)} uid, source {source}.")
+    return 0
+
+
+def cmd_egress_diff(a):
+    try:
+        A, B = (json.loads(egress_path(n).read_text()) for n in (a.a, a.b))
+    except OSError as e:
+        print(f"snapshot illisible: {e.filename}")
+        return 2
+    rows = []
+    for uid, nb in B["uids"].items():
+        na = A["uids"].get(uid, 0)
+        pk = ",".join(B["packages"].get(uid) or A["packages"].get(uid) or [f"uid{uid}"])
+        if a.uid is not None and int(uid) != a.uid or a.package and a.package not in pk.split(","):
+            continue
+        d, reset = (nb - na, False) if nb >= na else (nb, True)  # counters restart at reboot: nb is then a lower bound
+        if d > 0:
+            rows.append((d, uid, pk, reset))
+    for d, uid, pk, reset in sorted(rows, reverse=True):
+        print(f"uid {uid} {pk}: +{d / 1e6:.2f} Mo" + (" (compteur remis à zéro entre les deux, minimum)" if reset else ""))
+    print(f"{len(rows)} uid ont émis ou reçu plus entre {a.a} et {a.b}." if rows else "Aucune croissance entre les deux snapshots.")
+    return 0
+
+
+def cmd_chain_verify(a):
+    try:
+        ok, msg = chain_verify(a.file)
+    except OSError as e:
+        print(f"fichier illisible: {e}")
+        return 2
+    print(msg)
+    return 0 if ok else 1
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(prog="zion-guard", description=__doc__.split("\n")[0])
+    sub = ap.add_subparsers(dest="cmd", required=True)
+    p = sub.add_parser("baseline"); p.add_argument("--force", action="store_true"); p.set_defaults(fn=cmd_baseline)
+    p = sub.add_parser("check"); p.add_argument("--json", action="store_true"); p.set_defaults(fn=cmd_check)
+    eg = sub.add_parser("egress").add_subparsers(dest="sub", required=True)
+    p = eg.add_parser("snapshot"); p.add_argument("name"); p.set_defaults(fn=cmd_egress_snapshot)
+    p = eg.add_parser("diff"); p.add_argument("a"); p.add_argument("b")
+    p.add_argument("--uid", type=int); p.add_argument("--package"); p.set_defaults(fn=cmd_egress_diff)
+    ch = sub.add_parser("chain").add_subparsers(dest="sub", required=True)
+    p = ch.add_parser("verify"); p.add_argument("file"); p.set_defaults(fn=cmd_chain_verify)
+    a = ap.parse_args(argv)
+    return a.fn(a)
+
+
+if __name__ == "__main__":
+    sys.exit(main())
